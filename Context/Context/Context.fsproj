@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors>ptr</Authors>
+    <Company>ptr</Company>
+    <Description>Types that add 'context' to generic underlying types, e.g. functors, monads, monoids, etc., as well as some primitive and compositional operations.</Description>
+    <AssemblyVersion>1.0.0.5</AssemblyVersion>
+    <PackageReleaseNotes>The dll's in the `Release` folders are only rebuilt when the functionality is considered stable, and therefore should be safe to use. This is a work in progress though, so the Debug and Release versions may not match, and the Release versions may change frequently.</PackageReleaseNotes>
+    <FileVersion>1.0.0.5</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+    <OtherFlags></OtherFlags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Revisions.txt" />
+    <Content Include="ToDo.txt" />
+    <Compile Include="Contexts\Cont.fs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Contexts\DList.fs" />
+    <Compile Include="Contexts\Either.fs" />
+    <Compile Include="Contexts\Lens.fs" />
+    <Compile Include="Contexts\Maybe.fs" />
+    <Compile Include="Contexts\NonEmpty.fs" />
+    <Compile Include="Contexts\Proxy.fs" />
+    <Compile Include="Contexts\Reader.fs" />
+    <Compile Include="Contexts\RWS.fs" />
+    <Compile Include="Contexts\State.fs" />
+    <Compile Include="Contexts\Writer.fs" />
+    <Compile Include="Contexts\ZipList.fs" />
+    <Compile Include="Extensions\Builders\Cont.fs" />
+    <Compile Include="Extensions\Builders\DList.fs" />
+    <Compile Include="Extensions\Builders\Either.fs" />
+    <Compile Include="Extensions\Builders\Lens.fs" />
+    <Compile Include="Extensions\Builders\Maybe.fs" />
+    <Compile Include="Extensions\Builders\NonEmpty.fs" />
+    <Compile Include="Extensions\Builders\Proxy.fs" />
+    <Compile Include="Extensions\Builders\Reader.fs" />
+    <Compile Include="Extensions\Builders\RWS.fs" />
+    <Compile Include="Extensions\Builders\State.fs" />
+    <Compile Include="Extensions\Builders\Writer.fs" />
+    <Compile Include="Incomplete\Parser.fs" />
+    <Compile Include="Incomplete\RoseTree.fs" />
+    <Compile Include="Incomplete\Sq.fs" />
+    <Compile Include="Incomplete\Pipe.fs" />
+    <Compile Include="Incomplete\StreamTree.fs" />
+    <Compile Include="Incomplete\Tree.fs" />
+    <Compile Include="Incomplete\Tuple.fs" />
+    <Compile Include="Incomplete\Zipper.fs" />
+  </ItemGroup>
+
+  <ItemGroup />
+
+</Project>

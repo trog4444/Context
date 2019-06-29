@@ -1,0 +1,244 @@
+﻿2019-06-28
+    -- per .NET naming guidelines, added Ptr to beginning of all namespaces
+    -- added scripting file for testing purposes. It is not meant as part of the sln.
+    -- updated to 1.0.0.5
+    !? renamed `Primitive` to `Std` ala C++, but may change later
+
+^^^ Commit
+2019-06-26
+    -- swapped arg order for `Set` member of `Lens` from b->a->a to a->b->a
+        -- added Profunctor instance to Lens
+    -- added 'runLens' and changed the ( >- ) operator to use it instead of 'lensGet'
+    -- added IEnumerable to Either, Maybe, & Writer
+    -- added Adjoint to Writer (ala Reader)
+    -- removed Yield and YieldFrom from all builders
+    -- added Extensions folder (Context.Extension namespace)
+        -- added Builders folder (Context.Extension.Builder._TypeName_)
+        -- added Combine modules and variants of Combine methods to add to builders as needed
+
+2019-06-25
+    -- changed `runX` functions to have the `Context`-value as the last curried arg
+    -- updated ZipList with factory methods to allow for inlining of other funcs rather than using internal ctor
+        -- added IEnumerable interface
+
+2019-06-23
+    added NonEmpty(list)
+
+Commit
+2019-06-23
+    -- moved concatM, mapM, mapM2, zipWithM, and replicateM to Applicative
+        & renamed to sequenceA, forA, for2A, zipWithA, & replicateA
+    -- added ZipList (`zipping` Applicative functor of sequences, rather than non-deterministic)
+    -- updated package # to 1.0.0.4
+
+2019-06-21
+    -- changed Undefined folder to Incomplete and changed ns to Context.Incomplete./.../
+    -- added extendMap and composeW to Comonads (Cont, Proxy, Writer
+
+2019-06-19
+    -- added NoEquality and NoComparison to function types
+    -- changed Id property (for Cat) to a unit method
+    -- removed Extension folder
+    -- updated LRTree type, added functions, and renamed to StreamTree
+
+2019-06-18
+^^^ commit <<< removed Experimental branch
+    -- Updated State to where the state type can change
+        -- included State'<s, a> as a synonymn for State<s, s*, a>
+        && same for RWS >>> also added trifunctor module
+        -- added Bifunctor
+
+2019-06-17
+    -- added methods to State/StateValue type for converting tuples/tuple-functions/StateValue pairs etc
+    !! Proxy moved to Contexts from Undefined and added applicable modules
+        -- added Proxy(2) for Bifunctor, Profunctor, Cat, & Arrow
+    -- bifunctor added to writer
+    -- Added IxState to Undefined (?? or should I just make NORMAL state indexed by default ??)
+
+^^^ Commit / rebase master
+2019-06-17
+    
+2019-06-16
+    -- finished Monad implementation of Lens
+    -- modified filterA | POSSIBLY more efficient (negligible at best though)
+    -- finished implementation of DList
+    -- changed Parser to yield a ParseResult record instead of a tuple
+        added a few utility methods
+        finished Bifunctor implementation
+        started Applicative implementation
+        !! needs operators
+        ?? should some and many be moved to Primitive ??
+
+^^^ Commit on Experimental branch
+2019-06-16
+    -- changed version to 1.0.0.2 (last commit didnt take (?))
+
+2019-06-16
+    -- Changed state from struct pair to StateValue value.
+
+2019-06-15
+    -- Created 'Undefined' folder
+        -- moved Lens, Par, DList, Parser, Sq, Tuple, & Stream
+        !! created LRTree, RWS, & RoseTree
+    -- Changed Writer to a record & changed the 'log' from a function to a term
+        where APPLICABLE functions use Semigroup and/or Monoid instance 0of the underlying type
+    -- Changed all instances of 'cacheX' functions to use HashIdentity.Structural (for POTENTIAL speedup)
+    -- changed thenA BACK to andThen
+    -- added _Extension_ folder with _Default_ implementations for _Monoids_ for some types
+        HOWEVER they are not working in tests (with Writer)
+    -- Optimized the 'cacheX' functions in Reader, State, & Lens
+
+2019-06-09
+    !! removed 'lazy' versions of functions (eg replace & replace' & fromMaybe & fromMaybe')
+        -- removed nix and pair
+        ?? this needs to be x2 checked and tested
+
+2019-06-06
+    -- Optimized and generalized recM for Maybe and Either.
+    -- Removed: runMonad, >=>, <=<, >>-, -<<, =>=, =<=
+    !! WAS able to inline _some_ NON-funcs (like ask, get, empty, mzero, app, identity, etc)
+
+^^^ Commit
+2019-06-05
+    -- changed version # to 1.0.0.2
+
+2019-06-05
+    -- changed Applicative.andThen to thenA (and thenA')
+    -- renamed Prelude to Primitive
+    -- adjusted some names & added some functions to Lens
+    -- REMOVED IEnumerable interface from: Either, Maybe, & Writer
+    -- moved TestSuite into own sln (unpublished)
+
+2019-06-04
+    -- Defined Parser type >>> need to flesh out
+    -- moved Sq active pattern into Sq ns & removed Pattern.fs
+    -- added hush to Either & note to Maybe
+    -- added MaybeOp module to Maybe ns - includes operators that are related to the Maybe type but can not be directly attached, like ( >=> )
+        ?? remove runMonad from Monad and remove >=> and <=< as operators on all monads.
+    -- began change in Parser - prelude functions should only act ONCE (w possible exceptions) unless used by a 'repeat' type function like 'some' and 'many'
+    -- began Lens
+    -- added flip, konst, curry, & uncurry to Reader
+
+^^^ Commit
+2019-06-03
+    -- changed version # to 1.0.0.1
+    -- updated tests to use new Context ns/module format
+
+2019-06-03
+    -- added 'Tuple' file => needs work
+    -- Adjusted namespaces and module names and ordering
+        -- each Type is within its own ns (ex: Context.Type.Maybe => type Maybe a = ...
+        -- Primitives are now in module Primitive
+        -- Convert is now its own module in the ns
+        -- Composition is now its own module in the ns
+        ?? where to put builder ?? auto open module ??
+        -- done in
+            |Cont
+            |DList
+            |Either
+            |Maybe
+            |Par
+            {Parser}
+            |Reader
+            |Sq
+            |State
+            {Tuple}
+            |Writer
+    -- removed MonadT (in Github.ToDo folder)
+    -- moved Pattern module to Context ns (from Context.Type)
+    -- added IEnumerable implementations
+        /Cont % toSeq
+        |DList
+        |Either
+        |Maybe
+        |Par
+        {Parser}
+        /Reader
+        |Sq
+        /State
+        |Tuple (2 & 3)
+        |Writer
+    -- added to release notes
+
+2019-06-02
+    -- Changed .> to *> (same for rev direction and lazy variants)
+    -- updated and added lazy variants of <|> and <||>
+    -- Added Pattern module (under ns Context and set to Auto open)
+        -- added Sq active pattern.
+    -- Added merge and fanin to Arrow (in Reader) << had to rename merge from
+        -- Applicative to 'pair' (in all files)
+    -- Added 'Convert' module to Either.
+    -- Created TestSuite project
+        -- includes beginnings of Maybe and Either.
+
+2019-06-01
+    -- removed Kleisli into own sln.
+    -- Generalized Monad.concatM and related functions for Cont to have a different 'return' type(s).
+    -- optimized Cont => Monad.replicateM.
+    -- fixed some errors in Cont (order of 'c' calls was backwards on some functions).
+
+^^^ Commit
+2019-05-31 -- mainly just removed some modules to separate sln's
+    -- need to reread ALL notes above!
+
+2019-05-31
+    Added Semigroup module to:
+        |Cont
+        DList
+        |Either        
+        |Maybe
+        |Par
+        {Parser}
+        |Reader
+        |Sq
+        |State
+        |Writer
+        All MonadT as applicable
+    Changed operators to have spaces preceding/proceding spaces, also allowing to change Arrow (---) to ( *** ).
+
+    Added Monoid to:
+        Maybe
+        Sq
+
+2019-05-30
+    Added Kleisli folder/ns for Kleisli types (MonadTypeK of (a -> MonadType b))
+        Cat and Arr modules can be used.
+        This needs to be a separate Solution.
+        Partial Implementation for ContK added.
+        ?? Consider removing runMonad and composeM and >=> / >>- and put in Kleisli instead ??
+    Typeclasses folder removed -- needs to be its own solution.
+    Moved filterM to Applicative from Monad and renamed to filterA.
+    Added new 'm' functions to Monad.Plus for Maybe.
+    Added 'ofMaybe' (and thunk version) to Maybe and MaybeAsync and MaybeState (all current Maybe types).
+
+^^^ Commit
+2019-05-30
+    -- no notes, just initial commit.
+
+2019-05-29
+	Finished ContAsync.
+	Finished MaybeAsync.
+    Changed Writer and State to result in struct 2tuples instead of XPair types.
+    Added MaybeState.
+    Moved computation expression builders to primary module from Composition.
+    Added Sq module.
+
+2019-05-28
+	Added Reader and State.
+	Fixed minor issues in Cont and Par.
+	Added Folders for eventual MonadWrappers (w 1 ex in MonadReader).
+	Fixed naming conventions (Context vs Contexts, etc).
+	
+	Added Either.
+	Made some adjustments to Arrow.
+	Minor optimizations to some functions.
+	Added >>- and -<< operators to Monads.
+	Added Writer.
+	Added Maybe.
+	Created MaybeAsync in Context.MonadT ns.
+	Changed Context to Context.Type for primary types.
+
+1.0.0.0
+2019-05-26
+	Created
+	Cont and Par types added.

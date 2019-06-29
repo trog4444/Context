@@ -1,0 +1,63 @@
+﻿Scripting files for testing:
+
+
+//// Load entire dll - may have to close and reopen script file after rebuilding sln.
+//#r @"C:/Users/Tyler/Documents/GitHub/Context/Context/Context/bin/Release/netcoreapp2.0/Context.dll"
+
+//// Load a single file - when referencing, must still use full path,
+// eg: open Ptr.Context.Type.Maybe
+//#load @"Contexts/Maybe.fs"
+
+
+
+
+//module private Test =
+
+//    let a = Ptr.Context.Type.Maybe.Maybe.
+
+
+
+Make Convert modules for all relavent types.
+
+
+Add interface implementations as applicable (eg IEnumerable).
+
+
+Add default implementations as comments beneath all functions (see Maybe.Composition.Monad.Plus).
+^^ see if it adds extra size to Release.dll
+
+
+Unit tests.
+
+
+Add things that aren't Monads -- like the Store Comonad, or simple Monoids, etc
+
+
+Parser @ some & many @ do not work "as expected" -- may NEED to change
+Parser to result in Pass rem result / Fail rem
+
+Get Builder.Combine to work
+
+
+
+put --sig:C:\Users\Tyler\Documents\GitHub\Context\Context\Context\slnsig.fsi
+in Project Properties -> Build -> other flags
+
+Reset/Shift testing ::
+open Std
+    let a = reset <| map2 (*) (wrap 3) (shift <| fun k -> wrap <| k (k 10))
+            |> map2 (+) <| wrap 1
+            |> map2 (-) <| wrap 3
+            |> evalCont // 88 -- 3 * 10 * 3 + 1 - 3
+    let b = map2 (*) (wrap 3) (shift <| fun k -> wrap <| k (k 10))
+            |> map2 (+) <| (wrap 1)
+            |> map2 (-) <| (wrap 3)
+            |> evalCont // 82 -- 3 * 10 + 1 - 3 * 3 + 1 - 3
+    let c = map2 (*) (wrap 3) (Cont <| fun k -> k <| k 10)
+            |> map2 (+) <| (wrap 1)
+            |> map2 (-) <| (wrap 3)
+            |> evalCont // 82 -- 3 * 10 + 1 - 3 * 3 + 1 - 3
+    // conclusion :
+    // | a shift inside of a reset means that the k's inside the reset all occur BEFORE
+    // | all other following Cont's
+    // | HOWEVER ... when a Cont is used BEFORE the reset, all 3 forms yielded the same result
