@@ -68,7 +68,7 @@
 
 
 /////
-//module Composition =
+//module Compose =
 
 //    ///
 //    let inline wrap x : Parser< ^s, ^s, ^a> = Parser (fun xs -> [{ Remaining = xs ; Result = x }])
@@ -119,7 +119,7 @@
 
 
     
-//    /// Creates a monadic workflow for the given type.
+//    /// Creates a computation expression for the given type.
 //    let parser = Monad.ParserBuilder ()
 
 
@@ -175,10 +175,10 @@
 
                 
 //                let s = ([1;1;1;1;1] : int list) //|> List.pairwise
-//                let p = (Std.item) : Parser<int, int, int> //Parser<int * int, int * int, int * int>
-//                let rp = Std.runParser p s
+//                let p = (item) : Parser<int, int, int> //Parser<int * int, int * int, int * int>
+//                let rp = runParser p s
 //                let a = many p
-//                let ra = Std.runParser p s
+//                let ra = runParser p s
 //                let same = rp = ra
 
 //    ///
@@ -218,7 +218,7 @@
 
 
 //open Std
-//open Composition
+//open Compose
   
 ////  @ Operators @
 //type Parser<'s, 'r, 'a> with

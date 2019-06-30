@@ -1,4 +1,4 @@
-﻿namespace Ptr.Context.Type.DList
+﻿namespace Ptr.Context.Type
 
 
 /// A difference list is a function that, given a list, returns the original
@@ -13,9 +13,9 @@ with interface System.Collections.Generic.IEnumerable< ^a> with
         override s.GetEnumerator() = (s :> ^a seq).GetEnumerator() :> System.Collections.IEnumerator
 
 
-/// Standard operations on `DList` values.
-module Std =
-  
+/// Operations on `DList` values.
+module DList =
+
     /// The result of running a difference list when given an existing list to extend.
     let inline runDList xs (DL dl) = dl xs
 
@@ -71,335 +71,334 @@ module Std =
         DL (fun xs -> if d.TryGetValue(xs, r) then !r else d.GetOrAdd(key = xs, value = f xs))
 
 
-/// Convert between values of type `DList` and related types.
-module Convert =
+    /// Convert between values of type `DList` and related types.
+    module Convert =
 
-    /// Convert a list to a dlist.
-    let inline ofList xs = DL (List.append xs)
+        /// Convert a list to a dlist.
+        let inline ofList xs = DL (List.append xs)
 
-    /// Convert a dlist to a list, using the empty list as the initial list.
-    let inline toList (DL dl) = dl []
+        /// Convert a dlist to a list, using the empty list as the initial list.
+        let inline toList (DL dl) = dl []
 
-    /// <summary>Convert a sequence to a dlist.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    let inline ofSeq xs = DL (List.append (Seq.toList xs))
-
-    /// Convert a dlist to a sequence.
-    let inline toSeq (DL xs) = seq { for x in xs [] -> x }
-
-
-/// Compositional operations on `DList` values.
-module Composition =
-
-    /// Lift a value onto an effectful context.
-    let inline wrap x = Std.singleton x
-
-    /// Sequentially compose two effects, passing any value produced by the first
-    /// as an argument to the second.
-    let inline bind (k: ^a -> DList< ^b>) (DL xs) : DList< ^b> =
-        //let inline foldr f s xs = Seq.foldBack f xs s
-        //(foldr (append << f) empty << toList) m
-        DL (List.append (List.collect (k >> Convert.toList) (xs [])))        
-
-    /// Removes one layer of monadic context from a nested monad.
-    let inline flatten mm = bind id mm
-
-    /// Sequential application on effects.
-    let inline ap (DL mv) (DL mf) =
-        DL (List.append [ let vs = mv [] in for f in mf [] do for v in vs -> f v ])
-
-    /// Lift a function onto effects.
-    let inline map (f: ^a -> ^b) (DL xs) =
-        DL (List.append (List.map f (xs [])))
-
-
-    /// Supplementary Monad operations on the given type.
-    module Monad =
-
-        /// Monadic computation builder specialised to the given monad.
-        type DListBuilder () =
-            member inline s.Bind(m, k) = bind k m
-            member inline s.Return x = wrap x
-            member inline s.ReturnFrom m : DList< ^a> = m
-            member inline s.Zero () = s.Return ()
-  
-            member inline s.Delay f = f ()
-            member inline s.Run f = f
-  
-            member inline s.TryWith (body, handler) = try s.ReturnFrom(body ()) with e -> handler e
-            member inline s.TryFinally (body, finalizer) = try s.ReturnFrom(body ()) finally finalizer ()
-  
-            member inline s.Using(disp: #System.IDisposable, body) =
-                s.TryFinally((fun () -> body disp),
-                    fun () -> match box disp with null -> () | _ -> disp.Dispose ())
-  
-            member inline s.While(guard, body) =
-                let rec loop = function
-                | false -> s.Zero ()
-                | true -> s.Bind(body (), guard >> loop)
-                loop (guard ())
-  
-            member inline s.For(seq: _ seq, body) =
-                s.Using(seq.GetEnumerator(),
-                    fun enum -> s.While(enum.MoveNext,
-                                    s.Delay(fun () -> body enum.Current)))
-
-
-        /// Composes two monadic functions together.
-        /// Acts as the composition function in the Kleisli category.
-        let inline composeM k2 k1 = k1 >> bind k2
-  
-        /// Sequentially compose three actions, passing any value produced by the first
-        /// two as arguments to the third.
-        let inline bind2 k ma mb = bind (fun a -> bind (k a) mb) ma
-
-        /// Sequentially compose four actions, passing any value produced by the
-        /// first two as arguments to the third.
-        let inline bind3 k ma mb mc =
-            bind2 (fun a b -> bind (k a b) mc) ma mb
-
-        /// Sequentially compose two actions, creating a third from the result and
-        /// lifting a binary function on its effects.
-        let inline bindMap k f m = bind (fun a -> map (f a) (k a)) m
-
-        /// Build a monad through recursive (effectful) computations.
-        /// Computation proceeds through the use of a continuation function applied to the intermediate result.
-        /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
-        let inline recM f x =
-            let rec go m = bind (f (wrap >> go)) m in go (f wrap x)
-
-        /// Build a monad through recursive (effectful) computations.
-        /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
-        /// Any constructor can be used in each iteration, in the case of union-types.
-        let inline recMp f x =
-            let rec go m = bind (f go) m in go (f id x)
-            
-        /// <summary>Monadic fold over a structure associating to the right.</summary>
+        /// <summary>Convert a sequence to a dlist.</summary>
         /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline foldrM f (s0: ^s) (source: ^a seq) =
-            let g k x s = bind k (f x s) in Seq.fold g wrap source s0
+        let inline ofSeq xs = DL (List.append (Seq.toList xs))
 
-        /// <summary>Monadic fold over a structure associating to the left.</summary>
-        /// <exception cref="System.ArgumentNullException">
-        /// Thrown when the input sequence is null.</exception>
-        let inline foldlM f (s0: ^s) (source: ^a seq) =
-            let g x k s = bind k (f s x) in Seq.foldBack g source wrap s0
+        /// Convert a dlist to a sequence.
+        let inline toSeq (DL xs) = seq { for x in xs [] -> x }
 
 
-        /// Monads that also support choice and failure.
-        module Plus =
+    /// Compositional operations on `DList` values.
+    module Compose =
 
-            /// The identity of mplus.
-            let inline mzero<'a> : DList<'a> = Std.empty
+        /// Lift a value onto an effectful context.
+        let inline wrap x = singleton x
 
-            /// A monoidal operation on monads, supporting choice and failure.
-            let inline mplus m1 m2 : DList< ^a> =
-                Std.append m1 m2
+        /// Sequentially compose two effects, passing any value produced by the first
+        /// as an argument to the second.
+        let inline bind (k: ^a -> DList< ^b>) (DL xs) : DList< ^b> =
+            //let inline foldr f s xs = Seq.foldBack f xs s
+            //(foldr (append << f) empty << toList) m
+            DL (List.append (List.collect (k >> Convert.toList) (xs [])))        
 
-            /// Conditional failure of effectful computations.
-            let inline guard condition = if condition then wrap () else mzero
+        /// Removes one layer of monadic context from a nested monad.
+        let inline flatten mm = bind id mm
 
-            /// Create a new item if the previous was mzero, else keep the original.
-            let inline recover makeNew (DL f) =
-                DL (List.append (match f [] with [] -> (match makeNew () with (DL f) -> f []) | xs -> xs))
+        /// Sequential application on effects.
+        let inline ap (DL mv) (DL mf) =
+            DL (List.append [ let vs = mv [] in for f in mf [] do for v in vs -> f v ])
 
-            /// Combine two monads using a 'SQL style' inner join function.
-            let inline relate f (k1: ^a -> ^k) (k2: ^b -> ^k) ma mb =
-                bind2 (fun a b -> if k1 a = k2 b then wrap (f a b) else mzero) ma mb
+        /// Lift a function onto effects.
+        let inline map (f: ^a -> ^b) (DL xs) =
+            DL (List.append (List.map f (xs [])))
 
 
-            /// Generalizations of functions on other types.
-            module General =
+        /// Supplementary Monad operations on the given type.
+        module Monad =
 
-                /// <summary>Generalizes list concatenation to monads.</summary>
-                /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-                let inline msum source =
-                    Seq.foldBack mplus source mzero
+            /// Monadic computation builder specialised to the given monad.
+            type DListBuilder () =
+                member inline s.Bind(m, k) = bind k m
+                member inline s.Return x = wrap x
+                member inline s.ReturnFrom m : DList< ^a> = m
+                member inline s.Zero () = s.Return ()
+  
+                member inline s.Delay f = f ()
+                member inline s.Run f = f
+  
+                member inline s.TryWith (body, handler) = try s.ReturnFrom(body ()) with e -> handler e
+                member inline s.TryFinally (body, finalizer) = try s.ReturnFrom(body ()) finally finalizer ()
+  
+                member inline s.Using(disp: #System.IDisposable, body) =
+                    s.TryFinally((fun () -> body disp),
+                        fun () -> match box disp with null -> () | _ -> disp.Dispose ())
+  
+                member inline s.While(guard, body) =
+                    let rec loop = function
+                    | false -> s.Zero ()
+                    | true -> s.Bind(body (), guard >> loop)
+                    loop (guard ())
+  
+                member inline s.For(seq: _ seq, body) =
+                    s.Using(seq.GetEnumerator(),
+                        fun enum -> s.While(enum.MoveNext,
+                                        s.Delay(fun () -> body enum.Current)))
 
-                /// <summary>Generalizes the 'ofSeq' function.</summary>
-                /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-                let inline mOfSeq (xs: ^a seq) =
-                    msum (Seq.map wrap xs)
 
-                /// Generalizes the 'Seq.where' function.
-                let inline mwhere p m =
-                    bind (fun a -> if p a then m else mzero) m
+            /// Composes two monadic functions together.
+            /// Acts as the composition function in the Kleisli category.
+            let inline composeM k2 k1 = k1 >> bind k2
+  
+            /// Sequentially compose three actions, passing any value produced by the first
+            /// two as arguments to the third.
+            let inline bind2 k ma mb = bind (fun a -> bind (k a) mb) ma
 
-                /// Opposite of the 'mwhere' function.
-                let inline mremove p m =
-                    mwhere (not << p) m
+            /// Sequentially compose four actions, passing any value produced by the
+            /// first two as arguments to the third.
+            let inline bind3 k ma mb mc =
+                bind2 (fun a b -> bind (k a b) mc) ma mb
 
-                /// Generalizes the 'Seq.partition' function.
-                let inline mpartitionSeq p m =
-                    mwhere p m, mremove p m
+            /// Sequentially compose two actions, creating a third from the result and
+            /// lifting a binary function on its effects.
+            let inline bindMap k f m = bind (fun a -> map (f a) (k a)) m
 
-                /// Translate a form of Option.defaultWith to an arbitrary 'MonadPlus' type.
-                let inline mofOption m =
-                    let inline ofOption b f m = match m with None -> b | Some a -> f a
-                    ofOption mzero wrap m
+            /// Build a monad through recursive (effectful) computations.
+            /// Computation proceeds through the use of a continuation function applied to the intermediate result.
+            /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
+            let inline recM f x =
+                let rec go m = bind (f (wrap >> go)) m in go (f wrap x)
 
-                /// Translate a form of 'Option.defaultWith' to an arbitrary 'MonadPlus' type.
-                let inline mconcatOption m =
-                    let ofOption b f m = match m with None -> b | Some a -> f a
-                    bind (ofOption mzero wrap) m
+            /// Build a monad through recursive (effectful) computations.
+            /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
+            /// Any constructor can be used in each iteration, in the case of union-types.
+            let inline recMp f x =
+                let rec go m = bind (f go) m in go (f id x)
+            
+            /// <summary>Monadic fold over a structure associating to the right.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+            let inline foldrM f (s0: ^s) (source: ^a seq) =
+                let g k x s = bind k (f x s) in Seq.fold g wrap source s0
 
-                /// Generalizes the 'Seq.choose' function.
-                let inline mchoose (f: ^a -> ^b option) m =
-                    mconcatOption (map f m)
+            /// <summary>Monadic fold over a structure associating to the left.</summary>
+            /// <exception cref="System.ArgumentNullException">
+            /// Thrown when the input sequence is null.</exception>
+            let inline foldlM f (s0: ^s) (source: ^a seq) =
+                let g x k s = bind k (f s x) in Seq.foldBack g source wrap s0
 
-                /// Collects the values from Choice1Of2's, while discarding the rest.
-                let inline mchoice1 m =
-                    let inline l c = match c with Choice1Of2 a -> Some a | Choice2Of2 _ -> None
-                    mconcatOption (map l m)
+
+            /// Monads that also support choice and failure.
+            module Plus =
+
+                /// The identity of mplus.
+                let inline mzero<'a> : DList<'a> = empty
+
+                /// A monoidal operation on monads, supporting choice and failure.
+                let inline mplus m1 m2 : DList< ^a> = append m1 m2
+
+                /// Conditional failure of effectful computations.
+                let inline guard condition = if condition then wrap () else mzero
+
+                /// Create a new item if the previous was mzero, else keep the original.
+                let inline recover makeNew (DL f) =
+                    DL (List.append (match f [] with [] -> (match makeNew () with (DL f) -> f []) | xs -> xs))
+
+                /// Combine two monads using a 'SQL style' inner join function.
+                let inline relate f (k1: ^a -> ^k) (k2: ^b -> ^k) ma mb =
+                    bind2 (fun a b -> if k1 a = k2 b then wrap (f a b) else mzero) ma mb
+
+
+                /// Generalizations of functions on other types.
+                module General =
+
+                    /// <summary>Generalizes list concatenation to monads.</summary>
+                    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+                    let inline msum source =
+                        Seq.foldBack mplus source mzero
+
+                    /// <summary>Generalizes the 'ofSeq' function.</summary>
+                    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+                    let inline mOfSeq (xs: ^a seq) =
+                        msum (Seq.map wrap xs)
+
+                    /// Generalizes the 'Seq.where' function.
+                    let inline mwhere p m =
+                        bind (fun a -> if p a then m else mzero) m
+
+                    /// Opposite of the 'mwhere' function.
+                    let inline mremove p m =
+                        mwhere (not << p) m
+
+                    /// Generalizes the 'Seq.partition' function.
+                    let inline mpartitionSeq p m =
+                        mwhere p m, mremove p m
+
+                    /// Translate a form of Option.defaultWith to an arbitrary 'MonadPlus' type.
+                    let inline mofOption m =
+                        let inline ofOption b f m = match m with None -> b | Some a -> f a
+                        ofOption mzero wrap m
+
+                    /// Translate a form of 'Option.defaultWith' to an arbitrary 'MonadPlus' type.
+                    let inline mconcatOption m =
+                        let ofOption b f m = match m with None -> b | Some a -> f a
+                        bind (ofOption mzero wrap) m
+
+                    /// Generalizes the 'Seq.choose' function.
+                    let inline mchoose (f: ^a -> ^b option) m =
+                        mconcatOption (map f m)
+
+                    /// Collects the values from Choice1Of2's, while discarding the rest.
+                    let inline mchoice1 m =
+                        let inline l c = match c with Choice1Of2 a -> Some a | Choice2Of2 _ -> None
+                        mconcatOption (map l m)
                         
-                /// Collects the values from Choice2Of2's, while discarding the rest.
-                let inline mchoice2 m =
-                    let inline r c = match c with Choice2Of2 a -> Some a | Choice1Of2 _ -> None
-                    mconcatOption (map r m)
+                    /// Collects the values from Choice2Of2's, while discarding the rest.
+                    let inline mchoice2 m =
+                        let inline r c = match c with Choice2Of2 a -> Some a | Choice1Of2 _ -> None
+                        mconcatOption (map r m)
 
-                /// Collects the values from Choice1Of2s on the left, and from Choice2Of2s on the right.
-                let inline mpartitionChoice m =
-                    mchoice1 m, mchoice2 m
+                    /// Collects the values from Choice1Of2s on the left, and from Choice2Of2s on the right.
+                    let inline mpartitionChoice m =
+                        mchoice1 m, mchoice2 m
 
         
-        /// Monadic zipping (combining or decomposing corresponding monadic elements).
-        module Zip =
+            /// Monadic zipping (combining or decomposing corresponding monadic elements).
+            module Zip =
             
-            /// Combine the corresponding contents of two monads into a single monad.
-            let inline mzipWith (f: ^a -> ^b -> ^c) (DL fa) (DL fb) : DList< ^c> =
-                DL (List.append (Seq.toList (Seq.map2 f (fa []) (fb []))))
+                /// Combine the corresponding contents of two monads into a single monad.
+                let inline mzipWith (f: ^a -> ^b -> ^c) (DL fa) (DL fb) : DList< ^c> =
+                    DL (List.append (Seq.toList (Seq.map2 f (fa []) (fb []))))
 
-            /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-            let inline mzip (DL fa) (DL fb) =
-                DL (List.append (Seq.toList (Seq.map2 (fun a b -> a, b) (fa []) (fb []))))
+                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
+                let inline mzip (DL fa) (DL fb) =
+                    DL (List.append (Seq.toList (Seq.map2 (fun a b -> a, b) (fa []) (fb []))))
                     
-            /// Decompose a monad comprised of corresponding pairs of values.
-            let inline munzip m : DList< ^a> * DList< ^b> =
-                map fst m, map snd m
+                /// Decompose a monad comprised of corresponding pairs of values.
+                let inline munzip m : DList< ^a> * DList< ^b> =
+                    map fst m, map snd m        
 
 
-    /// Creates a monadic workflow for the given type.
-    let dlist = Monad.DListBuilder ()
+        /// Supplementary Applicative operations on the given type.
+        module Applicative =
 
+            /// Lift a binary function on effects.
+            let inline map2 (f: ^a -> ^b -> ^c) fa fb =
+                ap fb (map (fun a b -> f a b) fa)
 
-    /// Supplementary Applicative operations on the given type.
-    module Applicative =
+            /// Lift a ternary function on effects.
+            let inline map3 (f: ^a -> ^b -> ^c -> ^d) fa fb fc =
+                Monad.bind2 (fun a b -> map (f a b) fc) fa fb
 
-        /// Lift a binary function on effects.
-        let inline map2 (f: ^a -> ^b -> ^c) fa fb =
-            ap fb (map (fun a b -> f a b) fa)
+            /// Sequentially compose two effects, discarding any value produced by the first.
+            let inline andThen fb fa = bind (fun _ -> fb) fa
 
-        /// Lift a ternary function on effects.
-        let inline map3 (f: ^a -> ^b -> ^c -> ^d) fa fb fc =
-            Monad.bind2 (fun a b -> map (f a b) fc) fa fb
+            /// Conditional execution of effectful expressions.
+            let inline when_ (condition: bool) f =
+                if condition then f () else wrap ()
 
-        /// Sequentially compose two effects, discarding any value produced by the first.
-        let inline andThen fb fa = bind (fun _ -> fb) fa
-
-        /// Conditional execution of effectful expressions.
-        let inline when_ (condition: bool) f =
-            if condition then f () else wrap ()
-
-        /// <summary>Generalizes the sequence-based filter function.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline filterA (p: ^a -> DList<bool>) source =
-            Seq.foldBack (fun x xs -> map2 (fun flg xs -> if flg then x::xs else xs) (p x) xs) source (wrap [])
-
-        /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline sequenceA source : DList< ^a list> =
-            Seq.foldBack (map2 (fun x xs -> x::xs)) source (wrap [])
-
-        /// <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline forA f (source: ^a seq) : DList< ^b list> =
-            sequenceA (Seq.map f source)
-
-        /// <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-        let inline for2A f (source1: ^a seq) (source2: ^b seq) : DList< ^c list> =
-            forA ((<||) f) (Seq.allPairs source1 source2)
-
-        /// <summary>Produce an effect for each pair of elements in the sequences from left to right,
-        /// then evaluate each effect and collect the results.
-        /// If one sequence is longer, its extra elements are ignored.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline zipWithA f (source1: ^a seq) (source2: ^b seq) : DList< ^c list> =
-            sequenceA (Seq.map2 f source1 source2)
-
-        /// Performs the effect 'n' times.
-        let inline replicateA (n: uint32) fa : DList< ^a list> =
-            sequenceA (Seq.replicate (int n) fa)
-
-
-        /// A monoid on applicative functors.
-        module Alternative =
-
-            /// The identity of orElse.
-            let inline empty<'a> : DList<'a> = Std.empty
-
-            /// An associative binary operation on applicative functors.
-            let inline orElse choice2 choice1 = Monad.Plus.mplus choice1 choice2               
-
-            /// Return one or none results on effects.
-            let inline optional fa : DList< ^a option> =
-                orElse (wrap None) (map Some fa)
-
-            /// Create a new item if the previous was empty, else keep the original.
-            let inline alt def (DL f) : DList< ^a> =
-                DL (List.append (match f [] with [] -> Std.runDList [] (def ()) | xs -> xs))
-
-            /// <summary>The sum of a collection of effects.</summary>
+            /// <summary>Generalizes the sequence-based filter function.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline asum t_fa = Monad.Plus.General.msum t_fa
+            let inline filterA (p: ^a -> DList<bool>) source =
+                Seq.foldBack (fun x xs -> map2 (fun flg xs -> if flg then x::xs else xs) (p x) xs) source (wrap [])
+
+            /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+            let inline sequenceA source : DList< ^a list> =
+                Seq.foldBack (map2 (fun x xs -> x::xs)) source (wrap [])
+
+            /// <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+            let inline forA f (source: ^a seq) : DList< ^b list> =
+                sequenceA (Seq.map f source)
+
+            /// <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
+            let inline for2A f (source1: ^a seq) (source2: ^b seq) : DList< ^c list> =
+                forA ((<||) f) (Seq.allPairs source1 source2)
+
+            /// <summary>Produce an effect for each pair of elements in the sequences from left to right,
+            /// then evaluate each effect and collect the results.
+            /// If one sequence is longer, its extra elements are ignored.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+            let inline zipWithA f (source1: ^a seq) (source2: ^b seq) : DList< ^c list> =
+                sequenceA (Seq.map2 f source1 source2)
+
+            /// Performs the effect 'n' times.
+            let inline replicateA (n: uint32) fa : DList< ^a list> =
+                sequenceA (Seq.replicate (int n) fa)
 
 
-    /// Supplementary Functor operations on the given type.
-    module Functor =
+            /// A monoid on applicative functors.
+            module Alternative =
 
-        /// Replace all locations in the input with the same value.
-        let inline replace b fa = map (fun _ -> b) fa
+                /// The identity of orElse.
+                let inline empty<'a> : DList<'a> = empty
 
-        /// Perform an operation, store its result, perform an action using both
-        /// the input and output, and finally return the output.
-        let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
-            map (fun a -> let b = f a in g a b; b) fa
+                /// An associative binary operation on applicative functors.
+                let inline orElse choice2 choice1 = Monad.Plus.mplus choice1 choice2               
+
+                /// Return one or none results on effects.
+                let inline optional fa : DList< ^a option> =
+                    orElse (wrap None) (map Some fa)
+
+                /// Create a new item if the previous was empty, else keep the original.
+                let inline alt def (DL f) : DList< ^a> =
+                    DL (List.append (match f [] with [] -> runDList [] (def ()) | xs -> xs))
+
+                /// <summary>The sum of a collection of effects.</summary>
+                /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+                let inline asum t_fa = Monad.Plus.General.msum t_fa
 
 
-    /// Types with a binary, associative composition operation.
-    module Semigroup =
+        /// Supplementary Functor operations on the given type.
+        module Functor =
 
-        /// An associative composition operation.
-        let inline sappend e1 e2 =
-            Applicative.map2 (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) e1 e2
+            /// Replace all locations in the input with the same value.
+            let inline replace b fa = map (fun _ -> b) fa
+
+            /// Perform an operation, store its result, perform an action using both
+            /// the input and output, and finally return the output.
+            let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
+                map (fun a -> let b = f a in g a b; b) fa
 
 
-    /// Types with a binary, associative composition operation and an identity element.
-    module Monoid =
+        /// Types with a binary, associative composition operation.
+        module Semigroup =
 
-        /// An associative composition operation.
-        let inline mappend e1 e2 = Semigroup.sappend e1 e2
+            /// An associative composition operation.
+            let inline sappend e1 e2 =
+                Applicative.map2 (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) e1 e2
 
-        /// The identity element for the composition operator.
-        let inline mempty<'a> : DList<'a> = Std.empty
+
+        /// Types with a binary, associative composition operation and an identity element.
+        module Monoid =
+
+            /// An associative composition operation.
+            let inline mappend e1 e2 = Semigroup.sappend e1 e2
+
+            /// The identity element for the composition operator.
+            let inline mempty<'a> : DList<'a> = empty
            
-        /// Repeat a value 'n' times.
-        let inline mtimes (n: uint32) e =
-            let rec go acc = function
-            | 0u -> mempty
-            | 1u -> acc
-            | n  -> go (Semigroup.sappend e acc) (n - 1u)
-            go e n
+            /// Repeat a value 'n' times.
+            let inline mtimes (n: uint32) e =
+                let rec go acc = function
+                | 0u -> mempty
+                | 1u -> acc
+                | n  -> go (Semigroup.sappend e acc) (n - 1u)
+                go e n
 
-        /// <summary>Combine elements of a sequence using monoidal composition.</summary>
-        /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
-        let inline mconcat source =
-            Seq.foldBack Semigroup.sappend source mempty    
+            /// <summary>Combine elements of a sequence using monoidal composition.</summary>
+            /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
+            let inline mconcat source =
+                Seq.foldBack Semigroup.sappend source mempty    
+
+
+    /// Creates a computation expression for the given type.
+    let dlist = Compose.Monad.DListBuilder ()
 
 
 
-open Std
-open Composition
+open DList
+open Compose
   
 //  @ Operators @
 type DList<'a> with

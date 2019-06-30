@@ -11,7 +11,7 @@
 
 
 /////
-//module Composition =
+//module Compose =
 
 //    ///
 //    let inline wrap x = Node { Leaf = x ; TLeft = (fun () -> TNil) ; TRight = fun () -> TNil }

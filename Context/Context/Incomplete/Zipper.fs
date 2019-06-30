@@ -48,7 +48,7 @@
 
 
 /////
-//module Composition =
+//module Compose =
 
 //    ///
 //    let inline wrap x = { Left = [] ; Focus = x ; Right = [] }    
@@ -76,8 +76,8 @@
 //                yield x
 //                yield! iterate f (f x) }
 //            let inline gather f = Seq.tail << Seq.choose id << Seq.takeWhile Option.isSome << iterate (Option.bind f) << Some
-//            let lefts = gather Std.leftMaybe w |> Seq.toList
-//            let rights = gather Std.rightMaybe w |> Seq.toList
+//            let lefts = gather leftMaybe w |> Seq.toList
+//            let rights = gather rightMaybe w |> Seq.toList
 //            { Left = lefts ; Focus = w ; Right = rights }
 
 //        ///

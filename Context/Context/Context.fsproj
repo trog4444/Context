@@ -5,9 +5,10 @@
     <Authors>ptr</Authors>
     <Company>ptr</Company>
     <Description>Types that add 'context' to generic underlying types, e.g. functors, monads, monoids, etc., as well as some primitive and compositional operations.</Description>
-    <AssemblyVersion>1.0.0.5</AssemblyVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
     <PackageReleaseNotes>The dll's in the `Release` folders are only rebuilt when the functionality is considered stable, and therefore should be safe to use. This is a work in progress though, so the Debug and Release versions may not match, and the Release versions may change frequently.</PackageReleaseNotes>
-    <FileVersion>1.0.0.5</FileVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

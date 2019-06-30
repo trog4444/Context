@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.0": {
-      "Context/1.0.0": {
+      "Context/1.0.1": {
         "dependencies": {
           "FSharp.Core": "4.6.2"
         },
@@ -69,7 +69,7 @@
     }
   },
   "libraries": {
-    "Context/1.0.0": {
+    "Context/1.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

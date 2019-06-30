@@ -108,7 +108,7 @@
 
 
 /////
-//module Composition =
+//module Compose =
 
 //    ///
 //    let inline map f (RT ((l, rs) as q)) = q

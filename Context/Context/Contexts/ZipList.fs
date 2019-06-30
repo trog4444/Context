@@ -1,4 +1,4 @@
-﻿namespace Ptr.Context.Type.ZipList
+﻿namespace Ptr.Context.Type
 
 
 /// Sequences, but with an Applicative functor based on `zipping` rather than `non-determinism`.
@@ -12,17 +12,18 @@ with interface System.Collections.Generic.IEnumerable< ^a> with
      member s.ToSeq() = match s with ZL xs -> if isNull xs then Seq.empty else xs
      static member OfSeq (xs: #seq<_>) = ZL xs
 
-/// Active patterns on `ZipList` values.
-module Pattern =
-
-    /// Return the sequence within a `ZipList`. Null sequences are returned as empty sequences instead.
-    let inline ( |ZipList| ) (zl: ZipList<_>) = ZipList (zl.ToSeq())
-
-
-open Pattern
 
 /// Standard operations on `ZipList` values.
-module Std =    
+module ZipList =    
+
+    /// Active patterns on `ZipList` values.
+    module Pattern =
+    
+        /// Return the sequence within a `ZipList`. Null sequences are returned as empty sequences instead.
+        let inline ( |ZipList| ) (zl: ZipList<_>) = ZipList (zl.ToSeq())
+
+
+    open Pattern
 
     /// Create a `ZipList` from a sequence.
     let inline fromSeq (xs: #seq<_>) = ZipList<_>.OfSeq xs
@@ -61,135 +62,135 @@ module Std =
     let inline cacheZipList (ZipList xs) = ZipList<_>.OfSeq (Seq.cache xs)
 
 
-/// Compositional operations on `ZipList` values.
-module Composition =
+    /// Compositional operations on `ZipList` values.
+    module Compose =
 
-    /// Lift a value onto an effectful context.
-    let inline wrap x = ZipList<_>.OfSeq (seq { while true do yield x })
+        /// Lift a value onto an effectful context.
+        let inline wrap x = ZipList<_>.OfSeq (seq { while true do yield x })
 
-    /// Sequential application on effects.
-    let inline ap (ZipList mv) (ZipList mf) = ZipList<_>.OfSeq (Seq.map2 (<|) mf mv)
+        /// Sequential application on effects.
+        let inline ap (ZipList mv) (ZipList mf) = ZipList<_>.OfSeq (Seq.map2 (<|) mf mv)
 
-    /// Lift a function onto effects.
-    let inline map f (ZipList xs) = ZipList<_>.OfSeq (Seq.map f xs)    
-
-
-    /// Supplementary Applicative operations on the given type.
-    module Applicative =
-
-        /// Lift a binary function on effects.
-        let inline map2 f (ZipList xs) (ZipList ys) = ZipList<_>.OfSeq (Seq.map2 f xs ys)
-
-        /// Lift a ternary function on effects.
-        let inline map3 f (ZipList xs) (ZipList ys) (ZipList zs) = ZipList<_>.OfSeq (Seq.map3 f xs ys zs)
-
-        /// Sequentially compose two effects, discarding any value produced by the first.
-        let inline andThen fb fa = map2 (fun _ b -> b) fa fb
-
-        /// Conditional execution of effectful expressions.
-        let inline when_ condition f = if condition then f () else wrap ()
-
-        /// <summary>Generalizes the sequence-based filter function.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline filterA p source =
-            Seq.foldBack (fun x -> (map2 (fun b xs -> if b then x::xs else xs) (p x))) source (wrap [])
-
-        /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline sequenceA source =
-            Seq.foldBack (map2 (fun x xs -> x::xs)) source (wrap [])
-
-        /// <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline forA f source = sequenceA (Seq.map f source)
-
-        /// <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-        let inline for2A f source1 source2 = forA ((<||) f) (Seq.zip source1 source2)
-
-        /// <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
-        /// If one sequence is longer, its extra elements are ignored.</summary>
-        /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-        let inline zipWithA f source1 source2 = sequenceA (Seq.map2 f source1 source2)
-
-        /// Performs the effect 'n' times.
-        let inline replicateA (n: uint32) (ZipList xs) = ZipList<_>.OfSeq (Seq.replicate (int n) xs)
+        /// Lift a function onto effects.
+        let inline map f (ZipList xs) = ZipList<_>.OfSeq (Seq.map f xs)    
 
 
-        /// A monoid on applicative functors.
-        module Alternative =
+        /// Supplementary Applicative operations on the given type.
+        module Applicative =
 
-            /// The identity of orElse.
-            let inline empty<'a> : ZipList< ^a> = ZipList<_>.OfSeq Seq.empty
+            /// Lift a binary function on effects.
+            let inline map2 f (ZipList xs) (ZipList ys) = ZipList<_>.OfSeq (Seq.map2 f xs ys)
 
-            /// An associative binary operation on applicative functors.
-            let inline orElse choice2 choice1 = 
-                ZipList<_>.OfSeq
-                    (seq { match choice1 with
-                           | ZipList xs ->
-                            yield! xs
-                            match choice2 with
-                            | ZipList ys -> let n = Seq.length xs
-                                            if Seq.length ys > n then yield! Seq.skip n ys })
+            /// Lift a ternary function on effects.
+            let inline map3 f (ZipList xs) (ZipList ys) (ZipList zs) = ZipList<_>.OfSeq (Seq.map3 f xs ys zs)
 
-            /// <summary>The sum of a collection of effects.</summary>
+            /// Sequentially compose two effects, discarding any value produced by the first.
+            let inline andThen fb fa = map2 (fun _ b -> b) fa fb
+
+            /// Conditional execution of effectful expressions.
+            let inline when_ condition f = if condition then f () else wrap ()
+
+            /// <summary>Generalizes the sequence-based filter function.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline asum t_fa : ZipList< ^a> =
-                Seq.foldBack (fun x s -> orElse s x) t_fa empty
+            let inline filterA p source =
+                Seq.foldBack (fun x -> (map2 (fun b xs -> if b then x::xs else xs) (p x))) source (wrap [])
 
-            /// Return one or none results on effects.
-            let inline optional fa = orElse (wrap None) (map Some fa)
+            /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+            let inline sequenceA source =
+                Seq.foldBack (map2 (fun x xs -> x::xs)) source (wrap [])
 
-            /// Create a new item if the previous was empty, else keep the original.
-            let inline alt def fx : ZipList< ^a> = if Std.isEmpty fx then def () else fx
+            /// <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+            let inline forA f source = sequenceA (Seq.map f source)
 
+            /// <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
+            let inline for2A f source1 source2 = forA ((<||) f) (Seq.zip source1 source2)
 
-    /// Supplementary Functor operations on the given type.
-    module Functor =
+            /// <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
+            /// If one sequence is longer, its extra elements are ignored.</summary>
+            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+            let inline zipWithA f source1 source2 = sequenceA (Seq.map2 f source1 source2)
 
-        /// Replace all locations in the input with the same value.
-        let inline replace b fa = map (fun _ -> b) fa
-
-        /// Perform an operation, store its result, perform an action using both
-        /// the input and output, and finally return the output.
-        let inline tee f g fa =
-            map (fun a -> let b = f a in g a b; b) fa
-
-
-    /// Types with a binary, associative composition operation.
-    module Semigroup =
-
-        /// An associative composition operation.
-        let inline sappend e1 e2 =
-            Applicative.map2 (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) e1 e2
+            /// Performs the effect 'n' times.
+            let inline replicateA (n: uint32) (ZipList xs) = ZipList<_>.OfSeq (Seq.replicate (int n) xs)
 
 
-    /// Types with a binary, associative composition operation and an identity element.
-    module Monoid =
+            /// A monoid on applicative functors.
+            module Alternative =
 
-        /// An associative composition operation.
-        let inline mappend e1 e2 = Semigroup.sappend e1 e2
+                /// The identity of orElse.
+                let inline empty<'a> : ZipList< ^a> = ZipList<_>.OfSeq Seq.empty
 
-        /// The identity element for the composition operator.
-        let inline mempty<'a> : ZipList< ^a> = Applicative.Alternative.empty
+                /// An associative binary operation on applicative functors.
+                let inline orElse choice2 choice1 = 
+                    ZipList<_>.OfSeq
+                        (seq { match choice1 with
+                               | ZipList xs ->
+                                yield! xs
+                                match choice2 with
+                                | ZipList ys -> let n = Seq.length xs
+                                                if Seq.length ys > n then yield! Seq.skip n ys })
 
-        /// Repeat a value 'n' times.
-        let inline mtimes (n: uint32) e =
-            let rec go acc = function
-            | 0u -> mempty
-            | 1u -> acc
-            | n  -> go (Semigroup.sappend e acc) (n - 1u)
-            go e n
+                /// <summary>The sum of a collection of effects.</summary>
+                /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+                let inline asum t_fa : ZipList< ^a> =
+                    Seq.foldBack (fun x s -> orElse s x) t_fa empty
+
+                /// Return one or none results on effects.
+                let inline optional fa = orElse (wrap None) (map Some fa)
+
+                /// Create a new item if the previous was empty, else keep the original.
+                let inline alt def fx : ZipList< ^a> = if isEmpty fx then def () else fx
+
+
+        /// Supplementary Functor operations on the given type.
+        module Functor =
+
+            /// Replace all locations in the input with the same value.
+            let inline replace b fa = map (fun _ -> b) fa
+
+            /// Perform an operation, store its result, perform an action using both
+            /// the input and output, and finally return the output.
+            let inline tee f g fa =
+                map (fun a -> let b = f a in g a b; b) fa
+
+
+        /// Types with a binary, associative composition operation.
+        module Semigroup =
+
+            /// An associative composition operation.
+            let inline sappend e1 e2 =
+                Applicative.map2 (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) e1 e2
+
+
+        /// Types with a binary, associative composition operation and an identity element.
+        module Monoid =
+
+            /// An associative composition operation.
+            let inline mappend e1 e2 = Semigroup.sappend e1 e2
+
+            /// The identity element for the composition operator.
+            let inline mempty<'a> : ZipList< ^a> = Applicative.Alternative.empty
+
+            /// Repeat a value 'n' times.
+            let inline mtimes (n: uint32) e =
+                let rec go acc = function
+                | 0u -> mempty
+                | 1u -> acc
+                | n  -> go (Semigroup.sappend e acc) (n - 1u)
+                go e n
         
-        /// <summary>Combine elements of a sequence using monoidal composition.</summary>
-        /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
-        let inline mconcat source =
-            Seq.foldBack Semigroup.sappend source mempty
+            /// <summary>Combine elements of a sequence using monoidal composition.</summary>
+            /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
+            let inline mconcat source =
+                Seq.foldBack Semigroup.sappend source mempty
 
 
 
-open Std
-open Composition
+open ZipList
+open Compose
   
 //  @ Operators @
 type ZipList<'a> with

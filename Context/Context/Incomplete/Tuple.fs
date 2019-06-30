@@ -28,7 +28,7 @@
     
 
 //    ///
-//    module Composition =
+//    module Compose =
 
 //        ///
 //        let inline map f (Tuple2 (a, b)) = Tuple2 (a, f b)

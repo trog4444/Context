@@ -1,4 +1,14 @@
-﻿2019-06-28
+﻿^^^ Commit
+2019-06-29
+    -- Removed names of types from namespaces (eg Context.Type.Maybe)
+        and changed the 'Std' (formerly 'Primitive') module to match
+        the type name. Also, renamed the 'Composition' module to 'Compose'
+        and moved it inside the new 'TypeName' module. All computation expression
+        builders have been moved out of the 'Compose' modules into the top level
+        of the 'TypeName' modules.
+    -- Updated package to version 1.0.1.0
+
+2019-06-28
     -- per .NET naming guidelines, added Ptr to beginning of all namespaces
     -- added scripting file for testing purposes. It is not meant as part of the sln.
     -- updated to 1.0.0.5
@@ -130,7 +140,7 @@ Commit
         -- each Type is within its own ns (ex: Context.Type.Maybe => type Maybe a = ...
         -- Primitives are now in module Primitive
         -- Convert is now its own module in the ns
-        -- Composition is now its own module in the ns
+        -- Compose is now its own module in the ns
         ?? where to put builder ?? auto open module ??
         -- done in
             |Cont
@@ -220,7 +230,7 @@ Commit
 	Finished MaybeAsync.
     Changed Writer and State to result in struct 2tuples instead of XPair types.
     Added MaybeState.
-    Moved computation expression builders to primary module from Composition.
+    Moved computation expression builders to primary module from Compose.
     Added Sq module.
 
 2019-05-28

@@ -1,6 +1,7 @@
 ﻿namespace Ptr.Context.Extension.Builder.Maybe
 
-open Ptr.Context.Type.Maybe
+open Ptr.Context.Type
+open Maybe
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.
@@ -12,24 +13,24 @@ module Combine =
     /// The first `return` that results in a `Just`-value is returned if at least one `Just` exists, Nothing otherwise.
     module FirstJust =
 
-        type Composition.Monad.MaybeBuilder with
-            member inline s.Combine(a, b) = if Std.isJust a then a else b
+        type Compose.Monad.MaybeBuilder with
+            member inline s.Combine(a, b) = if isJust a then a else b
 
 
     /// Multiple `returns` result in all of the results being `appended` together.
     module Append =
 
-        type Composition.Monad.MaybeBuilder with
+        type Compose.Monad.MaybeBuilder with
 
             member inline s.Combine(a, b) =
-                Composition.Applicative.map2
+                Compose.Applicative.map2
                     (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) a b
 
 
     /// Multiple `returns` result in the entire workflow returning a list of results.
     module AsList =
 
-        type Composition.Monad.MaybeBuilder with
+        type Compose.Monad.MaybeBuilder with
             member inline s.Combine(a, b) =
                 match a with
                 | Nothing -> match b with

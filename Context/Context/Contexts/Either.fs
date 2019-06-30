@@ -1,4 +1,4 @@
-﻿namespace Ptr.Context.Type.Either
+﻿namespace Ptr.Context.Type
 
 
 /// The Either type represents values with two possibilities:
@@ -10,8 +10,8 @@ with interface System.Collections.Generic.IEnumerable< ^r> with
         override s.GetEnumerator() = (s :> _ seq).GetEnumerator() :> System.Collections.IEnumerator
 
 
-/// Standard operations on `Either` values.
-module Std =
+/// Operations on `Either` values.
+module Either =
   
     /// Return True if the given value is a Left-value, False otherwise.
     let inline isLeft either = match either with Left _ -> true | Right _ -> false
@@ -58,48 +58,48 @@ module Std =
     let inline hush either = match either with Left _ -> None | Right a -> Some a
 
 
-/// Convert between values of type `Either` and related types.
-module Convert =
+    /// Convert between values of type `Either` and related types.
+    module Convert =
         
-        /// Returns a Right-value with the head of a non-empty sequence and
-        /// returns a Left-value if the sequence is empty. The Left-value will
-        /// say if the input was either null or empty.
-        let inline ofSeq (source: ^a seq) =
-            match source with
-            | null -> Left "Input sequence was null."
-            | _    -> if Seq.isEmpty source then Left "Input sequence was empty."
-                      else Right (Seq.head source)
+            /// Returns a Right-value with the head of a non-empty sequence and
+            /// returns a Left-value if the sequence is empty. The Left-value will
+            /// say if the input was either null or empty.
+            let inline ofSeq (source: ^a seq) =
+                match source with
+                | null -> Left "Input sequence was null."
+                | _    -> if Seq.isEmpty source then Left "Input sequence was empty."
+                          else Right (Seq.head source)
 
-        /// Returns a singleton sequence if thet value is a Right-value, an empty sequence otherwise.
-        let inline toSeq either = match either with Left _ -> Seq.empty | Right a -> Seq.singleton a       
+            /// Returns a singleton sequence if thet value is a Right-value, an empty sequence otherwise.
+            let inline toSeq either = match either with Left _ -> Seq.empty | Right a -> Seq.singleton a       
 
-        /// Convert a Choice (Of2) to an Either.
-        let inline ofChoice choice =
-            match choice with
-            | Choice1Of2 a -> Right a
-            | Choice2Of2 b -> Left b
+            /// Convert a Choice (Of2) to an Either.
+            let inline ofChoice choice =
+                match choice with
+                | Choice1Of2 a -> Right a
+                | Choice2Of2 b -> Left b
 
-        /// Convert an Either to a Choice (Of2).
-        let inline toChoice either =
-            match either with
-            | Right a -> Choice1Of2 a
-            | Left b  -> Choice2Of2 b
+            /// Convert an Either to a Choice (Of2).
+            let inline toChoice either =
+                match either with
+                | Right a -> Choice1Of2 a
+                | Left b  -> Choice2Of2 b
 
-        /// Convert a Result to an Either.
-        let inline ofResult result =
-            match result with
-            | Ok a    -> Right a
-            | Error b -> Left b
+            /// Convert a Result to an Either.
+            let inline ofResult result =
+                match result with
+                | Ok a    -> Right a
+                | Error b -> Left b
 
-        /// Convert an Either to a Result.
-        let inline toResult result =
-            match result with
-            | Right a -> Ok a
-            | Left b  -> Error b
+            /// Convert an Either to a Result.
+            let inline toResult result =
+                match result with
+                | Right a -> Ok a
+                | Left b  -> Error b
 
 
-/// Compositional operations on `Either` values.
-module Composition =
+    /// Compositional operations on `Either` values.
+    module Compose =
 
         /// Lift a value onto an effectful context.
         let inline wrap x : Either< ^a, ^b> = Right x
@@ -117,8 +117,8 @@ module Composition =
             match mf with
             | Left  a -> Left a
             | Right f -> match mv with
-                         | Left  a -> Left a
-                         | Right v -> Right (f v)
+                            | Left  a -> Left a
+                            | Right v -> Right (f v)
 
         /// Lift a function onto effects.
         let inline map (f: ^b -> ^c) m : Either< ^a, ^c> =
@@ -167,8 +167,8 @@ module Composition =
                 match mb with
                 | Left  a -> Left a
                 | Right b -> match mc with
-                             | Left  a -> Left a
-                             | Right c -> k b c
+                                | Left  a -> Left a
+                                | Right c -> k b c
 
             /// Sequentially compose four actions, passing any value produced by the
             /// first two as arguments to the third.
@@ -225,26 +225,22 @@ module Composition =
                     match mb with
                     | Left  a -> Left a
                     | Right b -> match mc with
-                                 | Left  a -> Left a
-                                 | Right c -> Right (f b c)
+                                    | Left  a -> Left a
+                                    | Right c -> Right (f b c)
 
                 /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
                 let inline mzip mb mc : Either< ^a, ^b * ^c> =
                     match mb with
                     | Left  a -> Left a
                     | Right b -> match mc with
-                                 | Left  a -> Left a
-                                 | Right c -> Right (b, c)
+                                    | Left  a -> Left a
+                                    | Right c -> Right (b, c)
                     
                 /// Decompose a monad comprised of corresponding pairs of values.
                 let inline munzip (m: Either< ^a, ^b * ^c>) =
                     match m with
                     | Left      a  -> (Left a), (Left a)
-                    | Right (b, c) -> (Right b), (Right c)        
-
-
-        /// Creates a monadic workflow for the given type.
-        let either = Monad.EitherBuilder ()
+                    | Right (b, c) -> (Right b), (Right c)
 
 
         /// Supplementary Applicative operations on the given type.
@@ -255,8 +251,8 @@ module Composition =
                 match fb with
                 | Left  a -> Left a
                 | Right b -> match fc with
-                             | Left  a -> Left a
-                             | Right c -> Right (f b c)
+                                | Left  a -> Left a
+                                | Right c -> Right (f b c)
 
             /// Lift a ternary function on effects.
             let inline map3 (f: ^b -> ^c -> ^d -> ^e) fb fc fd : Either< ^a, ^e> =
@@ -265,8 +261,8 @@ module Composition =
                 | Right b -> match fc with
                              | Left  a -> Left a
                              | Right c -> match fd with
-                                          | Left  a -> Left a
-                                          | Right d -> Right (f b c d)
+                                            | Left  a -> Left a
+                                            | Right d -> Right (f b c d)
 
             /// Sequentially compose two effects, discarding any value produced by the first.
             let inline andThen fc fb : Either< ^a, ^c> =
@@ -352,10 +348,14 @@ module Composition =
                 | Left _  -> e2
                 | Right _ -> e1
         
+            
+    /// Creates a computation expression for the given type.
+    let either = Compose.Monad.EitherBuilder ()
 
 
-open Std
-open Composition
+
+open Either
+open Compose
   
 //  @ Operators @
 type Either<'a, 'b> with

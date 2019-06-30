@@ -1,6 +1,7 @@
 ﻿namespace Ptr.Context.Extension.Builder.Writer
 
-open Ptr.Context.Type.Writer
+open Ptr.Context.Type
+open Writer.Compose.Monad
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.
@@ -12,7 +13,7 @@ module Combine =
     /// Multiple `returns` result in all of the results being `appended` together.
     module Append =
 
-        type Composition.Monad.WriterBuilder with
+        type WriterBuilder with
 
             member inline s.Combine(a: Writer< ^l, ^a>, b: Writer< ^l, ^a>) =
                 { Log = (^l: (static member Append: ^l -> ^l -> ^l) (a.Log, b.Log))
@@ -22,7 +23,7 @@ module Combine =
     /// Multiple `returns` result in the entire workflow returning a list of results.
     module AsList =
 
-        type Composition.Monad.WriterBuilder with
+        type WriterBuilder with
 
             member inline s.Combine(a: Writer< ^l, ^a>, b: Writer< ^l, ^a>) =
                 { Log = (^l: (static member Append: ^l -> ^l -> ^l) (a.Log, b.Log))

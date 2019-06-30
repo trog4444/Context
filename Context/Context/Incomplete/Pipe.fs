@@ -62,7 +62,7 @@
 
 
 /////
-//module Composition =
+//module Compose =
 
 //    ///
 

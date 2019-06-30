@@ -47,7 +47,7 @@
 
 
 ///// Compositional operations on `Sq` values.
-//module Composition =
+//module Compose =
 
 //        /// Lift a value onto an effectful context.
 //        let inline wrap x = Sq (Seq.singleton x)
@@ -266,7 +266,7 @@
 //                    Sq (Seq.map fst ps), Sq (Seq.map snd ps)
 
 
-//        /// Creates a monadic workflow for the given type.
+//        /// Creates a computation expression for the given type.
 //        let sq = Monad.SqBuilder ()
 
 
@@ -374,7 +374,7 @@
 
 
 //open Std
-//open Composition
+//open Compose
   
 ////  @ Operators @
 //type Sq<'a> with

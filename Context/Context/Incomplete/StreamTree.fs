@@ -86,7 +86,7 @@
 
 
 ///// Compositional operations on `StreamTree` values.
-//module Composition =
+//module Compose =
 
 //    /// Lift a value onto an effectful context.
 //    let inline wrap x : StreamTree< ^s, ^l, ^r, ^a> = TSome x
@@ -168,7 +168,7 @@
 //                                    s.Delay(fun () -> body enum.Current)))
 
 
-//    /// Creates a monadic workflow for the given type.
+//    /// Creates a computation expression for the given type.
 //    let streamtree = Monad.StreamTreeBuilder ()
 
 

@@ -12,20 +12,20 @@ module Combine =
     /// Multiple `returns` result in all of the results being `appended` together.
     module Append =
 
-        type Composition.Monad.DListBuilder with
+        type Compose.Monad.DListBuilder with
 
             member inline s.Combine(a, b) =
-                Composition.Applicative.map2
+                Compose.Applicative.map2
                     (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) a b
 
 
     /// Multiple `returns` result in the entire workflow returning a list of results.
     module AsList =
         
-        type Composition.Monad.DListBuilder with
+        type Compose.Monad.DListBuilder with
 
             member inline s.Combine(a, b) =
-                Composition.Applicative.map2 (fun a b -> [a; b]) a b
+                Compose.Applicative.map2 (fun a b -> [a; b]) a b
 
             member inline s.Combine(a, b) =
-                Composition.Applicative.map2 (fun a bs -> a::bs) a b
+                Compose.Applicative.map2 (fun a bs -> a::bs) a b
