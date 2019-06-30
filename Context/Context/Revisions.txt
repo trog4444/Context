@@ -1,4 +1,8 @@
-﻿^^^ Commit
+﻿2019-06-29
+    -- changed RWS type to return a 3-tuple struct instead of a record ;; to prevent naming conflicts
+    -- same with State
+
+^^^ Commit
 2019-06-29
     -- Removed names of types from namespaces (eg Context.Type.Maybe)
         and changed the 'Std' (formerly 'Primitive') module to match
