@@ -35,11 +35,12 @@ module NonEmpty =
 
     /// Convert a sequence into a `NonEmpty` collection.
     let inline fromSeq head (tail: ^a seq) : NonEmpty< ^a> =
-        if isNull tail then { Head = head ; Tail = Nil } else
-        Seq.foldBack
-            (fun x s -> { s with Tail = Cons (fun () -> { s with Head = x })})
-            tail
-            { Head = head ; Tail = Nil }
+        match tail with
+        | null -> { Head = head ; Tail = Nil }
+        | _ -> Seq.foldBack
+                (fun x s -> { s with Tail = Cons (fun () -> { s with Head = x })})
+                tail
+                { Head = head ; Tail = Nil }
 
     /// Create a singleton `NonEmpty`.
     let inline singleton x = { Head = x ; Tail = Nil }
@@ -67,34 +68,24 @@ module NonEmpty =
 
 
     /// Compositional operations on `NonEmpty` values.
-    module Compose =
-
-        /// Lift a value onto an effectful context.
-        let inline wrap x : NonEmpty< ^a> = { Head = x ; Tail = Nil }
-
-        /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-        let inline bind (k: ^a -> NonEmpty< ^b>) m =
-            let xs = Seq.collect k m
-            fromSeq (Seq.head xs) (Seq.tail xs)
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten (mm: NonEmpty<NonEmpty< ^a>>) : NonEmpty< ^a> =
-            let xs = Seq.concat mm
-            fromSeq (Seq.head xs) (Seq.tail xs)
-
-        /// Lift a function onto effects.
-        let inline map (f: ^a -> ^b) (m: NonEmpty< ^a>) : NonEmpty< ^b> =
-            let rec go = function
-            | Head a -> { Head = f a ; Tail = Nil }
-            | Cons (a, t) -> { Head = f a ; Tail = Cons (t >> go) }
-            go m
-
-        /// Sequential application on effects.
-        let inline ap mv mf = bind (fun f -> map f mv) mf
-
+    module Compose =        
 
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : NonEmpty< ^a> = { Head = x ; Tail = Nil }
+
+            /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
+            let inline bind (k: ^a -> NonEmpty< ^b>) (m: NonEmpty< ^a>) =
+                let xs = Seq.collect k m
+                fromSeq (Seq.head xs) (Seq.tail xs)
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten (mm: NonEmpty<NonEmpty< ^a>>) : NonEmpty< ^a> =
+                let xs = Seq.concat mm
+                fromSeq (Seq.head xs) (Seq.tail xs)
+
 
             /// Monadic computation builder specialised to the given monad.
             type NonEmptyBuilder () =
@@ -141,8 +132,8 @@ module NonEmpty =
 
             /// Sequentially compose two actions, creating a third from the result and
             /// lifting a binary function on its effects.
-            let inline bindMap (k: ^a -> NonEmpty< ^b>) (f: ^a -> ^b -> ^c) m =
-                bind (fun a -> map (f a) (k a)) m
+            let inline bindMap (k: ^a -> NonEmpty< ^b>) (f: ^a -> ^b -> ^c) (m: NonEmpty< ^a>) =
+                bind (fun a -> bind (f a >> wrap) (k a)) m
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
@@ -159,13 +150,13 @@ module NonEmpty =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM f (s0: ^s) (source: ^a seq) : NonEmpty< ^s> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM f (s0: ^s) (source: ^a seq) : NonEmpty< ^s> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0        
 
 
@@ -199,8 +190,33 @@ module NonEmpty =
                     go1 m, go2 m        
 
 
+        /// Supplementary Functor operations on the given type.
+        module Functor =
+
+            /// Lift a function onto effects.
+            let inline map (f: ^a -> ^b) (fa: NonEmpty< ^a>) : NonEmpty< ^b> =
+                let rec go = function
+                | Head a -> { Head = f a ; Tail = Nil }
+                | Cons (a, t) -> { Head = f a ; Tail = Cons (t >> go) }
+                go fa
+
+            /// Replace all locations in the input with the same value.
+            let inline replace (b: ^b) fa = map (fun _ -> b) fa
+
+            /// Perform an operation, store its result, perform an action using both
+            /// the input and output, and finally return the output.
+            let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
+                map (fun a -> let b = f a in g a b; b) fa
+
+
         /// Supplementary Applicative operations on the given type.
         module Applicative =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : NonEmpty< ^a> = { Head = x ; Tail = Nil }
+
+            /// Sequential application on effects.
+            let inline ap mv mf = Monad.bind (fun f -> Functor.map f mv) mf
 
             /// Lift a binary function on effects.
             let inline map2 (f: ^a -> ^b -> ^c) (fa: NonEmpty< ^a>) (fb: NonEmpty< ^b>) : NonEmpty< ^c> =
@@ -212,7 +228,7 @@ module NonEmpty =
 
             /// Sequentially compose two effects, discarding any value produced by the first.
             let inline andThen fb fa : NonEmpty< ^b> =
-                bind (fun _ -> fb) fa
+                Monad.bind (fun _ -> fb) fa
 
             /// Conditional execution of effectful expressions.
             let inline when_ (condition: bool) f =
@@ -248,18 +264,6 @@ module NonEmpty =
                 sequenceA (Seq.replicate (int n) fa)
 
 
-        /// Supplementary Functor operations on the given type.
-        module Functor =
-
-            /// Replace all locations in the input with the same value.
-            let inline replace (b: ^b) fa = map (fun _ -> b) fa
-
-            /// Perform an operation, store its result, perform an action using both
-            /// the input and output, and finally return the output.
-            let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
-                map (fun a -> let b = f a in g a b; b) fa
-
-
         /// Supplementary Comonad operations on the given type.
         module Comonad =
 
@@ -281,7 +285,7 @@ module NonEmpty =
 
             /// Sequentially compose two co-actions, creating a third from the result and
             /// lifting a binary function on its effects.
-            let inline extendMap j f w : NonEmpty< ^c> = map (fun a -> f a (j w)) w
+            let inline extendMap j f w : NonEmpty< ^c> = Functor.map (fun a -> f a (j w)) w
 
             /// Deconstructs a comonad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function.
@@ -317,16 +321,16 @@ type NonEmpty<'a> with
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -336,14 +340,14 @@ type NonEmpty<'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (m, f) = map f m
+    static member inline ( |>> ) (m, f) = Functor.map f m
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, m) = map f m
+    static member inline ( <<| ) (f, m) = Functor.map f m
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Semigroup @
 

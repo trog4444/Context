@@ -25,6 +25,19 @@ module Writer =
         let inline ( |WriterValue| ) (w: Writer< ^l, ^c>) = WriterValue w.Value
 
 
+    /// Convert between values of type `Writer` and related types.
+    module Convert =
+
+        /// Convert a pair `Writer`.
+        let inline ofPair log value = { Log = log ; Value = value }
+
+        /// Convert a `Writer` to a pair.
+        let inline toPair { Log = l ; Value = v } = l, v
+
+        /// Convert a `Writer` to a pair.
+        let inline toPair1 { Log = l ; Value = v } = struct (l, v)
+
+
     /// Unwrap a Writer as a (log, value) pair.
     let inline runWriter f (w: Writer< ^l, ^c>) = f w.Log w.Value
 
@@ -44,33 +57,24 @@ module Writer =
     /// Compositional operations on `Writer` values.
     module Compose =
 
-        /// Lift a value onto an effectful context.
-        let inline wrap x : Writer< ^l, ^a> =
-            { Log = (^l : (static member Empty: unit -> ^l) ())
-            ; Value = x }
-
-        /// Sequentially compose two effects, passing any value produced by the first
-        /// as an argument to the second.
-        let inline bind (k: ^a -> Writer< ^l, ^b>) (m: Writer< ^l, ^a>) =
-            let w2 = k m.Value
-            { Log = (^l: (static member Append: ^l -> ^l -> ^l) (m.Log, w2.Log))
-            ; Value = w2.Value }
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten mm = bind id mm
-
-        /// Sequential application on effects.
-        let inline ap (mv: Writer< ^l, ^a>) (mf: Writer< ^l, ^a -> ^b>) =
-            { Log = (^l: (static member Append: ^l -> ^l -> ^l) (mf.Log, mv.Log))
-            ; Value = mf.Value mv.Value }
-
-        /// Lift a function onto effects.
-        let inline map f (m: Writer< ^l, ^a>) : Writer< ^l, ^b> =
-            { Log = m.Log ; Value = f m.Value }
-
-
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Writer< ^l, ^a> =
+                { Log = (^l : (static member Empty: unit -> ^l) ())
+                ; Value = x }
+
+            /// Sequentially compose two effects, passing any value produced by the first
+            /// as an argument to the second.
+            let inline bind (k: ^a -> Writer< ^l, ^b>) (m: Writer< ^l, ^a>) =
+                let w2 = k m.Value
+                { Log = (^l: (static member Append: ^l -> ^l -> ^l) (m.Log, w2.Log))
+                ; Value = w2.Value }
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten mm = bind id mm
+
 
             /// Monadic computation builder specialised to the given monad.
             type WriterBuilder () =
@@ -125,7 +129,7 @@ module Writer =
             let inline bindMap (k: ^a -> Writer< ^l, ^b>)
                                (f: ^a -> ^b -> ^c)
                                (m: Writer< ^l, ^a>) : Writer< ^l, ^c> =
-                bind (fun a -> map (f a) (k a)) m
+                bind (fun a -> bind (f a >> wrap) (k a)) m
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
@@ -142,13 +146,13 @@ module Writer =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s -> Writer< ^l, ^s>) (s0: ^s) (source: ^a seq) : Writer< ^l, ^s> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s -> ^a -> Writer< ^l, ^s>) (s0: ^s) (source: ^a seq) : Writer< ^l, ^s> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0
 
 
@@ -172,6 +176,16 @@ module Writer =
 
         /// Supplementary Applicative operations on the given type.
         module Applicative =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Writer< ^l, ^a> =
+                { Log = (^l : (static member Empty: unit -> ^l) ())
+                ; Value = x }
+
+            /// Sequential application on effects.
+            let inline ap (mv: Writer< ^l, ^a>) (mf: Writer< ^l, ^a -> ^b>) =
+                { Log = (^l: (static member Append: ^l -> ^l -> ^l) (mf.Log, mv.Log))
+                ; Value = mf.Value mv.Value }
 
             /// Lift a binary function on effects.
             let inline map2 f (ma: Writer< ^l, ^a>) (mb: Writer< ^l, ^b>) : Writer< ^l, ^c> =
@@ -230,6 +244,10 @@ module Writer =
         /// Supplementary Functor operations on the given type.
         module Functor =
 
+            /// Lift a function onto effects.
+            let inline map f (m: Writer< ^l, ^a>) : Writer< ^l, ^b> =
+                { Log = m.Log ; Value = f m.Value }
+
             /// Replace all locations in the input with the same value.
             let inline replace b { Log = log } : Writer< ^l, ^b> = { Log = log ; Value = b }
 
@@ -273,7 +291,7 @@ module Writer =
             let inline rightAdjunct (f: ^a -> (^e -> ^b)) { Log = e ; Value = a } = f a e
 
             /// Monadic 'bind' from the right-ajoint over its left-adjoint.
-            let inline leftBind f (r: ^e -> Writer< ^c, ^a>) : (^e -> Writer< ^d, ^b>) =
+            let inline rightBind f (r: ^e -> Writer< ^c, ^a>) : (^e -> Writer< ^d, ^b>) =
                 fun e -> match r e with w -> f w.Value w.Log
 
 
@@ -295,7 +313,7 @@ module Writer =
             /// Sequentially compose two co-actions, creating a third from the result and
             /// lifting a binary function on its effects.
             let inline extendMap j f w : Writer< ^l, ^c> =
-                map (fun a -> f a (j w)) w
+                Functor.map (fun a -> f a (j w)) w
 
             /// Deconstructs a comonad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function.
@@ -333,16 +351,16 @@ type Writer<'l, 'a> with
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -352,14 +370,14 @@ type Writer<'l, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = map f fa
+    static member inline ( |>> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = map f fa
+    static member inline ( <<| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Comonad @
 

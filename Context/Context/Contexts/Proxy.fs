@@ -23,25 +23,19 @@ module Proxy =
     /// Compositional operations on `Proxy` values.
     module Compose =
 
-        /// Lift a value onto an effectful context.
-        let inline wrap (_: ^a) : Proxy< ^a> = PROXY
-
-        /// Sequentially compose two effects, passing any value produced by the first
-        /// as an argument to the second.
-        let inline bind (_: ^a -> Proxy< ^b>) (_: Proxy< ^a>) : Proxy< ^b> = PROXY
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten (_: Proxy<Proxy< ^a>>) : Proxy< ^a> = PROXY
-
-        /// Sequential application on effects.
-        let inline ap (_: Proxy< ^a>) (_: Proxy< ^a -> ^b>) : Proxy< ^b> = PROXY
-
-        /// Lift a function onto effects.
-        let inline map (_: ^a -> ^b) (_: Proxy< ^a>) : Proxy< ^b> = PROXY
-
-
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap (_: ^a) : Proxy< ^a> = PROXY
+
+            /// Sequentially compose two effects, passing any value produced by the first
+            /// as an argument to the second.
+            let inline bind (_: ^a -> Proxy< ^b>) (_: Proxy< ^a>) : Proxy< ^b> = PROXY
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten (_: Proxy<Proxy< ^a>>) : Proxy< ^a> = PROXY
+
 
             /// Monadic computation builder specialised to the given monad.
             type ProxyBuilder () =
@@ -183,6 +177,12 @@ module Proxy =
         /// Supplementary Applicative operations on the given type.
         module Applicative =
 
+            /// Lift a value onto an effectful context.
+            let inline wrap (_: ^a) : Proxy< ^a> = PROXY
+
+            /// Sequential application on effects.
+            let inline ap (_: Proxy< ^a>) (_: Proxy< ^a -> ^b>) : Proxy< ^b> = PROXY
+
             /// Lift a binary function on effects.
             let inline map2 (_: ^a -> ^b -> ^c)
                 (_: Proxy< ^a>)
@@ -248,6 +248,9 @@ module Proxy =
 
         /// Supplementary Functor operations on the given type.
         module Functor =
+
+            /// Lift a function onto effects.
+            let inline map (_: ^a -> ^b) (_: Proxy< ^a>) : Proxy< ^b> = PROXY
 
             /// Replace all locations in the input with the same value.
             let inline replace (_: ^b) (_: Proxy< ^a>) : Proxy< ^b> = PROXY
@@ -410,6 +413,63 @@ open Compose
 //  @ Operators @
 type Proxy<'a> with
 
+// @ Monad @
+
+    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
+    static member inline ( >>= ) (m, k) = Monad.bind k m
+    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
+    static member inline ( =<< ) (k, m) = Monad.bind k m
+
+// @ Applicative @
+
+    /// Sequential application on effects.
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
+    /// Sequential application on effects.
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
+
+    /// Sequentially compose two effects, discarding any value produced by the first.
+    static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
+    /// Sequentially compose two effects, discarding any value produced by the first.
+    static member inline ( <* ) (fb, fa) = Applicative.andThen fb fa
+
+// @ Applicative.Alternative @
+
+    /// An associative binary operation on applicative functors.
+    static member inline ( <|> ) (c1, c2) = Applicative.Alternative.orElse c2 c1
+    /// An associative binary operation on applicative functors.
+    static member inline ( <||> ) (c2, c1) = Applicative.Alternative.orElse c2 c1
+
+// @ Functor @
+
+    /// Lift a function onto effects.
+    static member inline ( |>> ) (m, f) = Functor.map f m
+    /// Lift a function onto effects.
+    static member inline ( <<| ) (f, m) = Functor.map f m
+
+    /// Replace all locations in the input with the same value.
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    /// Replace all locations in the input with the same value.
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
+
+// @ Comonad @
+
+    /// Sequentially compose two co-effects.
+    static member inline ( =>> ) (w, j) = Comonad.extend j w
+    /// Sequentially compose two co-effects.
+    static member inline ( <<= ) (j, w) = Comonad.extend j w
+
+// @ Semigroup @
+
+    /// An associative composition operation.
+    static member inline Append (e1, e2) = Semigroup.sappend e1 e2
+
+    /// An associative composition operation.
+    static member inline ( ++ ) (e1, e2) = Semigroup.sappend e1 e2
+
+// @ Monoid @
+
+    static member inline Empty () : Proxy< ^a> = Monoid.mempty
+
 // @ Cat @
 
     /// Compose two members of a category together.
@@ -435,60 +495,3 @@ type Proxy<'a> with
 
     /// Split the input between the two argument arrows and merge their outputs.
     static member inline ( ||| ) (aa, ab) = Arrow.Choice.fanin ab aa
-
-// @ Monad @
-
-    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
-    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
-
-// @ Applicative @
-
-    /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
-    /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
-
-    /// Sequentially compose two effects, discarding any value produced by the first.
-    static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
-    /// Sequentially compose two effects, discarding any value produced by the first.
-    static member inline ( <* ) (fb, fa) = Applicative.andThen fb fa
-
-// @ Applicative.Alternative @
-
-    /// An associative binary operation on applicative functors.
-    static member inline ( <|> ) (c1, c2) = Applicative.Alternative.orElse c2 c1
-    /// An associative binary operation on applicative functors.
-    static member inline ( <||> ) (c2, c1) = Applicative.Alternative.orElse c2 c1
-
-// @ Functor @
-
-    /// Lift a function onto effects.
-    static member inline ( |>> ) (m, f) = map f m
-    /// Lift a function onto effects.
-    static member inline ( <<| ) (f, m) = map f m
-
-    /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
-    /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
-
-// @ Comonad @
-
-    /// Sequentially compose two co-effects.
-    static member inline ( =>> ) (w, j) = Comonad.extend j w
-    /// Sequentially compose two co-effects.
-    static member inline ( <<= ) (j, w) = Comonad.extend j w
-
-// @ Semigroup @
-
-    /// An associative composition operation.
-    static member inline Append (e1, e2) = Semigroup.sappend e1 e2
-
-    /// An associative composition operation.
-    static member inline ( ++ ) (e1, e2) = Semigroup.sappend e1 e2
-
-// @ Monoid @
-
-    static member inline Empty () : Proxy< ^a> = Monoid.mempty

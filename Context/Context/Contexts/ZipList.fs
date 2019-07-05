@@ -2,8 +2,8 @@
 
 
 /// Sequences, but with an Applicative functor based on `zipping` rather than `non-determinism`.
-/// Note: the Applicative `wrap` (aka pure, return, etc) function yields an infinite sequence,
-/// so care must be taken when consuming `ZipLists` created via wrap.
+/// Note: the Applicative 'wrap' (aka pure, return, etc) function yields an infinite sequence,
+/// so care must be taken when consuming `ZipLists` created via 'wrap'.
 [<Struct; NoComparison>]
 type ZipList<'a> = internal ZL of ^a seq
 with interface System.Collections.Generic.IEnumerable< ^a> with
@@ -14,7 +14,7 @@ with interface System.Collections.Generic.IEnumerable< ^a> with
 
 
 /// Standard operations on `ZipList` values.
-module ZipList =    
+module ZipList =
 
     /// Active patterns on `ZipList` values.
     module Pattern =
@@ -65,18 +65,14 @@ module ZipList =
     /// Compositional operations on `ZipList` values.
     module Compose =
 
-        /// Lift a value onto an effectful context.
-        let inline wrap x = ZipList<_>.OfSeq (seq { while true do yield x })
-
-        /// Sequential application on effects.
-        let inline ap (ZipList mv) (ZipList mf) = ZipList<_>.OfSeq (Seq.map2 (<|) mf mv)
-
-        /// Lift a function onto effects.
-        let inline map f (ZipList xs) = ZipList<_>.OfSeq (Seq.map f xs)    
-
-
         /// Supplementary Applicative operations on the given type.
         module Applicative =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x = ZipList<_>.OfSeq (seq { while true do yield x })
+
+            /// Sequential application on effects.
+            let inline ap (ZipList mv) (ZipList mf) = ZipList<_>.OfSeq (Seq.map2 (<|) mf mv)
 
             /// Lift a binary function on effects.
             let inline map2 f (ZipList xs) (ZipList ys) = ZipList<_>.OfSeq (Seq.map2 f xs ys)
@@ -93,7 +89,7 @@ module ZipList =
             /// <summary>Generalizes the sequence-based filter function.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline filterA p source =
-                Seq.foldBack (fun x -> (map2 (fun b xs -> if b then x::xs else xs) (p x))) source (wrap [])
+                Seq.foldBack (fun x -> map2 (fun b xs -> if b then x::xs else xs) (p x)) source (wrap [])
 
             /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -114,7 +110,8 @@ module ZipList =
             let inline zipWithA f source1 source2 = sequenceA (Seq.map2 f source1 source2)
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) (ZipList xs) = ZipList<_>.OfSeq (Seq.replicate (int n) xs)
+            let inline replicateA (n: uint32) (ZipList xs) =
+                ZipList<_>.OfSeq (Seq.replicate (int n) xs)
 
 
             /// A monoid on applicative functors.
@@ -139,7 +136,7 @@ module ZipList =
                     Seq.foldBack (fun x s -> orElse s x) t_fa empty
 
                 /// Return one or none results on effects.
-                let inline optional fa = orElse (wrap None) (map Some fa)
+                let inline optional fa = orElse (wrap None) (ap fa (wrap Some))
 
                 /// Create a new item if the previous was empty, else keep the original.
                 let inline alt def fx : ZipList< ^a> = if isEmpty fx then def () else fx
@@ -147,6 +144,9 @@ module ZipList =
 
         /// Supplementary Functor operations on the given type.
         module Functor =
+
+            /// Lift a function onto effects.
+            let inline map f (ZipList xs) = ZipList<_>.OfSeq (Seq.map f xs) 
 
             /// Replace all locations in the input with the same value.
             let inline replace b fa = map (fun _ -> b) fa
@@ -213,9 +213,9 @@ type ZipList<'a> with
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -232,14 +232,14 @@ type ZipList<'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (m, f) = map f m
+    static member inline ( |>> ) (m, f) = Functor.map f m
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, m) = map f m
+    static member inline ( <<| ) (f, m) = Functor.map f m
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Semigroup @
 

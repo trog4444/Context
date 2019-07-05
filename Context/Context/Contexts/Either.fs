@@ -17,7 +17,7 @@ module Either =
     let inline isLeft either = match either with Left _ -> true | Right _ -> false
 
     /// Return True if the given value is a Right-value, False otherwise.
-    let inline isRight either = not (isLeft either)
+    let inline isRight either = match either with Left _ -> false | Right _ -> true
 
     /// Apply one of the given functions to the value held within an Either, depending
     /// on if the value is 'Left' or 'Right.'
@@ -61,72 +61,60 @@ module Either =
     /// Convert between values of type `Either` and related types.
     module Convert =
         
-            /// Returns a Right-value with the head of a non-empty sequence and
-            /// returns a Left-value if the sequence is empty. The Left-value will
-            /// say if the input was either null or empty.
-            let inline ofSeq (source: ^a seq) =
-                match source with
-                | null -> Left "Input sequence was null."
-                | _    -> if Seq.isEmpty source then Left "Input sequence was empty."
-                          else Right (Seq.head source)
+        /// Returns a Right-value with the head of a non-empty sequence and
+        /// returns a Left-value if the sequence is empty. The Left-value will
+        /// say if the input was either null or empty.
+        let inline ofSeq (source: ^a seq) =
+            match source with
+            | null -> Left "Input sequence was null."
+            | _    -> if Seq.isEmpty source then Left "Input sequence was empty."
+                      else Right (Seq.head source)
 
-            /// Returns a singleton sequence if thet value is a Right-value, an empty sequence otherwise.
-            let inline toSeq either = match either with Left _ -> Seq.empty | Right a -> Seq.singleton a       
+        /// Returns a singleton sequence if thet value is a Right-value, an empty sequence otherwise.
+        let inline toSeq either = match either with Left _ -> Seq.empty | Right a -> Seq.singleton a       
 
-            /// Convert a Choice (Of2) to an Either.
-            let inline ofChoice choice =
-                match choice with
-                | Choice1Of2 a -> Right a
-                | Choice2Of2 b -> Left b
+        /// Convert a Choice (Of2) to an Either.
+        let inline ofChoice choice =
+            match choice with
+            | Choice1Of2 a -> Right a
+            | Choice2Of2 b -> Left b
 
-            /// Convert an Either to a Choice (Of2).
-            let inline toChoice either =
-                match either with
-                | Right a -> Choice1Of2 a
-                | Left b  -> Choice2Of2 b
+        /// Convert an Either to a Choice (Of2).
+        let inline toChoice either =
+            match either with
+            | Right a -> Choice1Of2 a
+            | Left b  -> Choice2Of2 b
 
-            /// Convert a Result to an Either.
-            let inline ofResult result =
-                match result with
-                | Ok a    -> Right a
-                | Error b -> Left b
+        /// Convert a Result to an Either.
+        let inline ofResult result =
+            match result with
+            | Ok a    -> Right a
+            | Error b -> Left b
 
-            /// Convert an Either to a Result.
-            let inline toResult result =
-                match result with
-                | Right a -> Ok a
-                | Left b  -> Error b
+        /// Convert an Either to a Result.
+        let inline toResult result =
+            match result with
+            | Right a -> Ok a
+            | Left b  -> Error b
 
 
     /// Compositional operations on `Either` values.
     module Compose =
 
-        /// Lift a value onto an effectful context.
-        let inline wrap x : Either< ^a, ^b> = Right x
-
-        /// Sequentially compose two effects, passing any value produced by the first
-        /// as an argument to the second.
-        let inline bind (k: ^b -> Either< ^a, ^c>) m =
-            match m with Left a -> Left a | Right b -> k b
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten mm : Either< ^a, ^b> = bind id mm
-
-        /// Sequential application on effects.
-        let inline ap mv mf : Either< ^a, ^c> =
-            match mf with
-            | Left  a -> Left a
-            | Right f -> match mv with
-                            | Left  a -> Left a
-                            | Right v -> Right (f v)
-
-        /// Lift a function onto effects.
-        let inline map (f: ^b -> ^c) m : Either< ^a, ^c> =
-            match m with Left a -> Left a | Right b -> Right (f b)
-
-
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Either< ^a, ^b> = Right x
+
+            /// Sequentially compose two effects, passing any value produced by the first
+            /// as an argument to the second.
+            let inline bind (k: ^b -> Either< ^a, ^c>) m =
+                match m with Left a -> Left a | Right b -> k b
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten mm : Either< ^a, ^b> = bind id mm
+
 
             /// Monadic computation builder specialised to the given monad.
             type EitherBuilder () =
@@ -167,8 +155,8 @@ module Either =
                 match mb with
                 | Left  a -> Left a
                 | Right b -> match mc with
-                                | Left  a -> Left a
-                                | Right c -> k b c
+                             | Left  a -> Left a
+                             | Right c -> k b c
 
             /// Sequentially compose four actions, passing any value produced by the
             /// first two as arguments to the third.
@@ -192,7 +180,6 @@ module Either =
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
             let inline recM f (x: ^a) : Either< ^e, ^b> =
-                //let rec go m = bind (f (wrap >> go)) m in go (f wrap x)
                 let rec go = function
                 | Left e  -> Left e
                 | Right a -> f (Right >> go) a
@@ -207,13 +194,13 @@ module Either =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^b -> ^s -> Either< ^a, ^s>) (s0: ^s) (source: ^b seq) : Either< ^a, ^s> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s -> ^b -> Either< ^a, ^s>) (s0: ^s) (source: ^b seq) : Either< ^a, ^s> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0            
 
 
@@ -225,16 +212,16 @@ module Either =
                     match mb with
                     | Left  a -> Left a
                     | Right b -> match mc with
-                                    | Left  a -> Left a
-                                    | Right c -> Right (f b c)
+                                 | Left  a -> Left a
+                                 | Right c -> Right (f b c)
 
                 /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
                 let inline mzip mb mc : Either< ^a, ^b * ^c> =
                     match mb with
                     | Left  a -> Left a
                     | Right b -> match mc with
-                                    | Left  a -> Left a
-                                    | Right c -> Right (b, c)
+                                 | Left  a -> Left a
+                                 | Right c -> Right (b, c)
                     
                 /// Decompose a monad comprised of corresponding pairs of values.
                 let inline munzip (m: Either< ^a, ^b * ^c>) =
@@ -246,13 +233,24 @@ module Either =
         /// Supplementary Applicative operations on the given type.
         module Applicative =
 
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Either< ^a, ^b> = Right x
+
+            /// Sequential application on effects.
+            let inline ap mv mf : Either< ^a, ^c> =
+                match mf with
+                | Left  a -> Left a
+                | Right f -> match mv with
+                             | Left  a -> Left a
+                             | Right v -> Right (f v)
+
             /// Lift a binary function on effects.
             let inline map2 (f: ^b -> ^c -> ^d) fb fc : Either< ^a, ^d> =
                 match fb with
                 | Left  a -> Left a
                 | Right b -> match fc with
-                                | Left  a -> Left a
-                                | Right c -> Right (f b c)
+                             | Left  a -> Left a
+                             | Right c -> Right (f b c)
 
             /// Lift a ternary function on effects.
             let inline map3 (f: ^b -> ^c -> ^d -> ^e) fb fc fd : Either< ^a, ^e> =
@@ -261,8 +259,8 @@ module Either =
                 | Right b -> match fc with
                              | Left  a -> Left a
                              | Right c -> match fd with
-                                            | Left  a -> Left a
-                                            | Right d -> Right (f b c d)
+                                          | Left  a -> Left a
+                                          | Right d -> Right (f b c d)
 
             /// Sequentially compose two effects, discarding any value produced by the first.
             let inline andThen fc fb : Either< ^a, ^c> =
@@ -282,7 +280,7 @@ module Either =
             let inline sequenceA (source: Either< ^a, ^b> seq) : Either< ^a, ^b seq> =
                 let mutable a0 = Unchecked.defaultof< ^a>
                 let f = function Left a -> a0 <- a; failwith "Left" | Right b -> b
-                try let xs = seq { for x in source -> f x } |> Seq.cache
+                try let xs = Seq.cache (seq { for x in source -> f x })
                     for _ in xs do ()
                     Right xs
                 with e when e.Message = "Left" -> Left a0 | e -> raise e
@@ -312,6 +310,10 @@ module Either =
 
         /// Supplementary Functor operations on the given type.
         module Functor =
+
+            /// Lift a function onto effects.
+            let inline map (f: ^b -> ^c) m : Either< ^a, ^c> =
+                match m with Left a -> Left a | Right b -> Right (f b)
 
             /// Replace all locations in the input with the same value.
             let inline replace (b: ^c) fb : Either< ^a, ^c> =
@@ -370,16 +372,16 @@ type Either<'a, 'b> with
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -389,14 +391,14 @@ type Either<'a, 'b> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = map f fa
+    static member inline ( |>> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = map f fa
+    static member inline ( <<| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Semigroup @
 

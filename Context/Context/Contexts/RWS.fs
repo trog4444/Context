@@ -5,7 +5,7 @@
 /// returns a modified state, a `log`, and an output.
 [<Struct; NoComparison; NoEquality>]
 type RWS<'env, 'state, '``state*``, 'log, 'value> =
-    RWS of (^env -> ^state -> struct (^``state*`` * ^log * ^value))
+    RWS of (^env -> ^state -> ^``state*`` * ^log * ^value)
 
 
 /// Operations on `RWS` values.
@@ -14,6 +14,9 @@ module RWS =
     /// Unwrap an RWS computation as a function.
     let inline runRWS (e: ^e) (s: ^s) (RWS r) : ^``s*`` * ^w * ^a =
         match r e s with s, w, a -> s, w, a
+
+    /// Unwrap an RWS computation as a function.
+    let inline runRWS' (RWS f) : ^e -> ^s -> ^``s*`` * ^l * ^a = f
 
     /// Evaluate a computation with the given initial state and environment,
     /// returning the final value and output, discarding the final state.
@@ -33,49 +36,36 @@ module RWS =
 
     /// Cache the results of a 'RWS' computation.
     let inline cacheRWS (RWS r) : RWS< ^e, ^s, ^``s*``, ^w, ^a> =
-        let d = System.Collections.Concurrent.ConcurrentDictionary<(struct(^e * ^s)), struct(^``s*`` * ^w * ^a)>(HashIdentity.Structural)
-        let v = ref Unchecked.defaultof<struct(^``s*`` * ^w * ^a)>
-        RWS (fun e s ->
-            let p = struct (e, s)
-            if d.TryGetValue(p, v) then !v
-            else d.GetOrAdd(key = p, value = r e s))
+        let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
+        RWS (fun e s -> let p = (e, s)
+                        match d.TryGetValue(p) with
+                        | true, res -> res
+                        | false, _ -> let res = r e s in d.[p] <- res ; res)
 
 
     /// Compositional operations on `RWS` values.
-    module Compose =
-
-        /// Lift a value onto an effectful context.
-        let inline wrap x : RWS< ^e, ^s, ^s, ^w, ^a> =
-            RWS (fun _ s -> s, (^w: (static member Empty: unit -> ^w) ()), x)
-
-        /// Sequentially compose two effects, passing any value produced by the first
-        /// as an argument to the second.
-        let inline bind (k: ^a -> RWS< ^e, ^``s*``, ^``s**``, ^w, ^b>) (RWS r) = RWS (fun e s ->
-            match r e (s: ^s) with
-            | (s, w, a) ->
-                match k a with
-                | RWS r -> match r e s with
-                           | (s, w', b) ->
-                             s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w')), b)
-        
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten mm = bind id mm
-
-        /// Sequential application on effects.
-        let inline ap (RWS rv) (RWS rf) : RWS< ^e, ^s, ^``s**``, ^w, ^b> = RWS (fun e s ->
-            match rf e s with
-            | (s, w, f) ->
-                match rv e (s: ^``s*``) with
-                | (s, w', v) ->
-                    (s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w')), f v))
-
-        /// Lift a function onto effects.
-        let inline map f (RWS r) : RWS< ^e, ^s, ^``s*``, ^w, ^b> =
-            RWS (fun e s -> match r e s with (s, w, a) -> s, w, f a)
-
+    module Compose =        
 
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : RWS< ^e, ^s, ^s, ^w, ^a> =
+                RWS (fun _ s -> s, (^w: (static member Empty: unit -> ^w) ()), x)
+
+            /// Sequentially compose two effects, passing any value produced by the first
+            /// as an argument to the second.
+            let inline bind (k: ^a -> RWS< ^e, ^``s*``, ^``s**``, ^w, ^b>) (RWS r) = RWS (fun e s ->
+                match r e (s: ^s) with
+                | (s, w, a) ->
+                    match k a with
+                    | RWS r -> match r e s with
+                               | (s, w', b) ->
+                                 s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w')), b)
+            
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten mm = bind id mm
+
 
             /// Monadic computation builder specialised to the given monad.
             type RWSBuilder () =
@@ -129,7 +119,7 @@ module RWS =
             /// Sequentially compose two actions, creating a third from the result and
             /// lifting a binary function on its effects.
             let inline bindMap (k: ^a -> RWS< ^e, ^s1, ^s2, ^w, ^b>) (f: ^a -> ^b -> ^c) m : RWS< ^e, ^s0, ^s2, ^w, ^c> =
-                bind (fun a -> map (f a) (k a)) m
+                bind (fun a -> bind (f a >> wrap) (k a)) m
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
@@ -147,14 +137,14 @@ module RWS =
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^z -> RWS< ^e, ^s, ^s, ^w, ^z>) (s0: ^z) (source: ^a seq)
                 : RWS< ^e, ^s, ^s, ^w, ^z> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^z -> ^a -> RWS< ^e, ^s, ^s, ^w, ^z>) (s0: ^z) (source: ^a seq)
                 : RWS< ^e, ^s, ^s, ^w, ^z> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0        
 
 
@@ -177,12 +167,25 @@ module RWS =
                         | s, w1, b -> s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w1)), (a, b))
                     
                 /// Decompose a monad comprised of corresponding pairs of values.
-                let inline munzip m : RWS< ^e, ^s, ^``s*``, ^w, ^a> * RWS< ^e, ^s, ^``s*``, ^w, ^b> =
-                    map fst m, map snd m
+                let inline munzip (RWS rs) : RWS< ^e, ^s, ^``s*``, ^w, ^a> * RWS< ^e, ^s, ^``s*``, ^w, ^b> =
+                    RWS (fun e s -> match rs e s with s, w, (a, _) -> s, w, a),
+                    RWS (fun e s -> match rs e s with s, w, (_, b) -> s, w, b)
 
 
         /// Supplementary Applicative operations on the given type.
         module Applicative =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : RWS< ^e, ^s, ^s, ^w, ^a> =
+                RWS (fun _ s -> s, (^w: (static member Empty: unit -> ^w) ()), x)
+
+            /// Sequential application on effects.
+            let inline ap (RWS rv) (RWS rf) : RWS< ^e, ^s, ^``s**``, ^w, ^b> = RWS (fun e s ->
+                match rf e s with
+                | (s, w, f) ->
+                    match rv e (s: ^``s*``) with
+                    | (s, w', v) ->
+                        (s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w')), f v))
 
             /// Lift a binary function on effects.
             let inline map2 f (RWS ra) (RWS rb) : RWS< ^e, ^s, ^``s**``, ^w, ^c> = RWS (fun e s ->
@@ -245,6 +248,10 @@ module RWS =
 
         /// Supplementary Functor operations on the given type.
         module Functor =
+
+            /// Lift a function onto effects.
+            let inline map f (RWS r) : RWS< ^e, ^s, ^``s*``, ^w, ^b> =
+                RWS (fun e s -> match r e s with (s, w, a) -> s, w, f a)
 
             /// Replace all locations in the input with the same value.
             let inline replace b (RWS r) : RWS< ^e, ^s, ^``s*``, ^w, ^b> =
@@ -315,16 +322,16 @@ type RWS<'e, 's, '``s*``, 'w, 'a> with
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -334,14 +341,14 @@ type RWS<'e, 's, '``s*``, 'w, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = map f fa
+    static member inline ( |>> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = map f fa
+    static member inline ( <<| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Semigroup @
 

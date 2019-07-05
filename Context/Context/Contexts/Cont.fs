@@ -13,6 +13,9 @@ module Cont =
     /// The result of running a CPS computation with a given final continuation.
     let inline runCont (k: ^a -> ^r) (Cont c) = c k
 
+    /// The result of running a CPS computation with a given final continuation.
+    let inline runCont' (Cont c) : (^a -> ^r) -> ^r = c
+
     /// The result of running a CPS computation with the identity as the final continuation.
     let inline evalCont (Cont c) : ^r = c id
 
@@ -41,35 +44,36 @@ module Cont =
 
     /// Attempt to apply `fOk` on an input and return a continuation. If the function fails,
     /// return a continuation with the result of applying `fErr` to the input and exception.
-    let inline tryCC fOk fErr (x: ^a) : Cont< ^r, ^b> =
-        callCC (fun ok -> callCC (fun er -> try ok (fOk x) with e -> er (fErr x e)))
+    let inline tryCC fOk fErr (input: ^a) : Cont< ^r, ^b> =
+        callCC (fun ok -> callCC (fun er -> try ok (fOk input) with e -> er (fErr input e)))
+
+    /// Caches the result(s) of a `Cont` computation.
+    let inline cacheCont (Cont c) : Cont< ^r, ^a> =
+        let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
+        Cont (fun k -> c (fun a ->
+            match d.TryGetValue(a) with
+            | true, r -> r
+            | false, _ -> let r = k a in d.[a] <- r ; r))
+
 
 
     /// Compositional operations on `Cont` values.
     module Compose =
 
-        /// Lift a value onto an effectful context.
-        let inline wrap x : Cont< ^r, ^a> = Cont (fun k -> k x)
-
-        /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-        let inline bind (k: ^a -> Cont< ^r, ^b>) (Cont c) =
-            Cont (fun k' -> c (fun a -> match k a with Cont c' -> c' k'))
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten (Cont cc) : Cont< ^r, ^a> =
-            Cont (fun k -> cc (fun (Cont c) -> c k))
-
-        /// Sequential application on effects.
-        let inline ap (Cont mv) (Cont mf) : Cont< ^r, ^b> =
-            Cont (fun k -> mf (fun f -> mv (f >> k)))
-
-        /// Lift a function onto effects.
-        let inline map (f: ^a -> ^b) (Cont c) : Cont< ^r, ^b> =
-            Cont (fun k -> c (f >> k))
-
-
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Cont< ^r, ^a> = Cont (fun k -> k x)
+
+            /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
+            let inline bind (k: ^a -> Cont< ^r, ^b>) (Cont c) =
+                Cont (fun k' -> c (fun a -> match k a with Cont c' -> c' k'))
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten (Cont cc) : Cont< ^r, ^a> =
+                Cont (fun k -> cc (fun (Cont c) -> c k))
+
 
             /// Monadic computation builder specialised to the given monad.
             type ContBuilder () =
@@ -122,9 +126,9 @@ module Cont =
             /// Sequentially compose two actions, creating a third from the result and
             /// lifting a binary function on its effects.
             let inline bindMap (k: ^a -> Cont< ^r, ^b>)
-                                (f: ^a -> ^b -> ^c)
-                                (m: Cont< ^r, ^a>) : Cont< ^r, ^c> =
-                bind (fun a -> map (f a) (k a)) m
+                               (f: ^a -> ^b -> ^c)
+                               (m: Cont< ^r, ^a>) : Cont< ^r, ^c> =
+                bind (fun a -> match k a with Cont c -> Cont (fun k -> c (f a >> k))) m
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
@@ -141,13 +145,13 @@ module Cont =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s -> Cont< ^r, ^s>) (s0: ^s) (source: ^a seq) : Cont< ^r, ^s> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s -> ^a -> Cont< ^r, ^s>) (s0: ^s) (source: ^a seq) : Cont< ^r, ^s> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0        
 
 
@@ -169,6 +173,13 @@ module Cont =
     
         /// Supplementary Applicative operations on the given type.
         module Applicative =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Cont< ^r, ^a> = Cont (fun k -> k x)
+
+            /// Sequential application on effects.
+            let inline ap (Cont mv) (Cont mf) : Cont< ^r, ^b> =
+                Cont (fun k -> mf (fun f -> mv (f >> k)))
 
             /// Lift a binary function on effects.
             let inline map2 (f: ^a -> ^b -> ^c) (Cont ca) (Cont cb) : Cont< ^r, ^c> =
@@ -220,6 +231,10 @@ module Cont =
         /// Supplementary Functor operations on the given type.
         module Functor =
 
+            /// Lift a function onto effects.
+            let inline map (f: ^a -> ^b) (Cont c) : Cont< ^r, ^b> =
+                Cont (fun k -> c (f >> k))
+
             /// Replace all locations in the input with the same value.
             let inline replace (b: ^b) (Cont c) : Cont< ^r, ^b> =
                 Cont (fun k -> c (fun _ -> k b))
@@ -250,7 +265,7 @@ module Cont =
             /// Sequentially compose two co-actions, creating a third from the result and
             /// lifting a binary function on its effects.
             let inline extendMap j f w : Cont< ^r, ^c> =
-                map (fun a -> f a (j w)) w
+                Functor.map (fun a -> f a (j w)) w
 
             /// Deconstructs a comonad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function.
@@ -289,16 +304,16 @@ type Cont<'r, 'a> with
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -308,14 +323,14 @@ type Cont<'r, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = map f fa
+    static member inline ( |>> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = map f fa
+    static member inline ( <<| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Comonad @
 

@@ -4,14 +4,17 @@
 /// Stateful computations, i.e. computations that consume an initial state and
 /// return a value along with a new state.
 [<Struct; NoComparison; NoEquality>]
-type State<'state, '``state*``, 'value> = State of (^state -> struct (^``state*`` * ^value))
+type State<'state, '``state*``, 'value> = State of (^state -> ^``state*`` * ^value)
 
 
 /// Operations on `State` values.
 module State = 
 
     /// Run a state computation with the given initial state and return the final state and value from it.
-    let inline runState (s: ^s) (State sa) : ^``s*`` * ^a = match sa s with s, a -> s, a
+    let inline runState (s: ^s) (State sa) : ^``s*`` * ^a = sa s
+
+    /// Run a state computation with the given initial state and return the final state and value from it.
+    let inline runState' (State f) : ^s -> ^``s*`` * ^a = f
 
     /// Evaluate a state computation with the given initial state and return the final value,
     /// discarding the final state.
@@ -39,39 +42,29 @@ module State =
 
     /// Store computed results to prevent recomputation on the same inputs.
     let inline cacheState (State st) : State< ^s, ^``s*``, ^a> =
-        let d = System.Collections.Concurrent.ConcurrentDictionary< ^s, struct(^``s*`` * ^a)>(HashIdentity.Structural)
-        let r = ref Unchecked.defaultof<struct(^``s*`` * ^a)>
-        State (fun s -> if d.TryGetValue(s, r) then !r
-                        else d.GetOrAdd(key = s, value = st s))
+        let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
+        State (fun s -> match d.TryGetValue(s) with
+                        | true, r -> r
+                        | false, _ -> let r = st s in d.[s] <- r ; r)
 
 
     /// Compositional operations on `State` values.
     module Compose =
 
-        /// Lift a value onto an effectful context.
-        let inline wrap x : State< ^s, ^s, ^a> = State (fun s -> s, x)
-
-        /// Sequentially compose two effects, passing any value produced by the first
-        /// as an argument to the second.
-        let inline bind (k: ^a -> State< ^``s*``, ^``s**``, ^b>) (State st) =
-            State (fun (s: ^s) -> match st s with s, a -> match k a with State st' -> st' s)
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten (mm: State< ^s, ^``s*``, State< ^``s*``, ^``s**``, ^a>>) = bind id mm
-
-        /// Sequential application on effects.
-        let inline ap (State sv) (State sf) : State< ^s, ^``s**``, ^b> =
-            State (fun s -> match sf s with
-                            | s, f -> match sv (s: ^``s*``) with
-                                      | s, v -> s, f v)
-
-        /// Lift a function onto effects.
-        let inline map (f: ^a -> ^b) (State st) : State< ^s, ^``s*``, ^b> =
-            State (fun s -> match st s with s, a -> s, f a)
-
-
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : State< ^s, ^s, ^a> = State (fun s -> s, x)
+
+            /// Sequentially compose two effects, passing any value produced by the first
+            /// as an argument to the second.
+            let inline bind (k: ^a -> State< ^``s*``, ^``s**``, ^b>) (State st) =
+                State (fun (s: ^s) -> match st s with s, a -> match k a with State st' -> st' s)
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten (mm: State< ^s, ^``s*``, State< ^``s*``, ^``s**``, ^a>>) = bind id mm
+
 
             /// Monadic computation builder specialised to the given monad.
             type StateBuilder () =
@@ -149,14 +142,14 @@ module State =
             /// <exception cref="System.ArgumentNullException">
             /// Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s0 -> State< ^s, ^s, ^s0>) (s0: ^s0) (source: ^a seq) : State< ^s, ^s, ^s0> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">
             /// Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s0 -> ^a -> State< ^s, ^s, ^s0>) (s0: ^s0) (source: ^a seq) : State< ^s, ^s, ^s0> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0
 
 
@@ -179,6 +172,15 @@ module State =
 
         /// Supplementary Applicative operations on the given type.
         module Applicative =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : State< ^s, ^s, ^a> = State (fun s -> s, x)
+
+            /// Sequential application on effects.
+            let inline ap (State sv) (State sf) : State< ^s, ^``s**``, ^b> =
+                State (fun s -> match sf s with
+                                | s, f -> match sv (s: ^``s*``) with
+                                          | s, v -> s, f v)
 
             /// Lift a binary function on effects.
             let inline map2 (f: ^a -> ^b -> ^c) (State sa) (State sb) : State< ^s0, ^s2, ^c> =
@@ -258,6 +260,10 @@ module State =
         /// Supplementary Functor operations on the given type.
         module Functor =
 
+            /// Lift a function onto effects.
+            let inline map (f: ^a -> ^b) (State st) : State< ^s, ^``s*``, ^b> =
+                State (fun s -> match st s with s, a -> s, f a)
+
             /// Replace all locations in the input with the same value.
             let inline replace b (State sa) : State< ^s, ^``s*``, ^b> =
                 State (fun s -> match sa s with s, _ -> s, b)
@@ -316,16 +322,16 @@ type State<'s, '``s*``, 'a> with
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -335,14 +341,14 @@ type State<'s, '``s*``, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = map f fa
+    static member inline ( |>> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = map f fa
+    static member inline ( <<| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Semigroup @
 

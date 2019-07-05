@@ -3,7 +3,7 @@
 
 /// Computations which read values from a shared environment.
 [<Struct; NoComparison; NoEquality>]
-type Reader<'env, 'result> = Reader of (^env -> ^result)    
+type Reader<'env, 'result> = Reader of (^env -> ^result)
 
 
 /// Operations on `Reader` values.
@@ -11,6 +11,9 @@ module Reader =
   
     /// Runs a Reader and extracts the final value from it.
     let inline runReader (env: ^e) (Reader r) : ^a = r env
+
+    /// Runs a Reader and extracts the final value from it.
+    let inline runReader' (Reader r) : ^e -> ^a = r
 
     /// Transform the value returned by a Reader.
     let inline mapReader f (Reader r) : Reader< ^e, ^b> = Reader (r >> f)
@@ -26,10 +29,10 @@ module Reader =
 
     /// Store computed results to prevent recomputation on the same inputs.
     let inline cacheReader (Reader f) : Reader< ^e, ^a> =
-        let d = System.Collections.Concurrent.ConcurrentDictionary< ^e, ^a>(HashIdentity.Structural)
-        let r = ref Unchecked.defaultof< ^a>
-        Reader (fun e -> if d.TryGetValue(e, r) then !r
-                         else d.GetOrAdd(key = e, value = f e))
+        let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
+        Reader (fun e -> match d.TryGetValue(e) with
+                         | true, r -> r
+                         | false, _ -> let r = f e in d.[e] <- r ; r)
 
     /// Flip a function then wrap it inside of a Reader.
     let inline flip f = Reader (fun a b -> f b a)
@@ -48,28 +51,23 @@ module Reader =
 
 
     /// Compositional operations on `Reader` values.
-    module Compose =
-
-        /// Lift a value onto an effectful context.
-        let inline wrap x : Reader< ^e, ^a> = Reader (fun _ -> x)
-
-        /// Sequentially compose two effects, passing any value produced by the first
-        /// as an argument to the second.
-        let inline bind (k: ^a -> Reader< ^e, ^b>) (Reader r) =
-            Reader (fun e -> match k (r e) with Reader r' -> r' e)
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten mm : Reader< ^e, ^a> = bind id mm
-
-        /// Sequential application on effects.
-        let inline ap (Reader rv) (Reader rf) = Reader (fun (e: ^e) -> rf e (rv e))
-
-        /// Lift a function onto effects.
-        let inline map (f: ^a -> ^b) (Reader r) : Reader< ^e, ^b> = Reader (r >> f)
-
+    module Compose =        
 
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Reader< ^e, ^a> = Reader (fun _ -> x)
+
+            /// Sequentially compose two effects, passing any value produced by the first
+            /// as an argument to the second.
+            let inline bind (k: ^a -> Reader< ^e, ^b>) (Reader r) =
+                Reader (fun e -> match k (r e) with Reader r' -> r' e)
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten (Reader rr) : Reader< ^e, ^a> =
+                Reader (fun e -> match rr e with Reader r -> r e)
+
 
             /// Monadic computation builder specialised to the given monad.
             type ReaderBuilder () =
@@ -134,13 +132,13 @@ module Reader =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s -> Reader< ^e, ^s>) (s0: ^s) (source: ^a seq) : Reader< ^e, ^s> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s -> ^a -> Reader< ^e, ^s>) (s0: ^s) (source: ^a seq) : Reader< ^e, ^s> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0        
 
 
@@ -162,6 +160,12 @@ module Reader =
 
         /// Supplementary Applicative operations on the given type.
         module Applicative =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Reader< ^e, ^a> = Reader (fun _ -> x)
+            
+            /// Sequential application on effects.
+            let inline ap (Reader rv) (Reader rf) = Reader (fun (e: ^e) -> rf e (rv e))
 
             /// Lift a binary function on effects.
             let inline map2 (f: ^a -> ^b -> ^c) (Reader ra) (Reader rb) : Reader< ^e, ^c> =
@@ -220,6 +224,9 @@ module Reader =
         /// Supplementary Functor operations on the given type.
         module Functor =
 
+            /// Lift a function onto effects.
+            let inline map (f: ^a -> ^b) (Reader r) : Reader< ^e, ^b> = Reader (r >> f)
+
             /// Replace all locations in the input with the same value.
             let inline replace (b: ^b) (Reader r) : Reader< ^e, ^b> = Reader (fun e -> ignore (r e); b)
 
@@ -237,7 +244,7 @@ module Reader =
                 Reader (f >> r >> g)
 
             /// Map the first argument contravariantly.
-            let inline lmap f (Reader r) : Reader< ^e, ^a> = Reader (f >> r)
+            let inline lmap (f: ^e -> ^e0) (Reader r) : Reader< ^e, ^a> = Reader (f >> r)
 
             /// Map the second argument covariantly.
             let inline rmap f (Reader r) : Reader< ^e, ^a> = Reader (r >> f)
@@ -365,29 +372,19 @@ type Reader<'e, 'a> with
     /// The result of running a computation with a given environment.
     static member inline ( -< ) (e, m) = runReader e m
 
-// @ Cat @
-
-    /// Compose two members of a category together.
-    static member inline ( >>> ) (ca, cb) = Cat.compose cb ca
-    /// Compose two members of a category together.
-    static member inline ( <<< ) (cb, ca) = Cat.compose cb ca
-
-    /// Identity of the category.
-    static member inline Id () : Reader< ^a, ^a> = Cat.identity
-
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -397,14 +394,14 @@ type Reader<'e, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = map f fa
+    static member inline ( |>> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = map f fa
+    static member inline ( <<| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Semigroup @
 
@@ -413,6 +410,16 @@ type Reader<'e, 'a> with
 
     /// An associative composition operation.
     static member inline ( ++ ) (e1, e2) = Semigroup.sappend e1 e2
+
+// @ Cat @
+
+    /// Compose two members of a category together.
+    static member inline ( >>> ) (ca, cb) = Cat.compose cb ca
+    /// Compose two members of a category together.
+    static member inline ( <<< ) (cb, ca) = Cat.compose cb ca
+
+    /// Identity of the category.
+    static member inline Id () : Reader< ^a, ^a> = Cat.identity
 
 // @ Arrow @
 

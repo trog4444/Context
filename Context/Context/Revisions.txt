@@ -1,4 +1,25 @@
-﻿2019-06-29
+﻿^^^ Commit
+2019-07-05
+    -- added cacheCont
+    -- changed all cacheX functions to use generic dict rather than concurrent
+    -- changed &> & <& to %> & <%
+    -- put 'top level' Composition functions (wrap, map, bind, etc) into their respective modules (Monad, Functor, etc)
+
+2019-07-03
+    -- slight tweak to 'cacheX' functions
+    -- changed 'State' and 'RWS' to return tuples (non struct type) for best interop
+    -- added funcs to function types to retrieve the underlying function without applying values to it
+        (like a flipped 'runX')
+    -- removed `Incomplete` folder - will finish up 'working/complete' ones first
+
+2019-07-02
+    -- removed some types from 'Incomplete' due to not intending to develop further
+    -- Removed Proxy extensions as they are unnecessary
+    -- added 'evalDList', which is like 'runDList' but with an empty list
+    -- commented out a section of 'Lens' due to incomplete development
+    -- added 'Convert' modules to RWS, State, & Writer for compatibility between tuple-types
+
+2019-06-29
     -- changed RWS type to return a 3-tuple struct instead of a record ;; to prevent naming conflicts
     -- same with State
 

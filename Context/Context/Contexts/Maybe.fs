@@ -80,33 +80,21 @@ module Maybe =
     /// Compositional operations on `Maybe` values.
     module Compose =
 
-        /// Lift a value onto an effectful context.
-        let inline wrap x : Maybe< ^a> = Just x
-
-        /// Sequentially compose two effects, passing any value produced by the first
-        /// as an argument to the second.
-        let inline bind (k: ^a -> Maybe< ^b>) m =
-            match m with Nothing -> Nothing | Just a -> k a
-
-        /// Removes one layer of monadic context from a nested monad.
-        let inline flatten mm : Maybe< ^a> =
-            match mm with Nothing -> Nothing | Just m -> m
-
-        /// Sequential application on effects.
-        let inline ap mv mf : Maybe< ^b> =
-            match mf with
-            | Nothing -> Nothing
-            | Just  f -> match mv with
-                         | Nothing -> Nothing
-                         | Just  v -> Just (f v)
-
-        /// Lift a function onto effects.
-        let inline map f m : Maybe< ^b> =
-            match m with Nothing -> Nothing | Just a -> Just (f a)
-
-
         /// Supplementary Monad operations on the given type.
         module Monad =
+
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Maybe< ^a> = Just x
+
+            /// Sequentially compose two effects, passing any value produced by the first
+            /// as an argument to the second.
+            let inline bind (k: ^a -> Maybe< ^b>) m =
+                match m with Nothing -> Nothing | Just a -> k a
+
+            /// Removes one layer of monadic context from a nested monad.
+            let inline flatten mm : Maybe< ^a> =
+                match mm with Nothing -> Nothing | Just m -> m
+
 
             /// Monadic computation builder specialised to the given monad.
             type MaybeBuilder () =
@@ -186,13 +174,13 @@ module Maybe =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s -> Maybe< ^s>) s0 source : Maybe< ^s> =
-                let g k x s = bind k (f x s)
+                let inline g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s -> ^a -> Maybe< ^s>) s0 source : Maybe< ^s> =
-                let g x k s = bind k (f s x)
+                let inline g x k s = bind k (f s x)
                 Seq.foldBack g source wrap s0        
         
 
@@ -345,6 +333,17 @@ module Maybe =
         /// Supplementary Applicative operations on the given type.
         module Applicative =
 
+            /// Lift a value onto an effectful context.
+            let inline wrap x : Maybe< ^a> = Just x
+
+            /// Sequential application on effects.
+            let inline ap mv mf : Maybe< ^b> =
+                match mf with
+                | Nothing -> Nothing
+                | Just  f -> match mv with
+                             | Nothing -> Nothing
+                             | Just  v -> Just (f v)
+
             /// Lift a binary function on effects.
             let inline map2 f fa fb : Maybe< ^c> =
                 match fa with
@@ -449,6 +448,10 @@ module Maybe =
         /// Supplementary Functor operations on the given type.
         module Functor =
 
+            /// Lift a function onto effects.
+            let inline map f m : Maybe< ^b> =
+                match m with Nothing -> Nothing | Just a -> Just (f a)
+            
             /// Replace all locations in the input with the same value.
             let inline replace b fa : Maybe< ^b> =
                 match fa with Nothing -> Nothing | Just _ -> Just b
@@ -519,16 +522,16 @@ type Maybe<'a> with
 // @ Monad @
 
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = bind k m
+    static member inline ( >>= ) (m, k) = Monad.bind k m
     /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = bind k m
+    static member inline ( =<< ) (k, m) = Monad.bind k m
 
 // @ Applicative @
 
     /// Sequential application on effects.
-    static member inline ( <*> )  (ff, fx) = ap fx ff
+    static member inline ( <*> )  (ff, fx) = Applicative.ap fx ff
     /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = ap fx ff
+    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
 
     /// Sequentially compose two effects, discarding any value produced by the first.
     static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
@@ -545,14 +548,14 @@ type Maybe<'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (m, f) = map f m
+    static member inline ( |>> ) (m, f) = Functor.map f m
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, m) = map f m
+    static member inline ( <<| ) (f, m) = Functor.map f m
 
     /// Replace all locations in the input with the same value.
-    static member inline ( &> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fx) = Functor.replace b fx
     /// Replace all locations in the input with the same value.
-    static member inline ( <& ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fx, b) = Functor.replace b fx
 
 // @ Semigroup @
 

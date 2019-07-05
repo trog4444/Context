@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>ptr</Authors>
     <Company>ptr</Company>
     <Description>Types that add 'context' to generic underlying types, e.g. functors, monads, monoids, etc., as well as some primitive and compositional operations.</Description>
@@ -43,19 +43,10 @@
     <Compile Include="Extensions\Builders\Lens.fs" />
     <Compile Include="Extensions\Builders\Maybe.fs" />
     <Compile Include="Extensions\Builders\NonEmpty.fs" />
-    <Compile Include="Extensions\Builders\Proxy.fs" />
     <Compile Include="Extensions\Builders\Reader.fs" />
     <Compile Include="Extensions\Builders\RWS.fs" />
     <Compile Include="Extensions\Builders\State.fs" />
     <Compile Include="Extensions\Builders\Writer.fs" />
-    <Compile Include="Incomplete\Parser.fs" />
-    <Compile Include="Incomplete\RoseTree.fs" />
-    <Compile Include="Incomplete\Sq.fs" />
-    <Compile Include="Incomplete\Pipe.fs" />
-    <Compile Include="Incomplete\StreamTree.fs" />
-    <Compile Include="Incomplete\Tree.fs" />
-    <Compile Include="Incomplete\Tuple.fs" />
-    <Compile Include="Incomplete\Zipper.fs" />
   </ItemGroup>
 
   <ItemGroup />
