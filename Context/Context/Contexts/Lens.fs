@@ -33,58 +33,56 @@ module Lens =
         let inline ( |LensSet| ) (lens: Lens< ^a, ^b>) = LensSet lens.Set    
     
     
-    /// Functions on Lenses to other types.
-    module Lenses =
-    
-        ///// Abstractions to expand on Lens' expressiveness.
-        //module Abstraction =
-    
-        //    /// Abstraction for any 2-arity product-type.
-        //    [<Interface>]
-        //    type IPair<'a, 'b> =
-        //        abstract member Fst: unit -> ^a
-        //        abstract member Snd: unit -> ^b
-    
-        //    /// Convert two items into a Pair.
-        //    let inline toPair a b =
-        //        { new IPair< ^a, ^b> with
-        //            override s.Fst () = a
-        //            override s.Snd () = b }
-    
-        //    /// Convert two items into a Pair.
-        //    let inline toPair' a b =
-        //        { new IPair< ^a, ^b> with
-        //            override s.Fst () = a ()
-        //            override s.Snd () = b () }
-    
-        //    /// Convert two items into a Pair.
-        //    let inline ofTuple (a, b) =
-        //        { new IPair< ^a, ^b> with
-        //            override s.Fst () = a
-        //            override s.Snd () = b }
+    // Functions on Lenses to other types.
+    //module Lenses =
+    //
+    // Abstractions to expand on Lens' expressiveness.
+    //module Abstraction =
+    //
+    //    /// Abstraction for any 2-arity product-type.
+    //    [<Interface>]
+    //    type IPair<'a, 'b> =
+    //        abstract member Fst: unit -> ^a
+    //        abstract member Snd: unit -> ^b
+    //
+    //    /// Convert two items into a Pair.
+    //    let inline toPair a b =
+    //        { new IPair< ^a, ^b> with
+    //            override s.Fst () = a
+    //            override s.Snd () = b }
+    //
+    //    /// Convert two items into a Pair.
+    //    let inline toPair' a b =
+    //        { new IPair< ^a, ^b> with
+    //            override s.Fst () = a ()
+    //            override s.Snd () = b () }
+    //
+    //    /// Convert two items into a Pair.
+    //    let inline ofTuple (a, b) =
+    //        { new IPair< ^a, ^b> with
+    //            override s.Fst () = a
+    //            override s.Snd () = b }
     
     
         /// Stateful `Lens` functions.
-        module StateL =
+        module LensState =
     
             /// 'Stateful' version of setL -- when the 'state' value is left out,
             /// the function takes the form of 'state -> state * content', which
             /// can be put inside the 'State' type for stateful computations, where it
             /// behaves like the 'modify' function.
-            let inline modifyL (lens: Lens< ^s, ^a>) property =
-                fun state -> (lens.Set state property, ())
+            let inline modifyL (lens: Lens< ^s, ^a>) property state = lens.Set state property, ()
     
             /// Use a 'Lens' as a stateful function.
-            let inline putL (lens: Lens< ^s, ^p>) =
-                fun state -> struct (state, lens.Get state)
+            let inline putL (lens: Lens< ^s, ^p>) state = state, lens.Get state
     
             /// Convert a stateful function of one state-type to another state-type.
-            let inline focus f (lens: Lens< ^p, ^s>) =
-                fun p -> match f (lens.Get p) with struct (s, a) -> (lens.Set p s, a)
+            let inline focus f (lens: Lens< ^p, ^s>) property =
+                match f (lens.Get property) with (s, a) -> (lens.Set property s, a)
     
     
         /// Functions between Lenses and collections.
-        module CollectionL =
+        module LensCollection =
     
             /// Functions between Lenses and Maps.
             module MapL =
@@ -93,22 +91,27 @@ module Lens =
                 ///
                 /// 'SetL' attempts to add a value to a Map.
                 let inline memberL key : Lens<Map< ^k, ^v>, ^v option> =
-                    { Get = Map.tryFind key
+                    { Lens.Get = Map.tryFind key
                     ; Set = fun m -> (function None -> Map.remove key m | Some v -> Map.add key v m) }
 
 
     /// Create a 'Lens' given an accessor function and a setter function.
-    let inline newLens getter setter = { Get = getter; Set = setter }
+    let inline newLens getter setter = { Lens.Get = getter; Set = setter }
     
     /// Run a `Lens` by applying a `getter` to the given value,
     /// then apply both to the `setter` to retrieve a final value.
-    let inline runLens property (lens: Lens< ^a, ^b>) = lens.Set property (lens.Get property)
+    let runLens property (lens: Lens<'a, 'b>) = lens.Set property (lens.Get property)
+
+    /// Map a function across the components of a `Lens`.
+    let inline mapLens (f: ^b -> ^c) (lens: Lens< ^a, ^b>) : Lens< ^a, ^c> =
+        { Lens.Get = lens.Get >> f
+        ; Set = fun a _ -> lens.Set a (lens.Get a) }
 
     /// Retrieve the "getter" from a 'Lens'.
-    let inline lensGet (lens: Lens< ^a, ^b>) = lens.Get
+    let lensGet (lens: Lens<'a, 'b>) = lens.Get
 
     /// Retrieve the "setter" from a 'Lens'.
-    let inline lensSet (lens: Lens< ^a, ^b>) = lens.Set
+    let lensSet (lens: Lens<'a, 'b>) = lens.Set
 
     /// Retrieve a value with a 'getter', apply a function to it,
     /// then apply a 'setter' to the result and the initial value.
@@ -117,31 +120,31 @@ module Lens =
 
     ///// Lens' equivalent of the standard 'fst' function on 2-arity product-types.
     //let inline _1<'a, 'b> : Lens<Lenses.Abstraction.IPair< ^a, ^b>, ^a> =
-    //    { Get = fun p -> p.Fst ()
+    //    { Lens.Get = fun p -> p.Fst ()
     //    ; Set = fun p a -> { new Lenses.Abstraction.IPair< ^a, ^b> with
     //                            override s.Fst () = a
     //                            override s.Snd () = p.Snd () } }
 
     ///// Lens' equivalent of the standard 'fst' function on 2-arity product-types.
     //let inline _2<'a, 'b> : Lens<Lenses.Abstraction.IPair< ^a,  ^b>, ^b> =
-    //    { Get = fun p -> p.Snd ()
+    //    { Lens.Get = fun p -> p.Snd ()
     //    ; Set = fun p b -> { new Lenses.Abstraction.IPair< ^a, ^b> with
     //                            override s.Fst () = p.Fst ()
     //                            override s.Snd () = b } }
 
     /// Lens' equivalent of the standard 'fst' function on tuples.
-    let inline lensFst<'a, 'b> : Lens< ^a * ^b, ^a> =
-        { Get = fst; Set = fun (_, b) a -> a, b }
+    let lensFst<'a, 'b> : Lens<'a * 'b, 'a> =
+        { Lens.Get = fst; Set = fun (_, b) a -> a, b }
 
     /// Lens' equivalent of the standard 'snd' function on tuples.
-    let inline lensSnd<'a, 'b> : Lens< ^a * ^b, ^b> =
-        { Get = snd; Set = fun (a, _) b -> a, b }    
+    let lensSnd<'a, 'b> : Lens<'a * 'b, 'b> =
+        { Lens.Get = snd; Set = fun (a, _) b -> a, b }    
 
     /// Caches both the 'getter' and 'setter' functions inside a Lens.
-    let inline cacheLens (lens: Lens< ^a, ^b>) =
+    let cacheLens (lens: Lens<'a, 'b>) =
         let mg = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
         let ms = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
-        { Get = fun a ->
+        { Lens.Get = fun a ->
             match mg.TryGetValue(a) with
             | true, b -> b
             | false, _ -> let r = lens.Get a in mg.[a] <- r ; r
@@ -160,18 +163,19 @@ module Lens =
 
             /// Lift a value onto an effectful context.
             let inline wrap x : Lens< ^a, ^b> =
-                { Get = fun _   -> x
+                { Lens.Get = fun _   -> x
                 ; Set = fun y _ -> y }
 
             /// Sequentially compose two effects, passing any value produced by the first
             /// as an argument to the second.
-            let inline bind (f: ^b -> Lens< ^a, ^c>) (lens: Lens< ^a, ^b>) : Lens< ^a, ^c> =
-                { Get = fun a   -> (f (lens.Get a)).Get a
-                ; Set = fun a c -> lens.Set a (lens.Get ((f (lens.Get a)).Set a c)) }
+            let inline bind (k: ^b -> Lens< ^a, ^c>) (lens: Lens< ^a, ^b>) : Lens< ^a, ^c> =
+                { Lens.Get = fun a -> (k (lens.Get a)).Get a
+                ; Set = fun a c -> lens.Set a (lens.Get ((k (lens.Get a)).Set a c)) }
 
             /// Removes one layer of monadic context from a nested monad.
-            let inline flatten mm : Lens< ^a, ^b> = bind id mm
-
+            let inline flatten (lens: Lens< ^a, Lens< ^a, ^b>>) : Lens< ^a, ^b> = //bind id mm
+                { Lens.Get = fun a -> (lens.Get a).Get a
+                ; Set = fun a c -> lens.Set a (lens.Get ((lens.Get a).Set a c)) }
 
             /// Monadic computation builder specialised to the given monad.
             type LensBuilder () =
@@ -202,25 +206,6 @@ module Lens =
                                         s.Delay(fun () -> body enum.Current)))
 
 
-            /// Composes two monadic functions together.
-            /// Acts as the composition function in the Kleisli category.
-            let inline composeM k2 k1 = k1 >> bind k2
-  
-            /// Sequentially compose three actions, passing any value produced by the first
-            /// two as arguments to the third.
-            let inline bind2 k ma mb =
-                bind (fun a -> bind (k a) mb) ma
-
-            /// Sequentially compose four actions, passing any value produced by the
-            /// first two as arguments to the third.
-            let inline bind3 k ma mb mc =
-                bind2 (fun a b -> bind (k a b) mc) ma mb
-
-            /// Sequentially compose two actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline bindMap k f m =
-                bind (fun a -> bind (f a >> wrap) (k a)) m
-
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
@@ -236,52 +221,14 @@ module Lens =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM f (s0: ^s) (source: ^a seq) : Lens< ^b, ^s> =
-                let inline g k x s = bind k (f x s)
+                let g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM f (s0: ^s) (source: ^a seq) : Lens< ^b, ^s> =
-                let inline g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0        
-
-
-            /// Monadic zipping (combining or decomposing corresponding monadic elements).
-            module Zip =
-            
-                /// Combine the corresponding contents of two monads into a single monad.
-                let inline mzipWith f (mb: Lens< ^a, ^b>) (mc: Lens< ^a, ^c>) : Lens< ^a, ^d> =
-                    { Get = fun a   -> f (mb.Get a) (mc.Get a)
-                    ; Set = fun a _ -> mc.Set (mb.Set a (mb.Get a)) (mc.Get a) }
-
-                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-                let inline mzip (mb: Lens< ^a, ^b>) (mc: Lens< ^a, ^c>) : Lens< ^a, ^b * ^c> =
-                    { Get = fun a -> mb.Get a, mc.Get a
-                    ; Set = fun a (b, c) -> mc.Set (mb.Set a b) c }
-                    
-                /// Decompose a monad comprised of corresponding pairs of values.
-                let inline unzip (lens: Lens< ^a, (^b * ^c)>) : Lens< ^a, ^b> * Lens< ^a, ^c> =
-                    { Get = lens.Get >> fst
-                    ; Set = fun a b -> match lens.Get a with (_, c) -> lens.Set a (b, c) },
-                    { Get = lens.Get >> snd
-                    ; Set = fun a c -> match lens.Get a with (b, _) -> lens.Set a (b, c) }                
-
-
-        /// Supplementary Functor operations on the given type.
-        module Functor =
-
-            /// Lift a function onto effects.
-            let inline map (f: ^b -> ^c) (lens: Lens< ^a, ^b>) : Lens< ^a, ^c> =
-                { Get = lens.Get >> f
-                ; Set = fun a _ -> lens.Set a (lens.Get a) }
-
-            /// Replace all locations in the input with the same value.
-            let inline replace (b: ^b) fa = map (fun _ -> b) fa
-
-            /// Perform an operation, store its result, perform an action using both
-            /// the input and output, and finally return the output.
-            let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
-                map (fun a -> let b = f a in g a b; b) fa
+                let g x k s = bind k (f s x)
+                Seq.foldBack g source wrap s0         
 
 
         /// Supplementary Applicative operations on the given type.
@@ -289,23 +236,23 @@ module Lens =
 
             /// Lift a value onto an effectful context.
             let inline wrap x : Lens< ^a, ^b> =
-                { Get = fun _   -> x
+                { Lens.Get = fun _ -> x
                 ; Set = fun y _ -> y }
 
             /// Sequential application on effects.
-            let inline ap mv (mf: Lens< ^a, ^b -> ^c>) : Lens< ^a, ^c> =
-                Monad.bind (fun f -> Functor.map f mv) mf
+            let inline ap (mv: Lens< ^a, ^b>) (mf: Lens< ^a, ^b -> ^c>) : Lens< ^a, ^c> =
+                Monad.bind (fun f -> mapLens f mv) mf
 
             /// Lift a binary function on effects.
             let inline map2 f fa fb =
-                Monad.bind (fun a -> Functor.map (f a) fb) fa
+                Monad.bind (fun a -> mapLens (f a) fb) fa
 
             /// Lift a ternary function on effects.
             let inline map3 (f: ^b -> ^c -> ^d -> ^e) fa fb fc =
-                Monad.bind2 (fun a b -> Functor.map (f a b) fc) fa fb
+                Monad.bind (fun a -> map2 (f a) fb fc) fa
 
             /// Sequentially compose two effects, discarding any value produced by the first.
-            let inline andThen fb fa = Monad.bind (fun _ -> fb) fa
+            let inline andThen fb fa = map2 (fun _ b -> b) fa fb
 
             /// Conditional execution of effectful expressions.
             let inline when_ (condition: bool) f =
@@ -338,8 +285,27 @@ module Lens =
                 sequenceA (Seq.map2 f source1 source2)  
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) m =
-                sequenceA (Seq.replicate (int n) m)
+            let inline replicateA n m =
+                sequenceA (Seq.replicate (max 0 n) m)
+
+
+        /// Supplementary Functor operations on the given type.
+        module Functor =
+
+            /// Lift a function onto effects.
+            let inline map (f: ^b -> ^c) (fa: Lens< ^a, ^b>) : Lens< ^a, ^c> =
+                { Lens.Get = fun a -> f (fa.Get a)
+                ; Set = fun a _ -> fa.Set a (fa.Get a) }
+
+            /// Replace all locations in the input with the same value.
+            let replace (b: 'b) (fa: Lens<'a, 'b>) =
+                { Lens.Get = fun _ -> b
+                ; Set = fun a _ -> fa.Set a b }
+
+            /// Perform an operation, store its result, perform an action using both
+            /// the input and output, and finally return the output.
+            let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
+                map (fun a -> let b = f a in g a b; b) fa        
 
 
         /// A functor where the first argument is contravariant and the second argument is covariant.
@@ -347,7 +313,7 @@ module Lens =
 
             /// Map the first argument contravariantly.
             let inline lmap f (lens: Lens< ^a0, ^b>) : Lens< ^a, ^b> =
-                { Get = f >> lens.Get
+                { Lens.Get = fun x -> lens.Get (f x)
                 ; Set = fun a _ -> a }
         
             /// Map over both arguments at the same time.
@@ -370,11 +336,11 @@ module Lens =
         module Cat =
 
             /// Identity element of a category.
-            let inline identity<'a> : Lens< ^a, ^a> = { Get = id ; Set = fun x _ -> x }
+            let identity<'a> : Lens< ^a, ^a> = { Lens.Get = id ; Set = fun x _ -> x }
 
             /// Compose two members of a category together.
             let inline compose (lens2: Lens< ^b, ^c>) (lens1: Lens< ^a, ^b>) : Lens< ^a, ^c> =
-                { Get = lens1.Get >> lens2.Get
+                { Lens.Get = lens1.Get >> lens2.Get
                 ; Set = fun a c -> lens1.Set a (lens2.Set (lens1.Get a) c) }
 
 
@@ -384,29 +350,29 @@ module Lens =
 
             /// Lift a function to an arrow.
             let inline arr f : Lens< ^a, ^b> =
-                { Get = f
+                { Lens.Get = f
                 ; Set = fun a _ -> a }
 
             /// Send the first component of the input through the argument arrow,
             /// and copy the rest unchanged to the output.
             let inline arrFst (lens: Lens< ^a, ^b>) : Lens< ^a * ^c, ^b * ^c> =
-                { Get = fun (a, c) -> lens.Get a, c
+                { Lens.Get = fun (a, c) -> lens.Get a, c
                 ; Set = fun (a, _) (b, c) -> lens.Set a b, c }
 
             /// Send the second component of the input through the argument arrow,
             /// and copy the rest unchanged to the output.
             let inline arrSnd (lens: Lens< ^a, ^b>) : Lens< ^c * ^a, ^c * ^b> =
-                { Get = fun (c, a) -> c, lens.Get a
+                { Lens.Get = fun (c, a) -> c, lens.Get a
                 ; Set = fun (_, a) (c, b) -> c, lens.Set a b }
 
             /// Split the input between the two argument arrows and combine their output.
             let inline split (lens2: Lens< ^c, ^d>) (lens1: Lens< ^a, ^b>) : Lens< ^a * ^c, ^b * ^d> =
-                { Get = fun (a, c) -> lens1.Get a, lens2.Get c
+                { Lens.Get = fun (a, c) -> lens1.Get a, lens2.Get c
                 ; Set = fun (a, c) (b, d) -> lens1.Set a b, lens2.Set c d }
 
             /// Fanout: send the input to both argument arrows and combine their output.
             let inline fanout (lens2: Lens< ^a, ^c>) (lens1: Lens< ^a, ^b>) : Lens< ^a, ^b * ^c> =
-                { Get = fun a -> lens1.Get a, lens2.Get a
+                { Lens.Get = fun a -> lens1.Get a, lens2.Get a
                 ; Set = fun a (b, c) -> lens2.Set (lens1.Set a b) c }
 
 
@@ -417,7 +383,7 @@ module Lens =
                 /// Feed marked inputs through the argument arrow, passing the
                 /// rest through unchanged to the output. A mirror of 'feed2'.
                 let inline feed1 (lens: Lens< ^a, ^b>) : Lens<Choice< ^a, ^c>, Choice< ^b, ^c>> =
-                    { Get = function
+                    { Lens.Get = function
                         | Choice1Of2 a -> Choice1Of2 (lens.Get a)
                         | Choice2Of2 c -> Choice2Of2 c
                     ; Set = fun ac bc ->
@@ -430,7 +396,7 @@ module Lens =
                 /// Feed marked inputs through the argument arrow, passing the
                 /// rest through unchanged to the output. A mirror of 'feed1'.
                 let inline feed2 (lens: Lens< ^a, ^b>) : Lens<Choice< ^c, ^a>, Choice< ^c, ^b>> =
-                    { Get = function
+                    { Lens.Get = function
                         | Choice1Of2 c -> Choice1Of2 c
                         | Choice2Of2 a -> Choice2Of2 (lens.Get a)
                     ; Set = fun ca cb ->
@@ -444,7 +410,7 @@ module Lens =
                 /// and merging their outputs.
                 let inline merge (lens2: Lens< ^c, ^d>) (lens1: Lens< ^a, ^b>)
                     : Lens<Choice< ^a, ^c>, Choice< ^b, ^d>> =
-                    { Get = function
+                    { Lens.Get = function
                         | Choice1Of2 a -> Choice1Of2 (lens1.Get a)
                         | Choice2Of2 c -> Choice2Of2 (lens2.Get c)
                     ; Set = fun ac bd ->
@@ -458,7 +424,7 @@ module Lens =
 
                 /// Split the input between the two argument arrows and merge their outputs.
                 let inline fanin (lens2: Lens< ^c, ^b>) (lens1: Lens< ^a, ^b>) : Lens<Choice< ^a, ^c>, ^b> =
-                    { Get = function
+                    { Lens.Get = function
                         | Choice1Of2 a -> lens1.Get a
                         | Choice2Of2 c -> lens2.Get c
                     ; Set = fun c b ->
@@ -471,9 +437,9 @@ module Lens =
             module Apply =
 
                 /// Arrow that allows application of arrow inputs to other inputs.
-                let inline app<'a, 'b> : Lens<Lens< ^a, ^b> * ^a, ^b> =
-                    { Get = fun (l, a) -> l.Get a
-                    ; Set = fun (l, a) b -> { Get = fun _ -> l.Get a
+                let app<'a, 'b> : Lens<Lens< ^a, ^b> * ^a, ^b> =
+                    { Lens.Get = fun (l, a) -> l.Get a
+                    ; Set = fun (l, a) b -> { Lens.Get = fun _ -> l.Get a
                                             ; Set = fun _ _ -> l.Set a b }, a }
 
         
@@ -517,14 +483,14 @@ type Lens<'a, 'b> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = Functor.map f fa
+    static member inline ( |%> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = Functor.map f fa
+    static member inline ( <%| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 
@@ -537,9 +503,9 @@ type Lens<'a, 'b> with
 // @ Cat @
 
     /// Compose two members of a category together.
-    static member inline ( >>> ) (ca, cb) = Cat.compose cb ca
+    static member inline ( >>. ) (ca, cb) = Cat.compose cb ca
     /// Compose two members of a category together.
-    static member inline ( <<< ) (cb, ca) = Cat.compose cb ca
+    static member inline ( <<. ) (cb, ca) = Cat.compose cb ca
 
     /// Identity of the category.
     static member inline Id () : Lens< ^a, ^a> = Cat.identity
@@ -547,15 +513,15 @@ type Lens<'a, 'b> with
 // @ Arrow @
 
     /// Split the input between the two argument arrows and combine their output.
-    static member inline ( *** ) (aa, ab) = Arrow.split ab aa
+    static member inline ( *^* ) (aa, ab) = Arrow.split ab aa
 
     /// Fanout: send the input to both argument arrows and combine their output.
-    static member inline ( &&& ) (aa, ab) = Arrow.fanout ab aa
+    static member inline ( &^& ) (aa, ab) = Arrow.fanout ab aa
 
 // @ Arrow.Choice @
 
     /// Split the input between the two argument arrows, retagging and merging their outputs.
-    static member inline ( +++ ) (aa, ab) = Arrow.Choice.merge ab aa
+    static member inline ( +^+ ) (aa, ab) = Arrow.Choice.merge ab aa
 
     /// Split the input between the two argument arrows and merge their outputs.
-    static member inline ( ||| ) (aa, ab) = Arrow.Choice.fanin ab aa
+    static member inline ( |^| ) (aa, ab) = Arrow.Choice.fanin ab aa

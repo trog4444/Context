@@ -1,4 +1,30 @@
-﻿^^^ Commit
+﻿!! @Maybe.Monad.foldlM => rewrote to break on Nothing, test if faster
+!! @Reader => continue testing inline vs noinline
+!! @Arrow operators => CANNOT use existing operators (|||, ***, etc)
+
+^^^ commit
+2019-07-13
+	-- changed >>> to >>. and <<< to <<.
+	-- changed map:  |>> to |%>, *** to *^*, &&& to &^& (for now) likewise ||| to |^|, +++ to +^+
+	-- removed 'test' methods from Maybe & Reader
+	-- removed `runX'` methods
+	-- added `fromXWith` type functions to have thunks as defaults instead of values
+	-- commented out `Proxy`
+	-- removed type annotation (^a -> ^b) from `Builder.Run f` for all builders as it wasnt letting me use the builder
+	!! began trying to reduce size of DLL
+		-- reimplemented some functions to NOT use other inline funcs
+		-- replaced (?some) instances of `>>` with lambdas
+		-- removed composeM, bind2, bind3, & bindMap => users of lib can just use workflow for same effect
+			-- also remove composeW and extendMap for Comonads
+		-- removed inline from empty, ask, mempty, identity, app, etc
+		-- removed inline from replace for cases where NOT implemented in terms of map
+
+2019-07-05
+    -- changed uint32s back to ints to prevent possible overflows on int uint32.maxvalue
+    -- in some modules, added a top-level 'mapX' function to remove circular dependencies
+        on Functor in Monad and Applicative modules
+
+^^^ Commit
 2019-07-05
     -- added cacheCont
     -- changed all cacheX functions to use generic dict rather than concurrent
@@ -229,7 +255,7 @@ Commit
         |State
         |Writer
         All MonadT as applicable
-    Changed operators to have spaces preceding/proceding spaces, also allowing to change Arrow (---) to ( *** ).
+    Changed operators to have spaces preceding/proceding spaces, also allowing to change Arrow (---) to ( *^* ).
 
     Added Monoid to:
         Maybe

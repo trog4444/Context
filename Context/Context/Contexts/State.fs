@@ -11,18 +11,15 @@ type State<'state, '``state*``, 'value> = State of (^state -> ^``state*`` * ^val
 module State = 
 
     /// Run a state computation with the given initial state and return the final state and value from it.
-    let inline runState (s: ^s) (State sa) : ^``s*`` * ^a = sa s
-
-    /// Run a state computation with the given initial state and return the final state and value from it.
-    let inline runState' (State f) : ^s -> ^``s*`` * ^a = f
+    let runState (s: 's) (State sa) : '``s*`` * 'a = sa s
 
     /// Evaluate a state computation with the given initial state and return the final value,
     /// discarding the final state.
-    let inline evalState (s: ^s) (State sa) : ^a = match sa s with _, a -> a
+    let evalState (s: 's) (State sa) : 'a = match sa s with _, a -> a
 
     /// Execute a state computation with the given initial state and return the final state,
     /// discarding the final value.
-    let inline execState (s: ^s) (State sa) : ^s = match sa s with (s, _) -> s
+    let execState (s: 's) (State sa) : 's = match sa s with (s, _) -> s
 
     /// Map both the return value and final state of a computation using the given function.
     let inline mapState f (State st) : State< ^s, ^``s**``, ^b> =
@@ -32,7 +29,7 @@ module State =
     let inline withState f (State st) : State< ^s, ^``s*``,  ^a> = State ((f: ^s -> ^s0) >> st)
 
     /// Retrieves the current state.
-    let inline get<'s> : State< ^s, ^s, ^s> = State (fun s -> s, s)
+    let get<'s> : State<'s, 's, 's> = State (fun s -> s, s)
 
     /// Replace the state inside the computation.
     let inline put (s: ^s) = State (fun (_: ^``_``) -> s, ())
@@ -41,7 +38,7 @@ module State =
     let inline modify f : State< ^s, ^``s*``, unit> = State (fun s -> f s, ())
 
     /// Store computed results to prevent recomputation on the same inputs.
-    let inline cacheState (State st) : State< ^s, ^``s*``, ^a> =
+    let cacheState (State st) : State<'s, '``s*``, 'a> =
         let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
         State (fun s -> match d.TryGetValue(s) with
                         | true, r -> r
@@ -95,37 +92,6 @@ module State =
                                         s.Delay(fun () -> body enum.Current)))
 
 
-            /// Composes two monadic functions together.
-            /// Acts as the composition function in the Kleisli category.
-            let inline composeM k2 (k1: ^a -> State< ^s, ^``s*``, ^b>) : ^a -> State< ^s, ^``s**``, ^c> =
-                k1 >> bind k2
-  
-            /// Sequentially compose three actions, passing any value produced by the first
-            /// two as arguments to the third.
-            let inline bind2 k (State sa) (State sb) : State< ^s0, ^``s3``, ^c> =
-                State (fun (s: ^s0) ->
-                    match sa s  with
-                    | s, a -> match sb (s: ^``s1``) with
-                              | s, b -> match k a b with State sr -> sr (s: ^``s2``))
-
-            /// Sequentially compose four actions, passing any value produced by the
-            /// first two as arguments to the third.
-            let inline bind3 (k: ^a -> ^b -> ^c -> State< ^s3, ^s4, ^d>) (State sa) (State sb) (State sc) =
-                State (fun s ->
-                    match sa (s: ^s0)  with
-                    | s, a -> match sb (s: ^s1) with
-                              | s, b -> match sc (s: ^s2) with
-                                        | s, c -> match k a b c with State sr -> sr (s: ^s3))
-
-            /// Sequentially compose two actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline bindMap (k: ^a -> State< ^s1, ^s2, ^b>) (f: ^a -> ^b -> ^c) (State sa) =
-                State (fun (s: ^s0) ->
-                    match sa s with
-                    | s, a -> match k a with
-                              | State sb -> match sb (s: ^s1) with
-                                            | s, b -> s, f a b)
-
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
@@ -142,32 +108,15 @@ module State =
             /// <exception cref="System.ArgumentNullException">
             /// Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s0 -> State< ^s, ^s, ^s0>) (s0: ^s0) (source: ^a seq) : State< ^s, ^s, ^s0> =
-                let inline g k x s = bind k (f x s)
+                let g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">
             /// Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s0 -> ^a -> State< ^s, ^s, ^s0>) (s0: ^s0) (source: ^a seq) : State< ^s, ^s, ^s0> =
-                let inline g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0
-
-
-            /// Monadic zipping (combining or decomposing corresponding monadic elements).
-            module Zip =
-            
-                /// Combine the corresponding contents of two monads into a single monad.
-                let inline mzipWith (f: ^a -> ^b -> ^c) ma (mb: State< ^s1, ^s2, ^b>) : State< ^s0, ^s2, ^c> =
-                    bind2 (fun a b -> wrap (f a b)) ma mb
-
-                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-                let inline mzip ma (mb: State< ^s1, ^s2, ^b>) : State< ^s0, ^s2, ^a * ^b> =
-                    mzipWith (fun a b -> a, b) ma mb
-                    
-                /// Decompose a monad comprised of corresponding pairs of values.
-                let inline munzip (State st) : State< ^s, ^``s*``, ^a> * State< ^s, ^``s*``, ^b> =
-                    State (fun s -> match st s with s, (a, _) -> s, a),
-                    State (fun s -> match st s with s, (_, b) -> s, b)
+                let g x k s = bind k (f s x)
+                Seq.foldBack (fun x k s -> bind k (f s x)) source wrap s0
 
 
         /// Supplementary Applicative operations on the given type.
@@ -247,12 +196,11 @@ module State =
                 : State< ^s, ^s, ^c seq> = sequenceA (Seq.map2 f source1 source2)
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) (State f) : State< ^s, ^s, ^a seq> =
+            let inline replicateA n (State f) : State< ^s, ^s, ^a seq> =
                 State (fun s0 ->
                     let mutable st = s0
-                    let xs = seq { for i = 1u to n do
-                                    match f st with
-                                    | s, a -> st <- s; yield a } |> Seq.cache
+                    let xs = Seq.cache (seq { for i = 1 to max 0 n do
+                                                match f st with s, a -> st <- s; yield a })
                     for _ in xs do ()
                     st, xs)
 
@@ -265,16 +213,14 @@ module State =
                 State (fun s -> match st s with s, a -> s, f a)
 
             /// Replace all locations in the input with the same value.
-            let inline replace b (State sa) : State< ^s, ^``s*``, ^b> =
+            let replace (b: 'b) (State sa) : State<'s, '``s*``, 'b> =
                 State (fun s -> match sa s with s, _ -> s, b)
 
             /// Perform an operation, store its result, perform an action using both
             /// the input and output, and finally return the output.
             let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) (State st) : State< ^s, ^``s*``, ^b> =
                 State (fun s -> match st s with
-                                | s, a -> let b = f a
-                                          g a b
-                                          s, b)
+                                | s, a -> let b = f a in g a b; s, b)
 
 
         /// A two paramater functor where both the first and second arguments are covariant.
@@ -341,14 +287,14 @@ type State<'s, '``s*``, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = Functor.map f fa
+    static member inline ( |%> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = Functor.map f fa
+    static member inline ( <%| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 

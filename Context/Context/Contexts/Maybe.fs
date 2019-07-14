@@ -26,10 +26,22 @@ module Maybe =
         | Nothing -> def
         | Just a  -> f a
 
+    /// Takes a default value, a function, and a Maybe value.
+    /// If the Maybe value is Nothing, the function returns the default value.
+    /// Otherwise, it applies the function to the value inside the Just and returns the result.
+    let inline ofMaybeWith def f maybe : ^b =
+        match maybe with
+        | Nothing -> def ()
+        | Just a  -> f a
+
     /// Return the contents of a Just-value or a default value otherwise.
     let inline fromMaybe def maybe =
         match maybe with Nothing -> def | Just a -> a
     
+    /// Return the contents of a Just-value or a default value otherwise.
+    let inline fromMaybeWith def maybe =
+        match maybe with Nothing -> def () | Just a -> a
+
     /// <summary>The catMaybes function takes a sequence of Maybes and returns a list of all the Just values.</summary>
     /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
     let inline catMaybes maybes =
@@ -123,38 +135,7 @@ module Maybe =
                     s.Using(seq.GetEnumerator(),
                         fun enum -> s.While(enum.MoveNext,
                                         s.Delay(fun () -> body enum.Current)))
-
-
-            /// Composes two monadic functions together.
-            /// Acts as the composition function in the Kleisli category.
-            let inline composeM k2 (k1: ^a -> Maybe< ^b>) : ^a -> Maybe< ^c> = k1 >> bind k2
-  
-            /// Sequentially compose three actions, passing any value produced by the first
-            /// two as arguments to the third.
-            let inline bind2 (k: ^a -> ^b -> Maybe< ^c>) ma mb =
-                match ma with
-                | Nothing -> Nothing
-                | Just a  -> match mb with
-                             | Nothing -> Nothing
-                             | Just  b -> k a b
-
-            /// Sequentially compose four actions, passing any value produced by the
-            /// first two as arguments to the third.
-            let inline bind3 (k: ^a -> ^b -> ^c -> Maybe< ^d>) ma mb mc =
-                match ma with
-                | Nothing -> Nothing
-                | Just a  -> match mb with
-                             | Nothing -> Nothing
-                             | Just  b -> match mc with
-                                          | Nothing -> Nothing
-                                          | Just  c -> k a b c
-
-            /// Sequentially compose two actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline bindMap (k: ^a -> Maybe< ^b>) (f: ^a -> ^b -> ^c) m =
-                match m with
-                | Nothing -> Nothing
-                | Just a  -> match k a with Nothing -> Nothing | Just b -> Just (f a b)
+            
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
@@ -174,15 +155,22 @@ module Maybe =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s -> Maybe< ^s>) s0 source : Maybe< ^s> =
-                let inline g k x s = bind k (f x s)
+                let g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline foldlM (f: ^s -> ^a -> Maybe< ^s>) s0 source : Maybe< ^s> =
-                let inline g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0        
-        
+            let inline foldlM (f: ^s -> ^a -> Maybe< ^s>) s0 (source: ^a seq) : Maybe< ^s> =
+                //let g x k s = bind k (f s x)
+                //Seq.foldBack (fun x k s -> bind k (f s x)) source wrap s0        
+                let mutable s = s0
+                let mutable fl = true
+                use e = source.GetEnumerator()
+                while fl && e.MoveNext() do
+                    match f s e.Current with
+                    | Nothing -> fl <- false
+                    | Just s' -> s <- s'
+                if fl then Just s else Nothing
 
             /// Monads that also support choice and failure.
             module Plus =
@@ -301,33 +289,7 @@ module Maybe =
                         match m with
                         | Nothing -> Nothing, Nothing
                         | Just (Choice1Of2 a) -> Just a, Nothing
-                        | Just (Choice2Of2 b) -> Nothing, Just b
-
-
-            /// Monadic zipping (combining or decomposing corresponding monadic elements).
-            module Zip =
-            
-                /// Combine the corresponding contents of two monads into a single monad.
-                let inline mzipWith f ma mb : Maybe< ^c> =
-                    match ma with
-                    | Nothing -> Nothing
-                    | Just a  -> match mb with
-                                 | Nothing -> Nothing
-                                 | Just  b -> Just (f a b)
-
-                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-                let inline mzip ma mb : Maybe< ^a * ^b> =
-                    match ma with
-                    | Nothing -> Nothing
-                    | Just a  -> match mb with
-                                 | Nothing -> Nothing
-                                 | Just  b -> Just (a, b)
-                    
-                /// Decompose a monad comprised of corresponding pairs of values.
-                let inline munzip (m: Maybe< ^a * ^b>) =
-                    match m with
-                    | Nothing     -> Nothing, Nothing
-                    | Just (a, b) -> (Just a), (Just b)        
+                        | Just (Choice2Of2 b) -> Nothing, Just b        
 
 
         /// Supplementary Applicative operations on the given type.
@@ -407,17 +369,17 @@ module Maybe =
                 sequenceA (Seq.map2 f source1 source2)
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) m : Maybe< ^a seq> =
+            let inline replicateA n m : Maybe< ^a seq> =
                 match m with
                 | Nothing -> Nothing
-                | Just a  -> Just (Seq.replicate (int n) a)
+                | Just a  -> Just (Seq.replicate (max 0 n) a)
 
 
             /// A monoid on applicative functors.
             module Alternative =
 
                 /// The identity of orElse.
-                let inline empty<'a> : Maybe< ^a> = Nothing
+                let empty<'a> : Maybe< ^a> = Nothing
 
                 /// An associative binary operation on applicative functors.
                 let inline orElse choice2 choice1 = 
@@ -451,9 +413,9 @@ module Maybe =
             /// Lift a function onto effects.
             let inline map f m : Maybe< ^b> =
                 match m with Nothing -> Nothing | Just a -> Just (f a)
-            
+
             /// Replace all locations in the input with the same value.
-            let inline replace b fa : Maybe< ^b> =
+            let replace (b: 'b) fa : Maybe<'b> =
                 match fa with Nothing -> Nothing | Just _ -> Just b
 
             /// Perform an operation, store its result, perform an action using both
@@ -483,17 +445,18 @@ module Maybe =
             let inline mappend e1 e2 = Semigroup.sappend e1 e2
 
             /// The identity element for the composition operator.
-            let inline mempty<'a> : Maybe< ^a> = Nothing
+            let mempty<'a> : Maybe< ^a> = Nothing
 
             /// Repeat a value 'n' times.
-            let inline mtimes (n: uint32) e =            
+            let inline mtimes n e =
                 match e with
                 | Nothing -> Nothing
                 | Just a  ->
-                    if n = 0u then Nothing
-                    else let mutable r : ^a = a
-                         for i = 1 to int n do r <- (^a: (static member Append: ^a -> ^a -> ^a) (a, r))
-                         Just r
+                    match max 0 n with
+                    | 0 -> Nothing
+                    | n -> let mutable r : ^a = a
+                           for __ = 1 to n do r <- (^a: (static member Append: ^a -> ^a -> ^a) (a, r))
+                           Just r
 
             /// <summary>Combine elements of a sequence using monoidal composition.</summary>
             /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
@@ -548,14 +511,14 @@ type Maybe<'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (m, f) = Functor.map f m
+    static member inline ( |%> ) (m, f) = Functor.map f m
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, m) = Functor.map f m
+    static member inline ( <%| ) (f, m) = Functor.map f m
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 

@@ -10,25 +10,22 @@ type Reader<'env, 'result> = Reader of (^env -> ^result)
 module Reader =
   
     /// Runs a Reader and extracts the final value from it.
-    let inline runReader (env: ^e) (Reader r) : ^a = r env
-
-    /// Runs a Reader and extracts the final value from it.
-    let inline runReader' (Reader r) : ^e -> ^a = r
+    let runReader (env: 'e) (Reader r) : 'r = r env
 
     /// Transform the value returned by a Reader.
-    let inline mapReader f (Reader r) : Reader< ^e, ^b> = Reader (r >> f)
+    let inline mapReader f (Reader r) : Reader< ^e, ^b> = Reader (fun e -> f (r e))
 
     /// Execute a computation in a modified environment.
-    let inline withReader (f: ^e -> ^e0) (Reader r) : Reader< ^e, ^a> = Reader (f >> r)
+    let inline withReader (f: ^e -> ^e0) (Reader r) : Reader< ^e, ^a> = Reader (fun e -> r (f e))
 
     /// Retrieves the current environment.
-    let inline ask<'e> : Reader< ^e, ^e> = Reader id
+    let ask<'e> : Reader<'e, 'e> = Reader id
 
     /// Executes a computation in a modified environment.
-    let inline local (f: ^e -> ^e) (Reader r) = Reader (f >> r)   
+    let inline local (f: ^e -> ^e) (Reader r) = Reader (fun e -> r (f e))
 
     /// Store computed results to prevent recomputation on the same inputs.
-    let inline cacheReader (Reader f) : Reader< ^e, ^a> =
+    let cacheReader (Reader f) : Reader<'e, 'a> =
         let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
         Reader (fun e -> match d.TryGetValue(e) with
                          | true, r -> r
@@ -38,10 +35,10 @@ module Reader =
     let inline flip f = Reader (fun a b -> f b a)
 
     /// 'const' function -- returns the first argument given and ignores the rest.
-    let inline konst x = Reader (fun (_: ^``_``) -> x)
+    let konst x = Reader (fun (_: '``_``) -> x)
 
     /// 'const' function -- returns the first argument given and ignores the rest.
-    let inline konst1<'a, '``_``> : Reader< ^a, (^``_`` -> ^a)> = Reader (fun (x: ^a) (_: ^``_``) -> x)
+    let konst1<'a, '``_``> : Reader< ^a, (^``_`` -> ^a)> = Reader (fun (x: ^a) (_: ^``_``) -> x)
 
     /// Convert a function on a 2-tuple to a 2-arity, curried function.
     let inline curry f = Reader (fun a b -> f (a, b))
@@ -98,25 +95,6 @@ module Reader =
                                         s.Delay(fun () -> body enum.Current)))
 
 
-            /// Composes two monadic functions together.
-            /// Acts as the composition function in the Kleisli category.
-            let inline composeM k2 (k1: ^a -> Reader< ^e, ^b>) : ^a -> Reader< ^e, ^c> = k1 >> bind k2
-  
-            /// Sequentially compose three actions, passing any value produced by the first
-            /// two as arguments to the third.
-            let inline bind2 (k: ^a -> ^b -> Reader< ^e, ^c>) (Reader ra) (Reader rb) =
-                Reader (fun e -> match k (ra e) (rb e) with Reader r -> r e)
-
-            /// Sequentially compose four actions, passing any value produced by the
-            /// first two as arguments to the third.
-            let inline bind3 (k: ^a -> ^b -> ^c -> Reader< ^e, ^d>) (Reader ra) (Reader rb) (Reader rc) =
-                Reader (fun e -> match k (ra e) (rb e) (rc e) with Reader r -> r e)
-
-            /// Sequentially compose two actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline bindMap (k: ^a -> Reader< ^e, ^b>) (f: ^a -> ^b -> ^c) (Reader ra) =
-                Reader (fun e -> let a = ra e in match k a with Reader r -> f a (r e))
-
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
@@ -132,30 +110,14 @@ module Reader =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^s -> Reader< ^e, ^s>) (s0: ^s) (source: ^a seq) : Reader< ^e, ^s> =
-                let inline g k x s = bind k (f x s)
+                let g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s -> ^a -> Reader< ^e, ^s>) (s0: ^s) (source: ^a seq) : Reader< ^e, ^s> =
-                let inline g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0        
-
-
-            /// Monadic zipping (combining or decomposing corresponding monadic elements).
-            module Zip =
-            
-                /// Combine the corresponding contents of two monads into a single monad.
-                let inline mzipWith (f: ^a -> ^b -> ^c) (Reader ra) (Reader rb) : Reader< ^e, ^c> =
-                    Reader (fun e -> f (ra e) (rb e))
-
-                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-                let inline mzip (Reader ra) (Reader rb) : Reader< ^e, ^a * ^b> =
-                    Reader (fun e -> ra e, rb e)
-                    
-                /// Decompose a monad comprised of corresponding pairs of values.
-                let inline munzip (Reader r) : Reader< ^e, ^a> * Reader< ^e, ^b> =
-                    Reader (r >> fst), Reader (r >> snd)    
+                let g x k s = bind k (f s x)
+                Seq.foldBack g source wrap s0  
 
 
         /// Supplementary Applicative operations on the given type.
@@ -217,18 +179,19 @@ module Reader =
                 sequenceA (Seq.map2 f source1 source2)
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) (Reader r) : Reader< ^e, ^a seq> =
-                Reader (r >> Seq.replicate (int n))
+            let inline replicateA n (Reader r) : Reader< ^e, ^a seq> =
+                Reader (r >> Seq.replicate (max 0 n))
 
 
         /// Supplementary Functor operations on the given type.
         module Functor =
 
             /// Lift a function onto effects.
-            let inline map (f: ^a -> ^b) (Reader r) : Reader< ^e, ^b> = Reader (r >> f)
+            let inline map (f: ^a -> ^b) (Reader r) : Reader< ^e, ^b> =
+                Reader (fun e -> f (r e))
 
             /// Replace all locations in the input with the same value.
-            let inline replace (b: ^b) (Reader r) : Reader< ^e, ^b> = Reader (fun e -> ignore (r e); b)
+            let replace (b: 'b) (Reader r) : Reader<'e, 'b> = Reader (fun e -> ignore (r e); b)
 
             /// Perform an operation, store its result, perform an action using both
             /// the input and output, and finally return the output.
@@ -244,10 +207,10 @@ module Reader =
                 Reader (f >> r >> g)
 
             /// Map the first argument contravariantly.
-            let inline lmap (f: ^e -> ^e0) (Reader r) : Reader< ^e, ^a> = Reader (f >> r)
+            let inline lmap (f: ^e -> ^e0) (Reader r) : Reader< ^e, ^a> = Reader (fun e -> r (f e))
 
             /// Map the second argument covariantly.
-            let inline rmap f (Reader r) : Reader< ^e, ^a> = Reader (r >> f)
+            let inline rmap f (Reader r) : Reader< ^e, ^a> = Reader (fun e -> f (r e))
 
 
         /// Adjunction to the given functor.
@@ -284,7 +247,7 @@ module Reader =
         module Cat =
 
             /// Identity element of a category.
-            let inline identity<'a> : Reader< ^a, ^a> = Reader id
+            let identity<'a> : Reader<'a, 'a> = Reader id
 
             /// Compose two members of a category together.
             let inline compose (Reader rb) (Reader ra) = Reader (ra >> rb)
@@ -350,7 +313,7 @@ module Reader =
             module Apply =
 
                 /// Arrow that allows application of arrow inputs to other inputs.
-                let inline app<'a, 'b> : Reader<Reader< ^a, ^b> * ^a, ^b> =
+                let app<'a, 'b> : Reader<Reader< ^a, ^b> * ^a, ^b> =
                     Reader (fun ((Reader f), b) -> f b)
 
 
@@ -394,14 +357,14 @@ type Reader<'e, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = Functor.map f fa
+    static member inline ( |%> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = Functor.map f fa
+    static member inline ( <%| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 
@@ -414,9 +377,9 @@ type Reader<'e, 'a> with
 // @ Cat @
 
     /// Compose two members of a category together.
-    static member inline ( >>> ) (ca, cb) = Cat.compose cb ca
+    static member inline ( >>. ) (ca, cb) = Cat.compose cb ca
     /// Compose two members of a category together.
-    static member inline ( <<< ) (cb, ca) = Cat.compose cb ca
+    static member inline ( <<. ) (cb, ca) = Cat.compose cb ca
 
     /// Identity of the category.
     static member inline Id () : Reader< ^a, ^a> = Cat.identity
@@ -424,15 +387,15 @@ type Reader<'e, 'a> with
 // @ Arrow @
 
     /// Split the input between the two argument arrows and combine their output.
-    static member inline ( *** ) (aa, ab) = Arrow.split ab aa
+    static member inline ( *^* ) (aa, ab) = Arrow.split ab aa
 
     /// Fanout: send the input to both argument arrows and combine their output.
-    static member inline ( &&& ) (aa, ab) = Arrow.fanout ab aa
+    static member inline ( &^& ) (aa, ab) = Arrow.fanout ab aa
 
 // @ Arrow.Choice @
 
     /// Split the input between the two argument arrows, retagging and merging their outputs.
-    static member inline ( +++ ) (aa, ab) = Arrow.Choice.merge ab aa
+    static member inline ( +^+ ) (aa, ab) = Arrow.Choice.merge ab aa
 
     /// Split the input between the two argument arrows and merge their outputs.
-    static member inline ( ||| ) (aa, ab) = Arrow.Choice.fanin ab aa
+    static member inline ( |^| ) (aa, ab) = Arrow.Choice.fanin ab aa

@@ -12,19 +12,16 @@ type RWS<'env, 'state, '``state*``, 'log, 'value> =
 module RWS =
 
     /// Unwrap an RWS computation as a function.
-    let inline runRWS (e: ^e) (s: ^s) (RWS r) : ^``s*`` * ^w * ^a =
+    let runRWS (e: 'e) (s: 's) (RWS r) : '``s*`` * 'w * 'a =
         match r e s with s, w, a -> s, w, a
-
-    /// Unwrap an RWS computation as a function.
-    let inline runRWS' (RWS f) : ^e -> ^s -> ^``s*`` * ^l * ^a = f
 
     /// Evaluate a computation with the given initial state and environment,
     /// returning the final value and output, discarding the final state.
-    let inline evalRWS (e: ^e) (s: ^s) (RWS r) : ^w * ^a  = match r e s with (_, w, a) -> w, a
+    let evalRWS (e: 'e) (s: 's) (RWS r) : 'w * 'a  = match r e s with (_, w, a) -> w, a
 
     /// Evaluate a computation with the given initial state and environment,
     /// returning the final state and output, discarding the final value.
-    let inline execRWS (e: ^e) (s: ^s) (RWS r) : ^``s*`` * ^w = match r e s with (s, w, _) -> s, w
+    let execRWS (e: 'e) (s: 's) (RWS r) : '``s*`` * 'w = match r e s with (s, w, _) -> s, w
 
     /// Map the return value, final state, and output of a computation using the given function.
     let inline mapRWS (f: ^``s*`` -> ^w0 -> ^a0 -> ^``s**`` * ^w * ^a) (RWS r) =
@@ -35,7 +32,7 @@ module RWS =
         RWS (fun e s -> match f e s with e', s' -> r e' s')
 
     /// Cache the results of a 'RWS' computation.
-    let inline cacheRWS (RWS r) : RWS< ^e, ^s, ^``s*``, ^w, ^a> =
+    let cacheRWS (RWS r) : RWS<'e, 's, '``s*``, 'w, 'a> =
         let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
         RWS (fun e s -> let p = (e, s)
                         match d.TryGetValue(p) with
@@ -64,7 +61,12 @@ module RWS =
                                  s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w')), b)
             
             /// Removes one layer of monadic context from a nested monad.
-            let inline flatten mm = bind id mm
+            let inline flatten (RWS rr) = RWS (fun e s ->
+                match rr e (s: ^s0) with
+                | (s: ^s1, w, (RWS r)) ->
+                    match r e s with
+                    | (s: ^``s2``, w', b) ->
+                        s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w')), b)
 
 
             /// Monadic computation builder specialised to the given monad.
@@ -96,31 +98,6 @@ module RWS =
                                         s.Delay(fun () -> body enum.Current)))
 
 
-            /// Composes two monadic functions together.
-            /// Acts as the composition function in the Kleisli category.
-            let inline composeM k2 k1 : ^a -> RWS< ^e, ^s, ^``s**``, ^w, ^c> =
-                k1 >> bind k2
-  
-            /// Sequentially compose three actions, passing any value produced by the first
-            /// two as arguments to the third.
-            let inline bind2 (k: ^a -> ^b -> RWS< ^e, ^s2, ^s3, ^w, ^c>)
-                (ma: RWS< ^e, ^s0, ^s1, ^w, ^a>)
-                (mb: RWS< ^e, ^s1, ^s2, ^w, ^b>) =
-                bind (fun a -> bind (k a) mb) ma
-
-            /// Sequentially compose four actions, passing any value produced by the
-            /// first two as arguments to the third.
-            let inline bind3 (k: ^a -> ^b -> ^c -> RWS< ^e, ^s3, ^s4, ^w, ^c>)
-                (ma: RWS< ^e, ^s0, ^s1, ^w, ^a>)
-                (mb: RWS< ^e, ^s1, ^s2, ^w, ^b>)
-                (mc: RWS< ^e, ^s2, ^s3, ^w, ^c>) =
-                bind2 (fun a b -> bind (k a b) mc) ma mb
-
-            /// Sequentially compose two actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline bindMap (k: ^a -> RWS< ^e, ^s1, ^s2, ^w, ^b>) (f: ^a -> ^b -> ^c) m : RWS< ^e, ^s0, ^s2, ^w, ^c> =
-                bind (fun a -> bind (f a >> wrap) (k a)) m
-
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
@@ -137,39 +114,15 @@ module RWS =
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^a -> ^z -> RWS< ^e, ^s, ^s, ^w, ^z>) (s0: ^z) (source: ^a seq)
                 : RWS< ^e, ^s, ^s, ^w, ^z> =
-                let inline g k x s = bind k (f x s)
+                let g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^z -> ^a -> RWS< ^e, ^s, ^s, ^w, ^z>) (s0: ^z) (source: ^a seq)
                 : RWS< ^e, ^s, ^s, ^w, ^z> =
-                let inline g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0        
-
-
-            /// Monadic zipping (combining or decomposing corresponding monadic elements).
-            module Zip =
-            
-                /// Combine the corresponding contents of two monads into a single monad.
-                let inline mzipWith f (RWS ra) (RWS rb) : RWS< ^e, ^s, ^``s**``, ^w, ^c> = RWS (fun e s ->
-                    match ra e s with
-                    | s, w, a ->
-                        match rb e (s: ^``s*``) with
-                        | s, w1, b ->
-                            s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w1)), f a b)
-
-                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-                let inline mzip (RWS ra) (RWS rb) : RWS< ^e, ^s, ^``s**``, ^w, ^a * ^b> = RWS (fun e s ->
-                    match ra e s with
-                    | s, w, a ->
-                        match rb e (s: ^``s*``) with
-                        | s, w1, b -> s, (^w: (static member Append: ^w -> ^w -> ^w) (w, w1)), (a, b))
-                    
-                /// Decompose a monad comprised of corresponding pairs of values.
-                let inline munzip (RWS rs) : RWS< ^e, ^s, ^``s*``, ^w, ^a> * RWS< ^e, ^s, ^``s*``, ^w, ^b> =
-                    RWS (fun e s -> match rs e s with s, w, (a, _) -> s, w, a),
-                    RWS (fun e s -> match rs e s with s, w, (_, b) -> s, w, b)
+                let g x k s = bind k (f s x)
+                Seq.foldBack g source wrap s0
 
 
         /// Supplementary Applicative operations on the given type.
@@ -215,7 +168,7 @@ module RWS =
             /// <summary>Generalizes the sequence-based filter function.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline filterA (p: ^a -> RWS< ^e, ^s, ^s, ^w, bool>) source =    
-                Seq.foldBack (fun x xs -> map2 (fun flg xs -> if flg then x::xs else xs) (p x) xs) source (wrap [])
+                Seq.foldBack (fun x -> map2 (fun flg xs -> if flg then x::xs else xs) (p x)) source (wrap [])
 
             /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -242,8 +195,8 @@ module RWS =
                 sequenceA (Seq.map2 f source1 source2)
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) m : RWS< ^e, ^s, ^s, ^w, ^a list> =
-                sequenceA (Seq.replicate (int n) m)
+            let inline replicateA n m : RWS< ^e, ^s, ^s, ^w, ^a list> =
+                sequenceA (Seq.replicate (max 0 n) m)
 
 
         /// Supplementary Functor operations on the given type.
@@ -254,13 +207,14 @@ module RWS =
                 RWS (fun e s -> match r e s with (s, w, a) -> s, w, f a)
 
             /// Replace all locations in the input with the same value.
-            let inline replace b (RWS r) : RWS< ^e, ^s, ^``s*``, ^w, ^b> =
+            let replace (b: 'b) (RWS r) : RWS<'e, 's, '``s*``, 'w, 'b> =
                 RWS (fun e s -> match r e s with s, w, _ -> s, w, b)
 
             /// Perform an operation, store its result, perform an action using both
             /// the input and output, and finally return the output.
-            let inline tee f (g: ^a -> ^b -> unit) fa : RWS< ^e, ^s, ^``s*``, ^w, ^b> =
-                map (fun a -> let b = f a in g a b; b) fa
+            let inline tee f (g: ^a -> ^b -> unit) (RWS rs) : RWS< ^e, ^s, ^``s*``, ^w, ^b> =
+                RWS (fun e s -> match rs e s with
+                                | s, w, a -> let b = f a in g a b; s, w, b)
 
 
         /// A three paramater functor where the first, second, and third arguments are covariant.
@@ -341,14 +295,14 @@ type RWS<'e, 's, '``s*``, 'w, 'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = Functor.map f fa
+    static member inline ( |%> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = Functor.map f fa
+    static member inline ( <%| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 

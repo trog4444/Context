@@ -13,6 +13,9 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Release\netcoreapp2.2\Context.XML</DocumentationFile>
+    <WarningLevel>1</WarningLevel>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -31,7 +34,7 @@
     <Compile Include="Contexts\Lens.fs" />
     <Compile Include="Contexts\Maybe.fs" />
     <Compile Include="Contexts\NonEmpty.fs" />
-    <Compile Include="Contexts\Proxy.fs" />
+    <Compile Include="Contexts\_Proxy_.fs" />
     <Compile Include="Contexts\Reader.fs" />
     <Compile Include="Contexts\RWS.fs" />
     <Compile Include="Contexts\State.fs" />

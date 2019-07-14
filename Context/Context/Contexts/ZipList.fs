@@ -26,40 +26,40 @@ module ZipList =
     open Pattern
 
     /// Create a `ZipList` from a sequence.
-    let inline fromSeq (xs: #seq<_>) = ZipList<_>.OfSeq xs
+    let fromSeq (xs: #seq<_>) = ZipList<_>.OfSeq xs
 
     /// Initialize a `ZipList` of length `count`.
-    let inline init (count: uint32) initializer =
-        ZipList<_>.OfSeq (seq { for i = 1u to count do yield initializer i })
+    let inline init (count: int) initializer =
+        ZipList<_>.OfSeq (seq { for i = 1 to max 0 count do yield initializer i })
 
     /// Initialize a `ZipList` of length `count` using a state-transforming function.
-    let inline initWith (count: uint32) (state: 's) initializer =
+    let inline initWith (count: int) (initialState: ^s) initializer =
         ZipList<_>.OfSeq
-            (seq { let mutable s0 = state
-                   for i = 1u to count do
+            (seq { let mutable s0 = initialState
+                   for i = 1 to max 0 count do
                        let (s, x) = initializer i s0
                        s0 <- s
                        yield x })
 
     /// Initialize a `ZipList` of length `coutn`.
-    let inline initLong (count: uint64) initializer =
-        ZipList<_>.OfSeq (seq { for i = 1UL to count do yield initializer i })
+    let inline initLong (count: int64) initializer =
+        ZipList<_>.OfSeq (seq { for i = 1L to max 0L count do yield initializer i })
 
     /// Create a `ZipList` using the given generator function.
     let inline unfold generator seed = ZipList<_>.OfSeq (Seq.unfold generator seed)
 
     /// Take up to `n` items from a `ZipList`. If `n` exceeds the length of the sequence
     /// then the entire sequence is returned.
-    let inline take (count: uint32) (ZipList xs) = Seq.truncate (int count) xs
+    let take (count: int) (ZipList xs) = Seq.truncate (max 0 count) xs
 
     /// Take elements from a `ZipList` until the given predicate returns false.
     let inline takeWhile predicate (ZipList xs) = Seq.takeWhile predicate xs
 
     /// Returns true if the sequence is empty; false otherwise.
-    let inline isEmpty (ZipList xs) = Seq.isEmpty xs
+    let isEmpty (ZipList xs) = Seq.isEmpty xs
 
     /// Caches the inner sequence.
-    let inline cacheZipList (ZipList xs) = ZipList<_>.OfSeq (Seq.cache xs)
+    let cacheZipList (ZipList xs) = ZipList<_>.OfSeq (Seq.cache xs)
 
 
     /// Compositional operations on `ZipList` values.
@@ -110,15 +110,15 @@ module ZipList =
             let inline zipWithA f source1 source2 = sequenceA (Seq.map2 f source1 source2)
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) (ZipList xs) =
-                ZipList<_>.OfSeq (Seq.replicate (int n) xs)
+            let inline replicateA n (ZipList xs) =
+                ZipList<_>.OfSeq (Seq.replicate (max 0 n) xs)
 
 
             /// A monoid on applicative functors.
             module Alternative =
 
                 /// The identity of orElse.
-                let inline empty<'a> : ZipList< ^a> = ZipList<_>.OfSeq Seq.empty
+                let empty<'a> : ZipList< ^a> = ZipList<_>.OfSeq Seq.empty
 
                 /// An associative binary operation on applicative functors.
                 let inline orElse choice2 choice1 = 
@@ -146,15 +146,16 @@ module ZipList =
         module Functor =
 
             /// Lift a function onto effects.
-            let inline map f (ZipList xs) = ZipList<_>.OfSeq (Seq.map f xs) 
+            let inline map f (ZipList xs) = ZipList<_>.OfSeq (Seq.map f xs)
 
             /// Replace all locations in the input with the same value.
-            let inline replace b fa = map (fun _ -> b) fa
+            let replace (b: 'b) (ZipList xs) =
+                ZipList<_>.OfSeq (Seq.map (fun _ -> b) xs)
 
             /// Perform an operation, store its result, perform an action using both
             /// the input and output, and finally return the output.
-            let inline tee f g fa =
-                map (fun a -> let b = f a in g a b; b) fa
+            let inline tee f g (ZipList xs) =
+                ZipList<_>.OfSeq (Seq.map (fun a -> let b = f a in g a b; b) xs)
 
 
         /// Types with a binary, associative composition operation.
@@ -172,15 +173,15 @@ module ZipList =
             let inline mappend e1 e2 = Semigroup.sappend e1 e2
 
             /// The identity element for the composition operator.
-            let inline mempty<'a> : ZipList< ^a> = Applicative.Alternative.empty
+            let mempty<'a> : ZipList<'a> = ZL Seq.empty
 
             /// Repeat a value 'n' times.
-            let inline mtimes (n: uint32) e =
+            let inline mtimes (n: int) e =
                 let rec go acc = function
-                | 0u -> mempty
-                | 1u -> acc
-                | n  -> go (Semigroup.sappend e acc) (n - 1u)
-                go e n
+                | 0 -> mempty
+                | 1 -> acc
+                | n  -> go (Semigroup.sappend e acc) (n - 1)
+                go e (max 0 n)
         
             /// <summary>Combine elements of a sequence using monoidal composition.</summary>
             /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
@@ -232,14 +233,14 @@ type ZipList<'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (m, f) = Functor.map f m
+    static member inline ( |%> ) (m, f) = Functor.map f m
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, m) = Functor.map f m
+    static member inline ( <%| ) (f, m) = Functor.map f m
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 

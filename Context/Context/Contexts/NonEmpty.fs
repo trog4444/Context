@@ -3,7 +3,7 @@
 
 /// List constructor used in the `NonEmpty` sequence type.
 [<Struct; NoComparison; NoEquality>]
-type UnitList<'a> = Nil | Cons of (unit -> NonEmpty< ^a>)
+type UnitList<'a> = ULNil | ULCons of (unit -> NonEmpty< ^a>)
 
 
 /// Represents a sequence that has at least one element.
@@ -13,8 +13,8 @@ with interface System.Collections.Generic.IEnumerable< ^a> with
             let rec go t = seq {
                 yield t.Head
                 match t.Tail with
-                | Nil -> ()
-                | Cons t -> yield! go (t ()) } in (go s).GetEnumerator()
+                | ULNil -> ()
+                | ULCons t -> yield! go (t ()) } in (go s).GetEnumerator()
         override s.GetEnumerator() = (s :> _ seq).GetEnumerator() :> System.Collections.IEnumerator
 
 
@@ -27,8 +27,8 @@ module NonEmpty =
         /// Returns either the Head or Head/Tail pair of a `NonEmpty` sequence.
         let inline ( |Head|Cons| ) (nel: NonEmpty< ^a>) =
             match nel.Tail with
-            | Nil    -> Head nel.Head
-            | Cons t -> Cons (struct (nel.Head, t))
+            | ULNil    -> Head nel.Head
+            | ULCons t -> Cons (struct (nel.Head, t))
 
 
     open Pattern    
@@ -36,31 +36,38 @@ module NonEmpty =
     /// Convert a sequence into a `NonEmpty` collection.
     let inline fromSeq head (tail: ^a seq) : NonEmpty< ^a> =
         match tail with
-        | null -> { Head = head ; Tail = Nil }
+        | null -> { NonEmpty.Head = head ; Tail = ULNil }
         | _ -> Seq.foldBack
-                (fun x s -> { s with Tail = Cons (fun () -> { s with Head = x })})
+                (fun x s -> { s with Tail = ULCons (fun () -> { s with Head = x })})
                 tail
-                { Head = head ; Tail = Nil }
+                { NonEmpty.Head = head ; Tail = ULNil }
+
+    /// Map a function across the elements of a `NonEmpty` sequence.
+    let inline mapNonEmpty (f: ^a -> ^b) (fa: NonEmpty< ^a>) : NonEmpty< ^b> =
+        let rec go = function
+        | Head a -> { NonEmpty.Head = f a ; Tail = ULNil }
+        | Cons (a, t) -> { NonEmpty.Head = f a ; Tail = ULCons (fun () -> go (t ())) }
+        go fa
 
     /// Create a singleton `NonEmpty`.
-    let inline singleton x = { Head = x ; Tail = Nil }
+    let singleton x = { NonEmpty.Head = x ; Tail = ULNil }
 
     /// Add an item to the front of a `NonEmpty` sequence. / O(1) /
-    let inline cons x (xs: NonEmpty< ^a>) =
-        { Head = x ; Tail = Cons (fun () -> xs) }
+    let cons x (xs: NonEmpty<'a>) =
+        { NonEmpty.Head = x ; Tail = ULCons (fun () -> xs) }
 
     /// Add an item to the end of a `NonEmpty` sequence. / O(n) /
     let inline snoc x (xs: ^a NonEmpty) =
         let rec go = function
-        | Head a -> { Head = a ; Tail = Cons (fun () -> singleton x) }
-        | Cons (a, t) -> { Head = a ; Tail = Cons (t >> go) }
+        | Head a -> { NonEmpty.Head = a ; Tail = ULCons (fun () -> singleton x) }
+        | Cons (a, t) -> { NonEmpty.Head = a ; Tail = ULCons (fun () -> go (t ())) }
         go xs
 
     /// Append two `NonEmpty` sequences together. / O(n) /
     let inline append (xs: NonEmpty< ^a>) (ys: NonEmpty< ^a>) =
         let rec go = function
-        | Head a -> { Head = a ; Tail = Cons (fun () -> ys) }
-        | Cons (a, t) -> { Head = a ; Tail = Cons (t >> go) }
+        | Head a -> { NonEmpty.Head = a ; Tail = ULCons (fun () -> ys) }
+        | Cons (a, t) -> { NonEmpty.Head = a ; Tail = ULCons (fun () -> go (t ())) }
         go xs
 
     /// Applies a function to each element of a `NonEmpty` sequence, threading an accumulator through each iteration.
@@ -74,7 +81,7 @@ module NonEmpty =
         module Monad =
 
             /// Lift a value onto an effectful context.
-            let inline wrap x : NonEmpty< ^a> = { Head = x ; Tail = Nil }
+            let inline wrap x : NonEmpty< ^a> = { NonEmpty.Head = x ; Tail = ULNil }
 
             /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
             let inline bind (k: ^a -> NonEmpty< ^b>) (m: NonEmpty< ^a>) =
@@ -114,26 +121,7 @@ module NonEmpty =
                     s.Using(seq.GetEnumerator(),
                         fun enum -> s.While(enum.MoveNext,
                                         s.Delay(fun () -> body enum.Current)))
-
-
-            /// Composes two monadic functions together.
-            /// Acts as the composition function in the Kleisli category.
-            let inline composeM k2 (k1: ^a -> NonEmpty< ^b>) : ^a -> NonEmpty< ^c> = k1 >> bind k2
-  
-            /// Sequentially compose three actions, passing any value produced by the first
-            /// two as arguments to the third.
-            let inline bind2 (k: ^a -> ^b -> NonEmpty< ^c>) ma mb =
-                bind (fun a -> bind (k a) mb) ma
-
-            /// Sequentially compose four actions, passing any value produced by the
-            /// first two as arguments to the third.
-            let inline bind3 (k: ^a -> ^b -> ^c -> NonEmpty< ^d>) ma mb mc =
-                bind2 (fun a b -> bind (k a b) mc) ma mb
-
-            /// Sequentially compose two actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline bindMap (k: ^a -> NonEmpty< ^b>) (f: ^a -> ^b -> ^c) (m: NonEmpty< ^a>) =
-                bind (fun a -> bind (f a >> wrap) (k a)) m
+            
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
@@ -150,85 +138,36 @@ module NonEmpty =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM f (s0: ^s) (source: ^a seq) : NonEmpty< ^s> =
-                let inline g k x s = bind k (f x s)
+                let g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM f (s0: ^s) (source: ^a seq) : NonEmpty< ^s> =
-                let inline g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0        
-
-
-            /// Monadic zipping (combining or decomposing corresponding monadic elements).
-            module Zip =
-
-                /// Combine the corresponding contents of two monads into a single monad.
-                let inline mzipWith (f: ^a -> ^b -> ^c) (ma: NonEmpty< ^a>) (mb: NonEmpty< ^b>) =
-                    let rec go ba bb =
-                        match ba with
-                        | Head a -> match bb with
-                                    | Head b -> { Head = f a b ; Tail = Nil }
-                                    | Cons (b, _) -> { Head = f a b ; Tail = Nil }
-                        | Cons (a, ta) ->
-                            match bb with
-                            | Head b -> { Head = f a b ; Tail = Nil }
-                            | Cons (b, tb) -> { Head = f a b ; Tail = Cons (fun () -> go (ta ()) (tb ())) }
-                    go ma mb
-
-                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-                let inline mzip ma mb = mzipWith (fun a b -> a, b) ma mb
-                    
-                /// Decompose a monad comprised of corresponding pairs of values.
-                let inline munzip (m: NonEmpty< ^a * ^b>) : NonEmpty< ^a> * NonEmpty< ^b> =
-                    let rec go1 = function
-                    | Head (a, _) -> { Head = a ; Tail = Nil }
-                    | Cons ((a, _), t) -> { Head = a ; Tail = Cons (t >> go1) }
-                    let rec go2 = function
-                    | Head (_, b) -> { Head = b ; Tail = Nil }
-                    | Cons ((_, b), t) -> { Head = b ; Tail = Cons (t >> go2) } 
-                    go1 m, go2 m        
-
-
-        /// Supplementary Functor operations on the given type.
-        module Functor =
-
-            /// Lift a function onto effects.
-            let inline map (f: ^a -> ^b) (fa: NonEmpty< ^a>) : NonEmpty< ^b> =
-                let rec go = function
-                | Head a -> { Head = f a ; Tail = Nil }
-                | Cons (a, t) -> { Head = f a ; Tail = Cons (t >> go) }
-                go fa
-
-            /// Replace all locations in the input with the same value.
-            let inline replace (b: ^b) fa = map (fun _ -> b) fa
-
-            /// Perform an operation, store its result, perform an action using both
-            /// the input and output, and finally return the output.
-            let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
-                map (fun a -> let b = f a in g a b; b) fa
+                let g x k s = bind k (f s x)
+                Seq.foldBack (fun x k s -> bind k (f s x)) source wrap s0     
 
 
         /// Supplementary Applicative operations on the given type.
         module Applicative =
 
             /// Lift a value onto an effectful context.
-            let inline wrap x : NonEmpty< ^a> = { Head = x ; Tail = Nil }
+            let inline wrap x : NonEmpty< ^a> = { NonEmpty.Head = x ; Tail = ULNil }
 
             /// Sequential application on effects.
-            let inline ap mv mf = Monad.bind (fun f -> Functor.map f mv) mf
+            let inline ap mv mf = Monad.bind (fun f -> mapNonEmpty f mv) mf
 
             /// Lift a binary function on effects.
             let inline map2 (f: ^a -> ^b -> ^c) (fa: NonEmpty< ^a>) (fb: NonEmpty< ^b>) : NonEmpty< ^c> =
-                Monad.bind2 (fun a b -> wrap (f a b)) fa fb
+                ap fb (mapNonEmpty f fa)
 
             /// Lift a ternary function on effects.
             let inline map3 (f: ^a -> ^b -> ^c -> ^d) fa fb fc =
-                Monad.bind3 (fun a b c -> wrap (f a b c)) fa fb fc
+                ap fc (map2 f fa fb)
 
             /// Sequentially compose two effects, discarding any value produced by the first.
             let inline andThen fb fa : NonEmpty< ^b> =
-                Monad.bind (fun _ -> fb) fa
+                map2 (fun _  b -> b) fa fb
 
             /// Conditional execution of effectful expressions.
             let inline when_ (condition: bool) f =
@@ -260,8 +199,34 @@ module NonEmpty =
                 sequenceA (Seq.map2 f source1 source2) 
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) fa =
-                sequenceA (Seq.replicate (int n) fa)
+            let inline replicateA n fa =
+                sequenceA (Seq.replicate (max 0 n) fa)
+
+
+        /// Supplementary Functor operations on the given type.
+        module Functor =
+
+            /// Lift a function onto effects.
+            let inline map (f: ^a -> ^b) (fa: NonEmpty< ^a>) : NonEmpty< ^b> =
+                let rec go = function
+                | Head a -> { NonEmpty.Head = f a ; Tail = ULNil }
+                | Cons (a, t) -> { NonEmpty.Head = f a ; Tail = ULCons (fun () -> go (t ())) }
+                go fa
+
+            /// Replace all locations in the input with the same value.
+            let replace (b: 'b) fa =
+                let rec go = function
+                | Head _ -> { NonEmpty.Head = b ; Tail = ULNil }
+                | Cons (_, t) -> { NonEmpty.Head = b ; Tail = ULCons (fun () -> go (t ())) }
+                go fa
+
+            /// Perform an operation, store its result, perform an action using both
+            /// the input and output, and finally return the output.
+            let inline tee (f: ^a -> ^b) (g: ^a -> ^b -> unit) fa =
+                let rec go = function
+                | Head a -> let b = f a in g a b; { NonEmpty.Head = b ; Tail = ULNil }
+                | Cons (a, t) -> let b = f a in g a b; { NonEmpty.Head = b ; Tail = ULCons (fun () -> go (t ())) }
+                go fa
 
 
         /// Supplementary Comonad operations on the given type.
@@ -273,19 +238,12 @@ module NonEmpty =
             /// Sequentially compose two co-effects.
             let inline extend j (w: NonEmpty< ^a>) =
                 let rec go = function
-                | Head _ as w -> { Head = j w ; Tail = Nil }
-                | Cons (_, t) as w -> { Head = j w; Tail = Cons (t >> go) }
+                | Head _ as w -> { NonEmpty.Head = j w ; Tail = ULNil }
+                | Cons (_, t) as w -> { NonEmpty.Head = j w; Tail = ULCons (fun () -> go (t ())) }
                 go w
 
             /// Takes a comonadic container and produces a container of containers.
             let inline duplicate w = extend id w
-
-            /// Composes two comonadic functions together. Acts as the composition function in the CoKleisli category.
-            let inline composeW (f2: NonEmpty< ^b> -> ^c) f1 : NonEmpty< ^a> -> ^c = extend f1 >> f2
-
-            /// Sequentially compose two co-actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline extendMap j f w : NonEmpty< ^c> = Functor.map (fun a -> f a (j w)) w
 
             /// Deconstructs a comonad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function.
@@ -340,14 +298,14 @@ type NonEmpty<'a> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (m, f) = Functor.map f m
+    static member inline ( |%> ) (m, f) = Functor.map f m
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, m) = Functor.map f m
+    static member inline ( <%| ) (f, m) = Functor.map f m
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 

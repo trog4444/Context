@@ -30,9 +30,17 @@ module Either =
     let inline fromLeft def either =
         match either with Left a -> a | Right _ -> def
 
+    /// Return the contents of a Left-value or a default value otherwise.
+    let inline fromLeftWith def either =
+        match either with Left a -> a | Right _ -> def ()
+
     /// Return the contents of a Right-value or a default value otherwise.
     let inline fromRight def either =
         match either with Left _ -> def | Right b -> b
+
+    /// Return the contents of a Right-value or a default value otherwise.
+    let inline fromRightWith def either =
+        match either with Left _ -> def () | Right b -> b
 
     /// <summary>Extracts from a sequence of Eithers all the Left elements in order.</summary>
     /// <exception cref="System.ArgumentNullException"> Thrown when the input sequence is null.</exception>
@@ -113,7 +121,10 @@ module Either =
                 match m with Left a -> Left a | Right b -> k b
 
             /// Removes one layer of monadic context from a nested monad.
-            let inline flatten mm : Either< ^a, ^b> = bind id mm
+            let inline flatten mm : Either< ^a, ^b> =
+                match mm with
+                | Left e  -> Left e
+                | Right m -> m
 
 
             /// Monadic computation builder specialised to the given monad.
@@ -145,37 +156,6 @@ module Either =
                                         s.Delay(fun () -> body enum.Current)))
 
 
-            /// Composes two monadic functions together.
-            /// Acts as the composition function in the Kleisli category.
-            let inline composeM k2 (k1: ^b -> Either< ^a, ^c>) : ^b -> Either< ^a, ^d> = k1 >> bind k2
-  
-            /// Sequentially compose three actions, passing any value produced by the first
-            /// two as arguments to the third.
-            let inline bind2 (k: ^b -> ^c -> Either< ^a, ^d>) mb mc =
-                match mb with
-                | Left  a -> Left a
-                | Right b -> match mc with
-                             | Left  a -> Left a
-                             | Right c -> k b c
-
-            /// Sequentially compose four actions, passing any value produced by the
-            /// first two as arguments to the third.
-            let inline bind3 (k: ^b -> ^c -> ^d -> Either< ^a, ^e>) mb mc md =
-                match mb with
-                | Left  a -> Left a
-                | Right b -> match mc with
-                             | Left  a -> Left a
-                             | Right c -> match md with
-                                          | Left  a -> Left a
-                                          | Right d -> k b c d
-
-            /// Sequentially compose two actions, creating a third from the result and
-            /// lifting a binary function on its effects.
-            let inline bindMap (k: ^b -> Either< ^a, ^c>) (f: ^b -> ^c -> ^d) m =
-                match m with
-                | Left  a -> Left a
-                | Right b -> match k b with Left a -> Left a | Right c -> Right (f b c)
-
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
@@ -194,40 +174,14 @@ module Either =
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldrM (f: ^b -> ^s -> Either< ^a, ^s>) (s0: ^s) (source: ^b seq) : Either< ^a, ^s> =
-                let inline g k x s = bind k (f x s)
+                let g k x s = bind k (f x s)
                 Seq.fold g wrap source s0
 
             /// <summary>Monadic fold over a structure associating to the left.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline foldlM (f: ^s -> ^b -> Either< ^a, ^s>) (s0: ^s) (source: ^b seq) : Either< ^a, ^s> =
-                let inline g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0            
-
-
-            /// Monadic zipping (combining or decomposing corresponding monadic elements).
-            module Zip =
-            
-                /// Combine the corresponding contents of two monads into a single monad.
-                let inline mzipWith (f: ^b -> ^c -> ^d) mb mc : Either< ^a, ^d> =
-                    match mb with
-                    | Left  a -> Left a
-                    | Right b -> match mc with
-                                 | Left  a -> Left a
-                                 | Right c -> Right (f b c)
-
-                /// Merge the contents (of corresponding pairs) of two monads into a monad of pairs.
-                let inline mzip mb mc : Either< ^a, ^b * ^c> =
-                    match mb with
-                    | Left  a -> Left a
-                    | Right b -> match mc with
-                                 | Left  a -> Left a
-                                 | Right c -> Right (b, c)
-                    
-                /// Decompose a monad comprised of corresponding pairs of values.
-                let inline munzip (m: Either< ^a, ^b * ^c>) =
-                    match m with
-                    | Left      a  -> (Left a), (Left a)
-                    | Right (b, c) -> (Right b), (Right c)
+                let g x k s = bind k (f s x)
+                Seq.foldBack (fun x k s -> bind k (f s x)) source wrap s0
 
 
         /// Supplementary Applicative operations on the given type.
@@ -273,7 +227,7 @@ module Either =
             /// <summary>Generalizes the sequence-based filter function.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline filterA (p: ^b -> Either< ^a, bool>) source =
-                Seq.foldBack (fun x xs -> map2 (fun flg xs -> if flg then x::xs else xs) (p x) xs) source (wrap [])
+                Seq.foldBack (fun x -> map2 (fun flg xs -> if flg then x::xs else xs) (p x)) source (wrap [])
 
             /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -302,10 +256,10 @@ module Either =
                 sequenceA (Seq.map2 f source1 source2)
 
             /// Performs the effect 'n' times.
-            let inline replicateA (n: uint32) (m: Either< ^a, ^b>) : Either< ^a, ^b seq> =
+            let inline replicateA n (m: Either< ^a, ^b>) : Either< ^a, ^b seq> =
                 match m with
                 | Left  a -> Left a
-                | Right b -> Right (Seq.replicate (int n) b)
+                | Right b -> Right (Seq.replicate (max 0 n) b)
 
 
         /// Supplementary Functor operations on the given type.
@@ -316,7 +270,7 @@ module Either =
                 match m with Left a -> Left a | Right b -> Right (f b)
 
             /// Replace all locations in the input with the same value.
-            let inline replace (b: ^c) fb : Either< ^a, ^c> =
+            let replace (b: 'c) fb : Either<'a, 'c> =
                 match fb with Left a -> Left a | Right _ -> Right b
 
             /// Perform an operation, store its result, perform an action using both
@@ -391,14 +345,14 @@ type Either<'a, 'b> with
 // @ Functor @
 
     /// Lift a function onto effects.
-    static member inline ( |>> ) (fa, f) = Functor.map f fa
+    static member inline ( |%> ) (fa, f) = Functor.map f fa
     /// Lift a function onto effects.
-    static member inline ( <<| ) (f, fa) = Functor.map f fa
+    static member inline ( <%| ) (f, fa) = Functor.map f fa
 
     /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fx) = Functor.replace b fx
+    static member inline ( %> ) (b, fa) = Functor.replace b fa
     /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fx, b) = Functor.replace b fx
+    static member inline ( <% ) (fa, b) = Functor.replace b fa
 
 // @ Semigroup @
 

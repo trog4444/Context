@@ -1,0 +1,9 @@
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\netcoreapp2.2\Context.XML
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\netcoreapp2.2\Context.deps.json
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\netcoreapp2.2\Context.dll
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\netcoreapp2.2\Context.pdb
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp2.2\Context.fsprojAssemblyReference.cache
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp2.2\Context.AssemblyInfoInputs.cache
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp2.2\Context.AssemblyInfo.fs
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp2.2\Context.dll
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp2.2\Context.pdb

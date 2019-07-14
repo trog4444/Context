@@ -8,7 +8,7 @@ open System.Reflection
 
 
 [<assembly: System.Reflection.AssemblyCompanyAttribute("ptr")>]
-[<assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")>]
+[<assembly: System.Reflection.AssemblyConfigurationAttribute("Release")>]
 [<assembly: System.Reflection.AssemblyDescriptionAttribute("Types that add \'context\' to generic underlying types, e.g. functors, monads, monoids, etc., as well as some primitive and compositional operations.")>]
 [<assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.1.0")>]
 [<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.1")>]
