@@ -1,6 +1,5 @@
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\Context.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\Context.pdb
-C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\Context.XML
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\FSharp.Core.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\System.ValueTuple.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\cs\FSharp.Core.resources.dll
@@ -17,9 +16,10 @@ C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\ru\FSh
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\tr\FSharp.Core.resources.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\zh-Hans\FSharp.Core.resources.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\zh-Hant\FSharp.Core.resources.dll
-C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net46\Context.fsprojAssemblyReference.cache
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net46\Context.AssemblyInfoInputs.cache
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net46\Context.AssemblyInfo.fs
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net46\Context.fsproj.CopyComplete
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net46\Context.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net46\Context.pdb
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\bin\Release\net46\Context.XML
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net46\Context.fsprojAssemblyReference.cache

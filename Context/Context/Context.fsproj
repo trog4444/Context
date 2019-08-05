@@ -9,6 +9,7 @@
     <PackageReleaseNotes>The dll's in the `Release` folders are only rebuilt when the functionality is considered stable, and therefore should be safe to use. This is a work in progress though, so the Debug and Release versions may not match, and the Release versions may change frequently.</PackageReleaseNotes>
     <FileVersion>1.0.1.0</FileVersion>
     <Version>1.0.1</Version>
+    <RunPostBuildEvent>0</RunPostBuildEvent>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -16,16 +17,27 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Release\netcoreapp2.2\Context.XML</DocumentationFile>
     <WarningLevel>1</WarningLevel>
+    <DefineConstants />
+    <WarningsAsErrors>3239;</WarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <OtherFlags></OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>5</WarningLevel>
     <OtherFlags></OtherFlags>
+    <WarningsAsErrors>3239;</WarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="Revisions.txt" />
     <Content Include="ToDo.txt" />
+    <Compile Include="Contexts\Incomplete\NonEmpty_Builder.fs" />
+    <Compile Include="Contexts\Incomplete\Tree.fs" />
+    <Compile Include="Contexts\Incomplete\Transducer.fs" />
+    <Compile Include="Contexts\Incomplete\NonEmpty.fs" />
+    <Compile Include="Contexts\Incomplete\Store.fs" />
     <Compile Include="Contexts\Cont.fs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Compile>
@@ -33,25 +45,19 @@
     <Compile Include="Contexts\Either.fs" />
     <Compile Include="Contexts\Lens.fs" />
     <Compile Include="Contexts\Maybe.fs" />
-    <Compile Include="Contexts\NonEmpty.fs" />
-    <Compile Include="Contexts\_Proxy_.fs" />
     <Compile Include="Contexts\Reader.fs" />
     <Compile Include="Contexts\RWS.fs" />
     <Compile Include="Contexts\State.fs" />
     <Compile Include="Contexts\Writer.fs" />
-    <Compile Include="Contexts\ZipList.fs" />
     <Compile Include="Extensions\Builders\Cont.fs" />
     <Compile Include="Extensions\Builders\DList.fs" />
     <Compile Include="Extensions\Builders\Either.fs" />
     <Compile Include="Extensions\Builders\Lens.fs" />
     <Compile Include="Extensions\Builders\Maybe.fs" />
-    <Compile Include="Extensions\Builders\NonEmpty.fs" />
     <Compile Include="Extensions\Builders\Reader.fs" />
     <Compile Include="Extensions\Builders\RWS.fs" />
     <Compile Include="Extensions\Builders\State.fs" />
     <Compile Include="Extensions\Builders\Writer.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
 </Project>

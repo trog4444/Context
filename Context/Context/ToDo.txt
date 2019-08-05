@@ -5,7 +5,7 @@
 //#r @"C:/Users/Tyler/Documents/GitHub/Context/Context/Context/bin/Release/netcoreapp2.0/Context.dll"
 
 //// Load a single file - when referencing, must still use full path,
-// eg: open Ptr.Context.Type.Maybe
+// eg: open PTR.Context.Type.Maybe
 //#load @"Contexts/Maybe.fs"
 
 
@@ -13,7 +13,7 @@
 
 //module private Test =
 
-//    let a = Ptr.Context.Type.Maybe.Maybe.
+//  let a = PTR.Context.Type.Maybe.Maybe.
 
 
 
@@ -45,19 +45,19 @@ in Project Properties -> Build -> other flags
 
 Reset/Shift testing ::
 open Std
-    let a = reset <| map2 (*) (wrap 3) (shift <| fun k -> wrap <| k (k 10))
-            |> map2 (+) <| wrap 1
-            |> map2 (-) <| wrap 3
-            |> evalCont // 88 -- 3 * 10 * 3 + 1 - 3
-    let b = map2 (*) (wrap 3) (shift <| fun k -> wrap <| k (k 10))
-            |> map2 (+) <| (wrap 1)
-            |> map2 (-) <| (wrap 3)
-            |> evalCont // 82 -- 3 * 10 + 1 - 3 * 3 + 1 - 3
-    let c = map2 (*) (wrap 3) (Cont <| fun k -> k <| k 10)
-            |> map2 (+) <| (wrap 1)
-            |> map2 (-) <| (wrap 3)
-            |> evalCont // 82 -- 3 * 10 + 1 - 3 * 3 + 1 - 3
-    // conclusion :
-    // | a shift inside of a reset means that the k's inside the reset all occur BEFORE
-    // | all other following Cont's
-    // | HOWEVER ... when a Cont is used BEFORE the reset, all 3 forms yielded the same result
+  let a = reset <| map2 (*) (wrap 3) (shift <| fun k -> wrap <| k (k 10))
+      |> map2 (+) <| wrap 1
+      |> map2 (-) <| wrap 3
+      |> evalCont // 88 -- 3 * 10 * 3 + 1 - 3
+  let b = map2 (*) (wrap 3) (shift <| fun k -> wrap <| k (k 10))
+      |> map2 (+) <| (wrap 1)
+      |> map2 (-) <| (wrap 3)
+      |> evalCont // 82 -- 3 * 10 + 1 - 3 * 3 + 1 - 3
+  let c = map2 (*) (wrap 3) (Cont <| fun k -> k <| k 10)
+      |> map2 (+) <| (wrap 1)
+      |> map2 (-) <| (wrap 3)
+      |> evalCont // 82 -- 3 * 10 + 1 - 3 * 3 + 1 - 3
+  // conclusion :
+  // | a shift inside of a reset means that the k's inside the reset all occur BEFORE
+  // | all other following Cont's
+  // | HOWEVER ... when a Cont is used BEFORE the reset, all 3 forms yielded the same result

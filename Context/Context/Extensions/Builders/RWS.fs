@@ -1,6 +1,6 @@
-﻿namespace Ptr.Context.Extension.Builder.RWS
+﻿namespace PTR.Context.Extension.Builder.RWS
 
-open Ptr.Context.Type.RWS
+open PTR.Context.Type.RWS
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.

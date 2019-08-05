@@ -1,6 +1,6 @@
-﻿namespace Ptr.Context.Extension.Builder.Lens
+﻿namespace PTR.Context.Extension.Builder.Lens
 
-open Ptr.Context.Type.Lens
+open PTR.Context.Type.Lens
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.
@@ -23,9 +23,9 @@ module Combine =
     module AsList =
 
         type Compose.Monad.LensBuilder with
-        
+    
             member inline s.Combine(a, b) =
                 Compose.Applicative.map2 (fun a b -> [a; b]) a b
-        
+    
             member inline s.Combine(a, b) =
                 Compose.Applicative.map2 (fun a bs -> a::bs) a b

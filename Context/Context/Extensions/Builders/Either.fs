@@ -1,7 +1,7 @@
-﻿namespace Ptr.Context.Extension.Builder.Either
+﻿namespace PTR.Context.Extension.Builder.Either
 
-open Ptr.Context.Type
-open Either
+open PTR.Context.Type
+open PTR.Context.Type.Either
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.
@@ -23,6 +23,8 @@ module Combine =
         type Compose.Monad.EitherBuilder with
             member inline s.Combine(a, b) = if isLeft b then a else b
 
+    //FirstRightLastLeft | FirstRightFirstLeft etc
+
 
     /// Multiple `returns` result in all of the results being `appended` together.
     module Append =
@@ -38,7 +40,7 @@ module Combine =
 
     /// Multiple `returns` result in the entire workflow returning a list of results.
     module AsList =
-        
+    
         type Compose.Monad.EitherBuilder with
 
             member inline s.Combine(a, b) =

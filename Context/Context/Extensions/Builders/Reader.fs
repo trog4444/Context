@@ -1,6 +1,6 @@
-﻿namespace Ptr.Context.Extension.Builder.Reader
+﻿namespace PTR.Context.Extension.Builder.Reader
 
-open Ptr.Context.Type.Reader
+open PTR.Context.Type.Reader
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.

@@ -1,6 +1,6 @@
-﻿namespace Ptr.Context.Extension.Builder.Writer
+﻿namespace PTR.Context.Extension.Builder.Writer
 
-open Ptr.Context.Type
+open PTR.Context.Type
 open Writer.Compose.Monad
 
 

@@ -1,6 +1,6 @@
-﻿namespace Ptr.Context.Extension.Builder.State
+﻿namespace PTR.Context.Extension.Builder.State
 
-open Ptr.Context.Type.State
+open PTR.Context.Type.State
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.

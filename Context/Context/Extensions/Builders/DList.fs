@@ -1,6 +1,6 @@
 ﻿namespace DListext.Extension.Builder.DList
 
-open Ptr.Context.Type.DList
+open PTR.Context.Type.DList
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.
@@ -21,7 +21,7 @@ module Combine =
 
     /// Multiple `returns` result in the entire workflow returning a list of results.
     module AsList =
-        
+    
         type Compose.Monad.DListBuilder with
 
             member inline s.Combine(a, b) =

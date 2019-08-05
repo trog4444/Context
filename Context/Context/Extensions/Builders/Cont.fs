@@ -1,6 +1,6 @@
-﻿namespace Ptr.Context.Extension.Builder.Cont
+﻿namespace PTR.Context.Extension.Builder.Cont
 
-open Ptr.Context.Type.Cont
+open PTR.Context.Type.Cont
 
 
 /// Adds default implementations of the `Combine` method to the specified workflow builder.
@@ -15,13 +15,12 @@ module Combine =
         type Compose.Monad.ContBuilder with
 
             member inline s.Combine(a, b) =
-                Compose.Applicative.map2
-                    (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) a b
+                Compose.Applicative.map2 (fun a b -> (^a: (static member Append: ^a -> ^a -> ^a) (a, b))) a b
 
 
     /// Multiple `returns` result in the entire workflow returning a list of results.
     module AsList =
-        
+    
         type Compose.Monad.ContBuilder with
 
             member inline s.Combine(a, b) =
