@@ -222,10 +222,11 @@ module Either =
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline filterA (p: ^b -> Either< ^a, bool>) source =
                 let mutable e = Unchecked.defaultof< ^a>
-                try let xs = seq { for x in source do
-                    match p x with
-                    | Left e' -> e <- e'; failwith "Left"
-                    | Right fl -> if fl then yield x } |> Seq.cache
+                try let xs =
+                        seq { for x in source do
+                                  match p x with
+                                  | Left e' -> e <- e'; failwith "Left"
+                                  | Right fl -> if fl then yield x } |> Seq.cache
                     do for _ in xs do ()
                     Right xs
                 with e when e.Message = "Left" -> Left e | err -> raise err
@@ -233,15 +234,15 @@ module Either =
             /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline sequenceA (source: Either< ^a, ^b> seq) : Either< ^a, ^b seq> =
-                let mutable a0 = Unchecked.defaultof< ^a>
+                let mutable a0 = Unchecked.defaultof<_>
                 try let f = function Left a -> a0 <- a; failwith "Left" | Right b -> b
-                    match source with
-                    | :? array<_> as xs -> Right (Array.map f xs :> ^b seq)
-                    | :? list<_>  as xs -> Right (List.map  f xs :> ^b seq)
+                    (match source with
+                    | :? array<Either< ^a, ^b>> as xs -> Array.map f xs :> _ seq
+                    | :? list<Either< ^a, ^b>>  as xs -> List.map  f xs :> _ seq
                     | _ ->
                         let xs = Seq.cache (seq { for x in source -> f x })
-                        for _ in xs do ()
-                        Right xs
+                        do for _ in xs do ()
+                        xs) |> Right
                 with e when e.Message = "Left" -> Left a0 | e -> raise e
 
             /// <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>

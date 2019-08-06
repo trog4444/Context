@@ -11,7 +11,7 @@ type Cont<'R, 'T> = Cont of ((^T -> ^R) -> ^R)
 module Cont =
 
     /// The result of running a CPS computation with a given final continuation.
-    let runCont (Cont (c: ('a -> 'r) -> ^r)) (k: 'a -> 'r) : ^r = c k
+    let runCont (k: 'a -> 'r) (Cont (c: ('a -> 'r) -> ^r)) : ^r = c k
 
     /// The result of running a CPS computation with the identity as the final continuation.
     let evalCont (Cont (c: ('r -> ^r) -> ^r)) : ^r = c id

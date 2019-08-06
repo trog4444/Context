@@ -101,7 +101,7 @@ module Lens =
   
     /// Run a `Lens` by applying a `getter` to the given value,
     /// then apply both to the `setter` to retrieve a final value.
-    let runLens (lens: Lens<'a, 'b>) property : ^a =
+    let runLens property (lens: Lens<'a, 'b>) : ^a =
         lens.Set property (lens.Get property)
 
     /// Map a function across the components of a `Lens`.
@@ -458,9 +458,9 @@ type Lens<'P, 'V> with
 // @ Primitive @
 
     /// Run a `Lens` by applying a `getter` to the given value, then apply both to the `setter` to retrieve a final value.
-    static member inline ( >- ) (m, a) = runLens m a
+    static member inline ( >- ) (m, a) = runLens a m
     /// Run a `Lens` by applying a `getter` to the given value, then apply both to the `setter` to retrieve a final value.
-    static member inline ( -< ) (a, m) = runLens m a
+    static member inline ( -< ) (a, m) = runLens a m
 
 // @ Monad @
 

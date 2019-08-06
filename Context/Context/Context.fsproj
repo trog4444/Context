@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <Authors>ptr</Authors>
     <Company>ptr</Company>
     <Description>Types that add 'context' to generic underlying types, e.g. functors, monads, monoids, etc., as well as some primitive and compositional operations.</Description>

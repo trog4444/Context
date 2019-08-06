@@ -332,9 +332,9 @@ type Reader<'E, 'R> with
 // @ Primitive @
 
     /// The result of running a computation with a given environment.
-    static member inline ( >- ) (m, e) = runReader m e
+    static member inline ( >- ) (m, e) = runReader e m
     /// The result of running a computation with a given environment.
-    static member inline ( -< ) (e, m) = runReader m e
+    static member inline ( -< ) (e, m) = runReader e m
 
 // @ Monad @
 

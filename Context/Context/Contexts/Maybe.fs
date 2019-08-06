@@ -343,8 +343,8 @@ module Maybe =
             let inline sequenceA (source: ^a Maybe seq) =                
                 try let f = function Nothing -> failwith "Nothing" | Just a -> a
                     match source with
-                    | :? array<_> as xs -> Just (Array.map f xs :> ^b seq)
-                    | :? list<_>  as xs -> Just (List.map  f xs :> ^b seq)
+                    | :? array<Maybe< ^a>> as xs -> Just (Array.map f xs :> ^a seq)
+                    | :? list<Maybe< ^a>>  as xs -> Just (List.map  f xs :> ^a seq)
                     | _ ->
                         let xs = Seq.cache (seq { for x in source -> f x })
                         do for _ in xs do ()                

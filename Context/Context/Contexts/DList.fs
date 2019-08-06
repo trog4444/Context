@@ -26,7 +26,7 @@ module DList =
     let toList (DL (xs: 'a list -> ^a list)) : ^a list = xs [] 
 
     /// Apply a dlist to a list to get the underlying list with an extension.
-    let applyDList (DL (xs: 'a list -> ^a list)) (list: 'a list) : ^a list = xs list
+    let applyDList (list: 'a list) (DL (xs: 'a list -> ^a list)) : ^a list = xs list
 
     /// Create a dlist containing no elements.
     let empty<'a> : ^a DList = DL id
@@ -42,7 +42,7 @@ module DList =
 
     /// Append two dlists. /O(1)/
     let inline append ``1st`` ``2nd`` : ^a DList =
-        DL (fun xs -> unDList ``1st`` (applyDList ``2nd`` xs))
+        DL (fun xs -> unDList ``1st`` (applyDList xs ``2nd``))
 
     /// <summary>Concatenate dlists. /O(spine)/</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -394,9 +394,9 @@ type DList<'T> with
 // @ Primitive @
 
     /// Apply a dlist to a list to get the underlying list with an extension.
-    static member inline ( >- ) (dl, list) = applyDList dl list
+    static member inline ( >- ) (dl, list) = applyDList list dl
     /// Apply a dlist to a list to get the underlying list with an extension.
-    static member inline ( -< ) (list, dl) = applyDList dl list
+    static member inline ( -< ) (list, dl) = applyDList list dl
 
 // @ Monad @
 

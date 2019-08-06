@@ -316,9 +316,9 @@ type State<'S1, 'S2, 'A> with
 // @ Primitive @
 
     /// The result of running a computation with a given environment.
-    static member inline ( >- ) (m, s) = runState m s
+    static member inline ( >- ) (m, s) = runState s m
     /// The result of running a computation with a given environment.
-    static member inline ( -< ) (s, m) = runState m s
+    static member inline ( -< ) (s, m) = runState s m
 
 // @ Monad @
 
