@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <Authors>ptr</Authors>
     <Company>ptr</Company>
     <Description>Types that add 'context' to generic underlying types, e.g. functors, monads, monoids, etc., as well as some primitive and compositional operations.</Description>
@@ -33,22 +33,30 @@
   <ItemGroup>
     <Content Include="Revisions.txt" />
     <Content Include="ToDo.txt" />
-    <Compile Include="Contexts\Incomplete\NonEmpty_Builder.fs" />
-    <Compile Include="Contexts\Incomplete\Tree.fs" />
-    <Compile Include="Contexts\Incomplete\Transducer.fs" />
-    <Compile Include="Contexts\Incomplete\NonEmpty.fs" />
-    <Compile Include="Contexts\Incomplete\Store.fs" />
+    <Compile Include="Contexts\Cont.fsi" />
     <Compile Include="Contexts\Cont.fs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Compile>
-    <Compile Include="Contexts\DList.fs" />
+    <Compile Include="Contexts\Either.fsi" />
     <Compile Include="Contexts\Either.fs" />
     <Compile Include="Contexts\Lens.fs" />
+    <Compile Include="Contexts\Maybe.fsi" />
     <Compile Include="Contexts\Maybe.fs" />
     <Compile Include="Contexts\Reader.fs" />
     <Compile Include="Contexts\RWS.fs" />
     <Compile Include="Contexts\State.fs" />
     <Compile Include="Contexts\Writer.fs" />
+    <Compile Include="Contexts\Incomplete\Maybe_.fsi" />
+    <Compile Include="Contexts\Incomplete\Maybe_.fs" />
+    <Compile Include="Contexts\Incomplete\DList.fs" />
+    <Compile Include="Contexts\Incomplete\NonEmpty.fs" />
+    <Compile Include="Contexts\Incomplete\NonEmpty_Builder.fs" />
+    <Compile Include="Contexts\Incomplete\SearchTree.fs" />
+    <Compile Include="Contexts\Incomplete\Store.fs" />
+    <Compile Include="Contexts\Incomplete\Stream.fs" />
+    <Compile Include="Contexts\Incomplete\Stream_.fs" />
+    <Compile Include="Contexts\Incomplete\Transducer.fs" />
+    <Compile Include="Contexts\Incomplete\Tree.fs" />
     <Compile Include="Extensions\Builders\Cont.fs" />
     <Compile Include="Extensions\Builders\DList.fs" />
     <Compile Include="Extensions\Builders\Either.fs" />
@@ -58,6 +66,8 @@
     <Compile Include="Extensions\Builders\RWS.fs" />
     <Compile Include="Extensions\Builders\State.fs" />
     <Compile Include="Extensions\Builders\Writer.fs" />
+    <Compile Include="Operators.fs" />
+    <None Include="Test.fsx" />
   </ItemGroup>
 
 </Project>

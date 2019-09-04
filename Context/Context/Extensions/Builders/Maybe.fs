@@ -14,6 +14,10 @@ module Combine =
     module FirstJust =
 
         type Compose.Monad.MaybeBuilder with
+
+            member inline s.Delay f = f ()
+            member inline s.Run f = f
+
             member inline s.Combine(a, b) = if isJust a then a else b
 
 
@@ -21,6 +25,9 @@ module Combine =
     module Append =
 
         type Compose.Monad.MaybeBuilder with
+
+            member inline s.Delay f = f ()
+            member inline s.Run f = f
 
             member inline s.Combine(a, b) =
                 Compose.Applicative.map2
@@ -31,6 +38,10 @@ module Combine =
     module AsList =
 
         type Compose.Monad.MaybeBuilder with
+
+            member inline s.Delay f = f ()
+            member inline s.Run f = f
+
             member inline s.Combine(a, b) =
                 Compose.Applicative.map2 (fun a b -> [a; b]) a b
 

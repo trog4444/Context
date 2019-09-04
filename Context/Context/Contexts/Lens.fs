@@ -209,7 +209,9 @@ module Lens =
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
             let inline recM f x =
-                let rec go m = bind (f (fun x -> go (wrap x))) m in go (f wrap x)
+                let rec go m = bind (f wrapgo) m
+                and wrapgo x = go (wrap x)
+                go (f wrap x)
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
@@ -272,11 +274,6 @@ module Lens =
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline forA f (source: ^a seq) : Lens< ^c, ^b list> =
                 sequenceA (Seq.map f source)
-
-            /// <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-            let inline for2A f (source1: ^a seq) (source2: ^b seq) : Lens< ^d, ^c list> =
-                forA ((<||) f) (Seq.allPairs source1 source2)
 
             /// <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
             /// If one sequence is longer, its extra elements are ignored.</summary>

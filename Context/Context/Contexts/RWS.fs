@@ -38,7 +38,7 @@ module RWS =
         RWS (fun (e: ^e) (s: ^s0) -> match r e s with swa -> f (swa.State: ^s1) swa.Log swa.Value)
 
     /// Executes action with an initial environment and state modified by applying 'f'.
-    let inline withRWS (f: ^e -> ^s -> ^e0 * ^s0) (RWS r) : RWS< ^e, ^s1, ^s2, ^w, ^a> =
+    let inline withRWS (f: ^e -> ^s1 -> ^e0 * ^s0) (RWS r) : RWS< ^e, ^s1, ^s2, ^w, ^a> =
         RWS (fun e s -> match f e s with e', s' -> r e' s')
 
     /// Cache the results of a 'RWS' computation.
@@ -71,10 +71,17 @@ module RWS =
                     match k swa.Value with
                     | RWS r -> match r e swa.State with
                                | swb -> { swb with RWSResult.Log =
-                                   (^w: (static member Append: ^w -> ^w -> ^w) (swa.Log, swb.Log)) })
+                                                    (^w: (static member Append: ^w -> ^w -> ^w) (swa.Log, swb.Log)) })
       
             /// Removes one layer of monadic context from a nested monad.
-            let inline flatten (mm: RWS< ^e, ^s0, ^s1, ^w, (RWS< ^e, ^s0, ^s1, ^w, ^a>)>) = bind id mm
+            let inline flatten (RWS (r: ^e -> ^s0 -> RWSResult< ^s1, ^w, RWS< ^e, ^s1, ^s2, ^w, ^a>>)) = RWS (fun e s ->
+                match r e (s: ^s0) with
+                | swa ->
+                    match swa.Value with
+                    | RWS r -> match r e swa.State with
+                               | swb -> { swb with RWSResult.Log =
+                                                    (^w: (static member Append: ^w -> ^w -> ^w) (swa.Log, swb.Log)) })
+      
 
 
             /// Monadic computation builder specialised to the given monad.
@@ -107,7 +114,9 @@ module RWS =
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
             let inline recM f x : RWS< ^e, ^s, ^s, ^w, ^a> =
-                let rec go m = bind (f (fun x -> go (wrap x))) m in go (f wrap x)
+                let rec go m = bind (f wrapgo) m
+                and wrapgo x = go (wrap x)
+                go (f wrap x)
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
@@ -193,14 +202,6 @@ module RWS =
             let inline forA f source : RWS< ^e, ^s, ^s, ^w, ^b list> =
                 sequenceA (Seq.map f source)
 
-            /// <summary>Produce an effect for each pair of elements in the sequences from left to right
-            /// then evaluate each effect, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-            let inline for2A f source1 source2 : RWS< ^e, ^s, ^s, ^w, ^c list> =
-                sequenceA (seq { for x in source1 do
-                                 for y in source2 do
-                                     yield f x y })
-
             /// <summary>Produce an effect for each pair of elements in the sequences from left to right,
             /// then evaluate each effect and collect the results.
             /// If one sequence is longer, its extra elements are ignored.</summary>
@@ -218,14 +219,16 @@ module RWS =
 
             /// Lift a function onto effects.
             let inline map f (RWS r) : RWS< ^e, ^s1, ^s2, ^w, ^b> =
-                RWS (fun e s -> match r e s with swa ->
+                RWS (fun e s ->
+                    let swa = r e s
                     { RWSResult.State = swa.State
                     ; Log = swa.Log
                     ; Value = f swa.Value })
 
             /// Replace all locations in the input with the same value.
             let inline replace (b: ^b) (RWS r) : RWS< ^e, ^s1, ^s2, ^w, ^b> =
-                RWS (fun e s -> match r e s with sw_ ->
+                RWS (fun e s ->
+                    let sw_ = r e s
                     { RWSResult.State = sw_.State
                     ; Log = sw_.Log
                     ; Value = b })
@@ -233,7 +236,8 @@ module RWS =
             /// Perform an operation, store its result, perform an action using both
             /// the input and output, and finally return the output.
             let inline tee f (g: ^a -> ^b -> unit) (RWS r) : RWS< ^e, ^s1, ^s2, ^w, ^b> =
-                RWS (fun e s -> match r e s with swa ->
+                RWS (fun e s ->
+                    let swa = r e s
                     let b = f swa.Value
                     do g swa.Value b
                     { RWSResult.State = swa.State
@@ -247,7 +251,8 @@ module RWS =
             /// Map over all three arguments at the same time.
             let inline trimap (f: ^s2 -> ^s3) (g: ^w1 -> ^w2) (h: ^a -> ^b) (RWS r)
                 : RWS< ^e, ^s1, ^s3, ^w2, ^b> =
-                RWS (fun e s -> match r e s with swa ->
+                RWS (fun e s ->
+                    let swa = r e s
                     { RWSResult.State = f swa.State
                     ; Log = g swa.Log
                     ; Value = h swa.Value })
@@ -255,28 +260,32 @@ module RWS =
             /// Map over both arguments at the same time.
             let inline bimap (f: ^w1 -> ^w2) (g: ^a -> ^b) (RWS r)
                 : RWS< ^e, ^s1, ^s2, ^w2, ^b> =
-                    RWS (fun e s -> match r e s with swa ->
+                    RWS (fun e s ->
+                        let swa = r e s
                         { RWSResult.State = swa.State
                         ; Log = f swa.Log
                         ; Value = g swa.Value })
 
             /// Map covariantly over the first argument.
             let inline mapFst (f: ^s2 -> ^s3) (RWS r) : RWS< ^e, ^s1, ^s3, ^w, ^a> =
-                RWS (fun e s -> match r e s with swa ->
+                RWS (fun e s ->
+                    let swa = r e s
                     { RWSResult.State = f swa.State
                     ; Log = swa.Log
                     ; Value = swa.Value })
 
             /// Map covariantly over the second argument.
             let inline mapSnd (g: ^w0 -> ^w1) (RWS r) : RWS< ^e, ^s1, ^s2, ^w1, ^b> =
-                RWS (fun e s -> match r e s with swa ->
+                RWS (fun e s ->
+                    let swa = r e s
                     { RWSResult.State = swa.State
                     ; Log = g swa.Log
                     ; Value = swa.Value })
 
             /// Map covariantly over the third argument.
             let inline mapThr (h: ^a -> ^b) (RWS r) : RWS< ^e, ^s1, ^s2, ^w, ^b> =
-                RWS (fun e s -> match r e s with swa ->
+                RWS (fun e s ->
+                    let swa = r e s
                     { RWSResult.State = swa.State
                     ; Log = swa.Log
                     ; Value = h swa.Value })

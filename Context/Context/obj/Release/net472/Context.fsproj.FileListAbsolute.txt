@@ -21,3 +21,4 @@ C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net472\Conte
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net472\Context.fsproj.CopyComplete
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net472\Context.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net472\Context.pdb
+C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\net472\Context.fsprojAssemblyReference.cache

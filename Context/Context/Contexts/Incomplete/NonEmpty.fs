@@ -189,7 +189,7 @@ with interface System.Collections.Generic.IEnumerable< ^a> with
 
 //      /// <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
 //      /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-//      let inline for2A f (source1: ^a seq) (source2: ^b seq) =
+//      let inline ---END HERE--- f (source1: ^a seq) (source2: ^b seq) =
 //        forA ((<||) f) (Seq.allPairs source1 source2)
 
 //      /// <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.

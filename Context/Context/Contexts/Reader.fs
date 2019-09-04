@@ -8,7 +8,7 @@ type Reader<'Env, 'Result> = Reader of (^Env -> ^Result)
 
 /// Operations on `Reader` values.
 module Reader =
- 
+
     /// Runs a Reader and extracts the final value from it.
     let runReader (env: 'e) (Reader (r: 'e -> 'r)) : ^r = r env
 
@@ -96,7 +96,9 @@ module Reader =
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
             let inline recM f x : Reader< ^e, ^a> =
-                let rec go m = bind (f (fun x -> go (wrap x))) m in go (f wrap x)
+                let rec go m = bind (f wrapgo) m
+                and wrapgo x = go (wrap x)
+                go (f wrap x)
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
@@ -159,15 +161,6 @@ module Reader =
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline forA (f: ^a -> Reader< ^e, ^r>) (source: ^a seq) : Reader< ^e, ^r seq> =
                 sequenceA (Seq.map f source)
-
-            /// <summary>Produce an effect for each pair of elements in the sequences from left to right
-            /// then evaluate each effect, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-            let inline for2A (f: ^a -> ^b -> Reader< ^e, ^r>) (source1: ^a seq) (source2: ^b seq)
-                : Reader< ^e, ^r seq> =
-                sequenceA (seq { for x in source1 do
-                                 for y in source2 do
-                                     yield f x y})
 
             /// <summary>Produce an effect for each pair of elements in the sequences from left to right,
             /// then evaluate each effect and collect the results.

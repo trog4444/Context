@@ -13,6 +13,19 @@
 !! finish unfolds in DList
 !! finish Tree (list of lists?)
 
+!!!! figure out operators
+
+^^^ Commit
+2019-09-03
+    -- began adding fsi files (done Maybe, Cont, Either)
+    -- moved `Delay` & `Run` methods of builders into Extensions/Builders
+    -- began removing recMp
+    -- POSSIBLY replace static operators with methods
+
+2019-08-28
+    -- Added SearchTree (incomplete)
+    -- Added Stream (incomplete)
+
 ^^^ Commit
 2019-08-5
 	-- continued fixing type sigs
@@ -128,7 +141,7 @@
 Commit
 2019-06-23
   -- moved concatM, mapM, mapM2, zipWithM, and replicateM to Applicative
-    & renamed to sequenceA, forA, for2A, zipWithA, & replicateA
+    & renamed to sequenceA, forA, ---END HERE---, zipWithA, & replicateA
   -- added ZipList (`zipping` Applicative functor of sequences, rather than non-deterministic)
   -- updated package # to 1.0.0.4
 

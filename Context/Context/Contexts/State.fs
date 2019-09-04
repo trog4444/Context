@@ -121,7 +121,9 @@ module State =
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
             let inline recM f x : State< ^s, ^s, ^a> =
-                let rec go m = bind (f (fun x -> go (wrap x))) m in go (f wrap x)
+                let rec go m = bind (f wrapgo) m
+                and wrapgo x = go (wrap x)
+                go (f wrap x)
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
@@ -155,18 +157,19 @@ module State =
 
             /// Sequential application on effects.
             let inline ap (State sv) (State sf) : State< ^s1, ^s3, ^b> =
-                State (fun s -> match sf s with
-                | sf -> match sv (sf.State: ^s2) with
-                | sv -> { StateValue.State = sv.State
-                        ; Value = sf.Value sv.Value })
+                State (fun s ->
+                    let sf = sf s
+                    let sv = sv (sf.State: ^s2)
+                    { StateValue.State = sv.State
+                    ; Value = sf.Value sv.Value })
 
             /// Lift a binary function on effects.
             let inline map2 (f: ^a -> ^b -> ^c) (State sa) (State sb) : State< ^s1, ^s3, ^c> =
                 State (fun s ->
-                    match sa s with
-                    | sa -> match sb (sa.State: ^s2) with
-                    | sb -> { StateValue.State = sb.State
-                            ; Value = f sa.Value sb.Value })
+                    let sa = sa s
+                    let sb = sb (sa.State: ^s2)
+                    { StateValue.State = sb.State
+                    ; Value = f sa.Value sb.Value })
 
             /// Lift a ternary function on effects.
             let inline map3 (f: ^a -> ^b -> ^c -> ^d) (State sa) (State sb) (State sc)
@@ -195,10 +198,11 @@ module State =
                     let mutable st = s0
                     let xs = seq { for x in source do
                                        match p x with
-                                       | State f -> match f st with
-                                       | sb -> if sb.Value
-                                               then st <- sb.State
-                                                    yield x } |> Seq.cache
+                                       | State f ->
+                                        let sb = f st
+                                        if sb.Value
+                                        then st <- sb.State
+                                             yield x } |> Seq.cache
                     do for _ in xs do ()
                     { StateValue.State = st ; Value = xs })
 
@@ -218,14 +222,6 @@ module State =
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline forA (f: ^a -> State< ^s, ^s, ^b>) (source: ^a seq) : State< ^s, ^s, ^b seq> =
                 sequenceA (Seq.map f source)
-
-            /// <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-            let inline for2A (f: ^a -> ^b -> State< ^s, ^s, ^c>) (source1: ^a seq) (source2: ^b seq)
-                : State< ^s, ^s, ^c seq> =
-                sequenceA (seq { for x in source1 do
-                                 for y in source2 do
-                                     yield f x y })
 
             /// <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
             /// If one sequence is longer, its extra elements are ignored.</summary>
@@ -249,13 +245,15 @@ module State =
 
             /// Lift a function onto effects.
             let inline map (f: ^a -> ^b) (State st) : State< ^s1, ^s2, ^b> =
-                State (fun s -> match st s with sa ->
+                State (fun s ->
+                    let sa = st s
                     { StateValue.State = sa.State
                     ; Value = f sa.Value })
 
             /// Replace all locations in the input with the same value.
             let replace (b: 'b) (State (sa: 's1 -> StateValue<'s2, 'a>)) : State< ^s1, ^s2, ^b> =
-                State (fun s -> match sa s with s_ ->
+                State (fun s ->
+                    let s_ = sa s
                     { StateValue.State = s_.State
                     ; Value = b })
 

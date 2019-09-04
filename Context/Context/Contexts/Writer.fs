@@ -103,13 +103,15 @@ module Writer =
             /// Computation proceeds through the use of a continuation function applied to the intermediate result.
             /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
             let inline recM f x : Writer< ^w, ^a> =
-                let rec go m = bind (f (fun x -> go (wrap x))) m in go (f wrap x)
+                let rec go m = bind (f wrapgo) m
+                and wrapgo x = go (wrap x)
+                go (f wrap x)
 
             /// Build a monad through recursive (effectful) computations.
             /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
             /// Any constructor can be used in each iteration, in the case of union-types.
             let inline recMp f x : Writer< ^w, ^a> =
-                let rec go m = bind (f go) m in go (f id x)    
+                let rec go m = bind (f go) m in go (f id x)
 
             /// <summary>Monadic fold over a structure associating to the right.</summary>
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -170,12 +172,6 @@ module Writer =
             /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
             let inline forA f source : Writer< ^w, ^b list> =
                 sequenceA (Seq.map f source)
-
-            /// <summary>Produce an effect for each pair of elements in the sequences from left to right
-            /// then evaluate each effect, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-            let inline for2A f source1 source2 : Writer< ^w, ^c list> =
-                sequenceA (seq { for x in source1 do for y in source2 -> f x y })
 
             /// <summary>Produce an effect for each pair of elements in the sequences from left to right,
             /// then evaluate each effect and collect the results.

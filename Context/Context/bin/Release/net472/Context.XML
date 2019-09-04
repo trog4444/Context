@@ -29,7 +29,7 @@
  Sequentially compose two effects, discarding any value produced by the first.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.Cont`2.op_MinusLess``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Cont{``1,``0})">
+<member name="M:PTR.Context.Type.Cont`2.op_MinusLess``2(PTR.Context.Type.Cont{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``1,``0})">
 <summary>
  The result of running a CPS computation with a given final continuation.
 </summary>
@@ -64,7 +64,7 @@
  Sequentially compose two co-effects.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.Cont`2.op_GreaterMinus``2(PTR.Context.Type.Cont{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``1,``0})">
+<member name="M:PTR.Context.Type.Cont`2.op_GreaterMinus``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Cont{``1,``0})">
 <summary>
  The result of running a CPS computation with a given final continuation.
 </summary>
@@ -96,8 +96,8 @@
 </member>
 <member name="T:PTR.Context.Type.Cont`2">
 <summary>
- A CPS (&quot;continuation-passing style&quot;) computation that produces an intermediate
- result of type `a` within a CPS computation whose final result type is `r`.
+ A CPS (&quot;continuation-passing style&quot;) computation that uses an intermediate
+ value of type `T` within a CPS computation to produce a final result of type `R`.
 </summary>
 </member>
 <member name="M:PTR.Context.Type.DList`1.op_PercentGreater``2(PTR.Context.Type.DList{``0},``1)">
@@ -365,90 +365,8 @@
  Acts like a property of an object that can be accessed through a `getter` and/or `setter`.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe`1.op_PercentGreater``2(PTR.Context.Type.Maybe{``0},``1)">
-<summary>
- Replace all locations in the input with the same value.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_MultiplyGreater``2(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1})">
-<summary>
- Sequentially compose two effects, discarding any value produced by the first.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_MinusLess``1(``0,PTR.Context.Type.Maybe{``0})">
-<summary>
- Return the contents of a Just-value or a default value otherwise.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_LessPercentBar``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Maybe{``0})">
-<summary>
- Lift a function onto effects.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_LessPercent``2(``0,PTR.Context.Type.Maybe{``1})">
-<summary>
- Replace all locations in the input with the same value.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_LessMultiplyMultiplyGreater``2(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpFunc{``0,``1}})">
-<summary>
- Sequential application on effects.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_LessMultiplyGreater``2(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpFunc{``0,``1}},PTR.Context.Type.Maybe{``0})">
-<summary>
- Sequential application on effects.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_LessMultiply``2(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1})">
-<summary>
- Sequentially compose two effects, discarding any value produced by the first.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_LessBarGreater``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- An associative binary operation on applicative functors.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_LessBarBarGreater``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- An associative binary operation on applicative functors.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_GreaterMinus``1(PTR.Context.Type.Maybe{``0},``0)">
-<summary>
- Return the contents of a Just-value or a default value otherwise.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_GreaterGreaterEquals``2(PTR.Context.Type.Maybe{``0},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}})">
-<summary>
- Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_EqualsLessLess``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},PTR.Context.Type.Maybe{``0})">
-<summary>
- Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.op_BarPercentGreater``2(PTR.Context.Type.Maybe{``0},Microsoft.FSharp.Core.FSharpFunc{``0,``1})">
-<summary>
- Lift a function onto effects.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.Empty``1">
-<summary>
- The identity element for the composition operator.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe`1.Append``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- An associative composition operation.
-</summary>
-</member>
 <member name="T:PTR.Context.Type.Maybe`1">
-<summary>
- The Maybe type represents values which may or may not be exist.
-</summary>
+ <summary>The Maybe type represents values which may or may not be exist.</summary>
 </member>
 <member name="M:PTR.Context.Type.Reader`2.op_PlusHatPlus``4(PTR.Context.Type.Reader{``0,``1},PTR.Context.Type.Reader{``2,``3})">
 <summary>
@@ -470,7 +388,7 @@
  Sequentially compose two effects, discarding any value produced by the first.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.Reader`2.op_MinusLess``2(PTR.Context.Type.Reader{``0,``1},``0)">
+<member name="M:PTR.Context.Type.Reader`2.op_MinusLess``2(``0,PTR.Context.Type.Reader{``0,``1})">
 <summary>
  The result of running a computation with a given environment.
 </summary>
@@ -505,7 +423,7 @@
  Compose two members of a category together.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.Reader`2.op_GreaterMinus``2(``0,PTR.Context.Type.Reader{``0,``1})">
+<member name="M:PTR.Context.Type.Reader`2.op_GreaterMinus``2(PTR.Context.Type.Reader{``0,``1},``0)">
 <summary>
  The result of running a computation with a given environment.
 </summary>
@@ -641,7 +559,7 @@
  Sequentially compose two effects, discarding any value produced by the first.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.State`3.op_MinusLess``3(PTR.Context.Type.State{``0,``1,``2},``0)">
+<member name="M:PTR.Context.Type.State`3.op_MinusLess``3(``0,PTR.Context.Type.State{``0,``1,``2})">
 <summary>
  The result of running a computation with a given environment.
 </summary>
@@ -671,7 +589,7 @@
  Sequentially compose two effects, discarding any value produced by the first.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.State`3.op_GreaterMinus``3(``0,PTR.Context.Type.State{``0,``1,``2})">
+<member name="M:PTR.Context.Type.State`3.op_GreaterMinus``3(PTR.Context.Type.State{``0,``1,``2},``0)">
 <summary>
  The result of running a computation with a given environment.
 </summary>
@@ -787,22 +705,6 @@
  Type that holds both a `log` and `value`.
 </summary>
 </member>
-<member name="T:PTR.Context.Type.Incomplete.NonEmpty`1">
-<summary>
- Represents a sequence that has at least one element.
-</summary>
-</member>
-<member name="T:PTR.Context.Type.Incomplete.UnitList`1">
-<summary>
- List constructor used in the `NonEmpty` sequence type.
-</summary>
-</member>
-<member name="T:PTR.Context.Type.Incomplete.Store`2">
-<summary>
- The &apos;Store&apos; holds a constant value along with a modifiable &apos;accessor&apos;
- function which maps the &apos;stored value&apos; to the &apos;focus&apos;.
-</summary>
-</member>
 <member name="P:PTR.Context.Type.Cont.cont">
 <summary>
  Creates a computation expression for the given type.
@@ -859,7 +761,7 @@
  The result of running a CPS computation with the identity as the final continuation.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.Cont.runCont``2(PTR.Context.Type.Cont{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``1,``0})">
+<member name="M:PTR.Context.Type.Cont.runCont``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Cont{``1,``0})">
 <summary>
  The result of running a CPS computation with a given final continuation.
 </summary>
@@ -930,10 +832,6 @@
  <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-</member>
-<member name="M:PTR.Context.Type.Cont.Compose.Applicative.for2A``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Cont{``2,``3}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
 </member>
 <member name="M:PTR.Context.Type.Cont.Compose.Applicative.forA``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Cont{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
@@ -1116,7 +1014,7 @@
  Create a dlist containing no elements.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.DList.applyDList``1(PTR.Context.Type.DList{``0},Microsoft.FSharp.Collections.FSharpList{``0})">
+<member name="M:PTR.Context.Type.DList.applyDList``1(Microsoft.FSharp.Collections.FSharpList{``0},PTR.Context.Type.DList{``0})">
 <summary>
  Apply a dlist to a list to get the underlying list with an extension.
 </summary>
@@ -1200,10 +1098,6 @@
  <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-</member>
-<member name="M:PTR.Context.Type.DList.Compose.Applicative.for2A``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.DList{``2}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
 </member>
 <member name="M:PTR.Context.Type.DList.Compose.Applicative.forA``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.DList{``1}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
@@ -1545,10 +1439,6 @@
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Either.Compose.Applicative.for2A``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Either{``2,``3}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-</member>
 <member name="M:PTR.Context.Type.Either.Compose.Applicative.forA``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Either{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -1731,7 +1621,7 @@
  Map a function across the components of a `Lens`.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.Lens.runLens``2(PTR.Context.Type.Lens{``0,``1},``0)">
+<member name="M:PTR.Context.Type.Lens.runLens``2(``0,PTR.Context.Type.Lens{``0,``1})">
 <summary>
  Run a `Lens` by applying a `getter` to the given value,
  then apply both to the `setter` to retrieve a final value.
@@ -1889,10 +1779,6 @@
  <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-</member>
-<member name="M:PTR.Context.Type.Lens.Compose.Applicative.for2A``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Lens{``2,``3}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
 </member>
 <member name="M:PTR.Context.Type.Lens.Compose.Applicative.forA``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Lens{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
@@ -2060,384 +1946,243 @@
 </summary>
 </member>
 <member name="P:PTR.Context.Type.Maybe.maybe">
-<summary>
- Creates a computation expression for the given type.
-</summary>
+ <summary>Creates a computation expression for the given type.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.note``2(``0,PTR.Context.Type.Maybe{``1})">
-<summary>
- &apos;Adds&apos; a value/parameter to a Maybe-value by converting Just-values into Choice1Of2&apos;s,
- otherwise puts a default &apos;note&apos; value into a Choice2Of2.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Note``2(``0,PTR.Context.Type.Maybe{``1})">
+ <summary>'Adds' a value/parameter to a Maybe-value by converting Just-values into Choice1Of2's,
+ otherwise puts a default 'note' value into a Choice2Of2.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.mapMaybes``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},System.Collections.Generic.IEnumerable{``0})">
- <summary>Version of Seq.map that can throw out elements. If the result of 'f' is
- a Just value, the result is included, otherwise it is excluded.</summary>
+<member name="M:PTR.Context.Type.Maybe.MapMaybes``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},System.Collections.Generic.IEnumerable{``0})">
+ <summary>Version of Seq.map that can throw out elements. If the result of 'f' is a Just value, the result is included, otherwise it is excluded.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.catMaybes``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
+<member name="M:PTR.Context.Type.Maybe.CatMaybes``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
  <summary>The catMaybes function takes a sequence of Maybes and returns a list of all the Just values.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.fromMaybeWith``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- Return the contents of a Just-value or a default value otherwise.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.FromMaybe``1(``0,PTR.Context.Type.Maybe{``0})">
+ <summary>Return the contents of a Just-value or a default value otherwise.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.fromMaybe``1(``0,PTR.Context.Type.Maybe{``0})">
-<summary>
- Return the contents of a Just-value or a default value otherwise.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe.ofMaybeWith``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},Microsoft.FSharp.Core.FSharpFunc{``1,``0},PTR.Context.Type.Maybe{``1})">
-<summary>
- Takes a default value, a function, and a Maybe value.
+<member name="M:PTR.Context.Type.Maybe.OfMaybe``2(``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0},PTR.Context.Type.Maybe{``1})">
+ <summary>Takes a default value, a function, and a Maybe value.
  If the Maybe value is Nothing, the function returns the default value.
- Otherwise, it applies the function to the value inside the Just and returns the result.
-</summary>
+ Otherwise, it applies the function to the value inside the Just and returns the result.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.ofMaybe``2(``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0},PTR.Context.Type.Maybe{``1})">
-<summary>
- Takes a default value, a function, and a Maybe value.
- If the Maybe value is Nothing, the function returns the default value.
- Otherwise, it applies the function to the value inside the Just and returns the result.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.IsNothing``1(PTR.Context.Type.Maybe{``0})">
+ <summary>Return true if the given value is a Nothing-value, false otherwise.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.isNothing``1(PTR.Context.Type.Maybe{``0})">
-<summary>
- Return True if the given value is a Nothing-value, False otherwise.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.IsJust``1(PTR.Context.Type.Maybe{``0})">
+ <summary>Return true if the given value is a Just-value, false otherwise.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.isJust``1(PTR.Context.Type.Maybe{``0})">
-<summary>
- Return True if the given value is a Just-value, False otherwise.
-</summary>
-</member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.mconcat``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.MConcat``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
  <summary>Combine elements of a sequence using monoidal composition.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.mtimes``1(System.Int32,PTR.Context.Type.Maybe{``0})">
-<summary>
- Repeat a value &apos;n&apos; times.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.MTimes``1(System.Int32,PTR.Context.Type.Maybe{``0})">
+ <summary>Repeat a value 'n' times.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.mempty``1">
-<summary>
- The identity element for the composition operator.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.MEmpty``1">
+ <summary>The identity element for the composition operator.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.mappend``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- An associative composition operation.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monoid.MAppend``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
+ <summary>An associative composition operation.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Monoid">
-<summary>
- Types with a binary, associative composition operation and an identity element.
-</summary>
+ <summary>Types with a binary, associative composition operation and an identity element.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Semigroup.sappend``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- An associative composition operation.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Semigroup.SAppend``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
+ <summary>An associative composition operation.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Semigroup">
-<summary>
- Types with a binary, associative composition operation.
-</summary>
+ <summary>Types with a binary, associative composition operation.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Functor.tee``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.Unit}},PTR.Context.Type.Maybe{``0})">
-<summary>
- Perform an operation, store its result, perform an action using both
- the input and output, and finally return the output.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Functor.Tee``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.Unit}},PTR.Context.Type.Maybe{``0})">
+ <summary>Perform an operation, store its result, perform an action using both the input and output, and finally return the output.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Functor.replace``2(``0,PTR.Context.Type.Maybe{``1})">
-<summary>
- Replace all locations in the input with the same value.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Functor.Replace``2(``0,PTR.Context.Type.Maybe{``1})">
+ <summary>Replace all locations in the input with the same value.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Functor.map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Maybe{``0})">
-<summary>
- Lift a function onto effects.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Functor.Map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Maybe{``0})">
+ <summary>Lift a function onto effects.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Functor">
-<summary>
- Supplementary Functor operations on the given type.
-</summary>
+ <summary>Supplementary Functor operations on the given type.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.replicateA``1(System.Int32,PTR.Context.Type.Maybe{``0})">
-<summary>
- Performs the effect &apos;n&apos; times.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.ReplicateA``1(System.Int32,PTR.Context.Type.Maybe{``0})">
+ <summary>Performs the effect 'n' times.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.zipWithA``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Maybe{``2}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.ZipWithA``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Maybe{``2}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
  <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.for2A``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Maybe{``2}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when maybe input sequence is null.</exception>
-</member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.forA``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},System.Collections.Generic.IEnumerable{``0})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.ForA``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.sequenceA``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.SequenceA``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
  <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.filterA``1(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{System.Boolean}},System.Collections.Generic.IEnumerable{``0})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.FilterA``1(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{System.Boolean}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Generalizes the sequence-based filter function.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.when_(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Maybe{Microsoft.FSharp.Core.Unit}})">
-<summary>
- Conditional execution of effectful expressions.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.When(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Maybe{Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of effectful expressions.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.andThen``2(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1})">
-<summary>
- Sequentially compose two effects, discarding any value produced by the first.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.AndThen``2(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1})">
+ <summary>Sequentially compose two effects, discarding any value produced by the first.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.map3``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.FSharpFunc{``2,``3}}},PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1},PTR.Context.Type.Maybe{``2})">
-<summary>
- Lift a ternary function on effects.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Map3``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.FSharpFunc{``2,``3}}},PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1},PTR.Context.Type.Maybe{``2})">
+ <summary>Lift a ternary function on effects.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.map2``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1})">
-<summary>
- Lift a binary function on effects.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Map2``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1})">
+ <summary>Lift a binary function on effects.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.ap``2(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpFunc{``0,``1}})">
-<summary>
- Sequential application on effects.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Ap``2(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpFunc{``0,``1}})">
+ <summary>Sequential application on effects.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.wrap``1(``0)">
-<summary>
- Lift a value onto an effectful context.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Wrap``1(``0)">
+ <summary>Lift a value onto an effectful context.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.alt``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Maybe{``0}},PTR.Context.Type.Maybe{``0})">
-<summary>
- Create a new item if the previous was empty, else keep the original.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.Alt``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Maybe{``0}},PTR.Context.Type.Maybe{``0})">
+ <summary>Create a new item if the previous was empty, else keep the original.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.optional``1(PTR.Context.Type.Maybe{``0})">
-<summary>
- Return one or none results on effects.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.Optional``1(PTR.Context.Type.Maybe{``0})">
+ <summary>Return one or none results on effects.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.asum``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.ASum``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
  <summary>The sum of a collection of effects.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.orElse``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- An associative binary operation on applicative functors.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.OrElse``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
+ <summary>An associative binary operation on applicative functors.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.empty``1">
-<summary>
- The identity of orElse.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Applicative.Alternative.Empty``1">
+ <summary>The identity of orElse.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Applicative.Alternative">
-<summary>
- A monoid on applicative functors.
-</summary>
+ <summary>A monoid on applicative functors.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Applicative">
-<summary>
- Supplementary Applicative operations on the given type.
-</summary>
+ <summary>Supplementary Applicative operations on the given type.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Monad.MaybeBuilder">
-<summary>
- Monadic computation builder specialised to the given monad.
-</summary>
+ <summary>Monadic computation builder specialised to the given monad.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.foldlM``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Maybe{``0}}},``0,System.Collections.Generic.IEnumerable{``1})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.FoldlM``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Maybe{``0}}},``0,System.Collections.Generic.IEnumerable{``1})">
  <summary>Monadic fold over a structure associating to the left.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.foldrM``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Maybe{``1}}},``1,System.Collections.Generic.IEnumerable{``0})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.FoldrM``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Maybe{``1}}},``1,System.Collections.Generic.IEnumerable{``0})">
  <summary>Monadic fold over a structure associating to the right.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.recMp``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``0}}},``0)">
-<summary>
- Build a monad through recursive (effectful) computations.
- Computation proceeds through the use of a continuation function applied to an &apos;effect&apos; applied over the intermediate result.
- Any constructor can be used in each iteration, in the case of union-types.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.RecMp``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``0}}},``0)">
+ <summary>Build a monad through recursive (effectful) computations.
+ Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
+ Any constructor can be used in each iteration, in the case of union-types.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.recM``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}}},``0)">
-<summary>
- Build a monad through recursive (effectful) computations.
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.RecM``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}}},``0)">
+ <summary>Build a monad through recursive (effectful) computations.
  Computation proceeds through the use of a continuation function applied to the intermediate result.
- The default monadic &apos;identity&apos; function is used in each iteration where the continuation is applied.
-</summary>
+ The default monadic 'identity' function is used in each iteration where the continuation is applied.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.flatten``1(PTR.Context.Type.Maybe{PTR.Context.Type.Maybe{``0}})">
-<summary>
- Removes one layer of monadic context from a nested monad.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Flatten``1(PTR.Context.Type.Maybe{PTR.Context.Type.Maybe{``0}})">
+ <summary>Removes one layer of monadic context from a nested monad.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},PTR.Context.Type.Maybe{``0})">
-<summary>
- Sequentially compose two effects, passing any value produced by the first
- as an argument to the second.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},PTR.Context.Type.Maybe{``0})">
+ <summary>Sequentially compose two effects, passing any value produced by the first as an argument to the second.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.wrap``1(``0)">
-<summary>
- Lift a value onto an effectful context.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Wrap``1(``0)">
+ <summary>Lift a value onto an effectful context.</summary>
 </member>
 <member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.relate``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,``3},Microsoft.FSharp.Core.FSharpFunc{``1,``3},PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``1})">
-<summary>
- Combine two monads using a &apos;SQL style&apos; inner join function.
-</summary>
+ <summary>Combine two monads using a 'SQL style' inner join function.</summary>
 </member>
 <member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.recover``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Maybe{``0}},PTR.Context.Type.Maybe{``0})">
-<summary>
- Create a new item if the previous was mzero, else keep the original.
-</summary>
+ <summary>Create a new item if the previous was mzero, else keep the original.</summary>
 </member>
 <member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.guard(System.Boolean)">
-<summary>
- Conditional blocking of effectful computations.
-</summary>
+ <summary>Conditional blocking of effectful computations.</summary>
 </member>
 <member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.mplus``1(PTR.Context.Type.Maybe{``0},PTR.Context.Type.Maybe{``0})">
-<summary>
- A monoidal operation on monads, supporting choice and failure.
-</summary>
+ <summary>A monoidal operation on monads, supporting choice and failure.</summary>
 </member>
 <member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.mzero``1">
-<summary>
- The identity of mplus.
-</summary>
+ <summary>The identity of mplus.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mpartitionChoice``2(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpChoice{``0,``1}})">
-<summary>
- Collects the values from Choice1Of2s on the left, and from Choice2Of2s on the right.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MPartitionChoice``2(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpChoice{``0,``1}})">
+ <summary>Collects the values from Choice1Of2s on the left, and from Choice2Of2s on the right.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mchoice2``2(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpChoice{``0,``1}})">
-<summary>
- Collects the values from Choice2Of2&apos;s, while discarding the rest.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MChoice2``2(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpChoice{``0,``1}})">
+ <summary>Collects the values from Choice2Of2's, while discarding the rest.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mchoice1``2(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpChoice{``0,``1}})">
-<summary>
- Collects the values from Choice1Of2&apos;s, while discarding the rest.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MChoice1``2(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpChoice{``0,``1}})">
+ <summary>Collects the values from Choice1Of2's, while discarding the rest.</summary>                    
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mchoose``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{``1}},PTR.Context.Type.Maybe{``0})">
-<summary>
- Generalizes the &apos;Seq.choose&apos; function.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MChoose``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{``1}},PTR.Context.Type.Maybe{``0})">
+ <summary>Generalizes the 'Seq.choose' function.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mconcatOption``1(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpOption{``0}})">
-<summary>
- Translate a form of &apos;Option.defaultWith&apos; to an arbitrary &apos;MonadPlus&apos; type.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MConcatOption``1(PTR.Context.Type.Maybe{Microsoft.FSharp.Core.FSharpOption{``0}})">
+ <summary>Translate a form of 'Option.defaultWith' to an arbitrary 'MonadPlus' type.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mofOption``1(Microsoft.FSharp.Core.FSharpOption{``0})">
-<summary>
- Translate a form of Option.defaultWith to an arbitrary &apos;MonadPlus&apos; type.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MOfOption``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+ <summary>Translate a form of Option.defaultWith to an arbitrary 'MonadPlus' type.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mpartition``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Maybe{``0})">
-<summary>
- Generalizes the &apos;Seq.partition&apos; function.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MPartition``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Maybe{``0})">
+ <summary>Generalizes the 'Seq.partition' function.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mremove``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Maybe{``0})">
-<summary>
- Opposite of the &apos;mwhere&apos; function.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MRemove``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Maybe{``0})">
+ <summary>Opposite of the 'mwhere' function.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mwhere``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Maybe{``0})">
-<summary>
- Generalizes the &apos;Seq.where&apos; function.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MWhere``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Maybe{``0})">
+ <summary>Generalizes the 'Seq.where' function.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.mOfSeq``1(System.Collections.Generic.IEnumerable{``0})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MOfSeq``1(System.Collections.Generic.IEnumerable{``0})">
  <summary>Generalizes the 'ofSeq' function.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.msum``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
+<member name="M:PTR.Context.Type.Maybe.Compose.Monad.Plus.General.MSum``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Maybe{``0}})">
  <summary>Generalizes list concatenation to monads.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Monad.Plus.General">
-<summary>
- Generalizations of functions on other types.
-</summary>
+ <summary>Generalizations of functions on other types.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Monad.Plus">
-<summary>
- Monads that also support choice and failure.
-</summary>
+ <summary>Monads that also support choice and failure.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose.Monad">
-<summary>
- Supplementary Monad operations on the given type.
-</summary>
+ <summary>Supplementary Monad operations on the given type.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Compose">
-<summary>
- Compositional operations on `Maybe` values.
-</summary>
+ <summary>Compositional operations on Maybe values.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Convert.ofNullable``1(System.Nullable{``0})">
-<summary>
- Create a Just-value if the given object has a value, Nothing otherwise.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Convert.OfNullable``1(System.Nullable{``0})">
+ <summary>Create a Just-value if the given object has a value, Nothing otherwise.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Convert.ofObj``1(``0)">
-<summary>
- Create a Just-value if the given object is not null, Nothing otherwise.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Convert.OfObj``1(``0)">
+ <summary>Create a Just-value if the given object is not null, Nothing otherwise.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Convert.toOption``1(PTR.Context.Type.Maybe{``0})">
-<summary>
- Convert a Maybe-type to a .NET Option-type. Nothing =&gt; None and Just a =&gt; Some a.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Convert.ToOption``1(PTR.Context.Type.Maybe{``0})">
+ <summary>Convert a Maybe-type to a .NET Option-type. Nothing => None and Just a => Some a.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Convert.ofOption``1(Microsoft.FSharp.Core.FSharpOption{``0})">
-<summary>
- Convert a .NET Option-type to a Maybe-type. None =&gt; Nothing and Some a =&gt; Just a.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Convert.OfOption``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+ <summary>Convert a .NET Option-type to a Maybe-type. None => Nothing and Some a => Just a.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Convert.toSeq``1(PTR.Context.Type.Maybe{``0})">
-<summary>
- Returns a singleton sequence if thet value is a Just-value, an empty sequence otherwise.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Convert.ToSeq``1(PTR.Context.Type.Maybe{``0})">
+ <summary>Returns a singleton sequence if thet value is a Just-value, an empty sequence otherwise.</summary>
 </member>
-<member name="M:PTR.Context.Type.Maybe.Convert.ofSeq``1(System.Collections.Generic.IEnumerable{``0})">
-<summary>
- Returns a Just-value with the head of a non-empty sequence and returns Nothing if the sequence is empty.
-</summary>
+<member name="M:PTR.Context.Type.Maybe.Convert.OfSeq``1(System.Collections.Generic.IEnumerable{``0})">
+ <summary>Returns a Just-value with the head of a non-empty sequence and returns Nothing if the sequence is empty.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe.Convert">
-<summary>
- Convert between values of type `Maybe` and related types.
-</summary>
+ <summary>Conversions between Maybes and related types.</summary>
 </member>
 <member name="T:PTR.Context.Type.Maybe">
-<summary>
- Operations on `Maybe` values.
-</summary>
+ <summary>Operations on Maybes.</summary>
 </member>
 <member name="P:PTR.Context.Type.Reader.reader">
 <summary>
@@ -2678,11 +2423,6 @@
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Reader.Compose.Applicative.for2A``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Reader{``2,``3}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right
- then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-</member>
 <member name="M:PTR.Context.Type.Reader.Compose.Applicative.forA``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Reader{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right
  then evaluate each effect, and collect the results.</summary>
@@ -2899,11 +2639,6 @@
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.RWS.Compose.Applicative.for2A``6(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.RWS{``2,``3,``3,``4,``5}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right
- then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-</member>
 <member name="M:PTR.Context.Type.RWS.Compose.Applicative.forA``5(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.RWS{``1,``2,``2,``3,``4}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right
  then evaluate each effect, and collect the results.</summary>
@@ -2979,7 +2714,7 @@
  The default monadic &apos;identity&apos; function is used in each iteration where the continuation is applied.
 </summary>
 </member>
-<member name="M:PTR.Context.Type.RWS.Compose.Monad.flatten``4(PTR.Context.Type.RWS{``0,``1,``1,``2,PTR.Context.Type.RWS{``0,``1,``1,``2,``3}})">
+<member name="M:PTR.Context.Type.RWS.Compose.Monad.flatten``6(PTR.Context.Type.RWS{``0,``1,``2,``3,PTR.Context.Type.RWS{``0,``2,``4,``3,``5}})">
 <summary>
  Removes one layer of monadic context from a nested monad.
 </summary>
@@ -3122,10 +2857,6 @@
  <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-</member>
-<member name="M:PTR.Context.Type.State.Compose.Applicative.for2A``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.State{``2,``2,``3}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
 </member>
 <member name="M:PTR.Context.Type.State.Compose.Applicative.forA``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.State{``1,``1,``2}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
@@ -3388,11 +3119,6 @@
  If one sequence is longer, its extra elements are ignored.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:PTR.Context.Type.Writer.Compose.Applicative.for2A``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Writer{``2,``3}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
- <summary>Produce an effect for each pair of elements in the sequences from left to right
- then evaluate each effect, and collect the results.</summary>
- <exception cref="System.ArgumentNullException">Thrown when either input sequence is null.</exception>
-</member>
 <member name="M:PTR.Context.Type.Writer.Compose.Applicative.forA``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Writer{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -3538,6 +3264,510 @@
  Operations on `Writer` values.
 </summary>
 </member>
+<member name="T:PTR.Context.Type.Incomplete.SearchTree`1">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream`1">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_PercentGreater``2(PTR.Context.Type.Incomplete.Stream_{``0},``1)">
+<summary>
+ Replace all locations in the input with the same value.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_MultiplyGreater``2(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``1})">
+<summary>
+ Sequentially compose two effects, discarding any value produced by the first.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_MinusLess``2(System.Tuple{Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},``0},PTR.Context.Type.Incomplete.Stream_{``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_MinusLess``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_LessPercentBar``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ Lift a function onto effects.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_LessPercent``2(``0,PTR.Context.Type.Incomplete.Stream_{``1})">
+<summary>
+ Replace all locations in the input with the same value.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_LessMultiplyMultiplyGreater``2(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{Microsoft.FSharp.Core.FSharpFunc{``0,``1}})">
+<summary>
+ Sequential application on effects.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_LessMultiplyGreater``2(PTR.Context.Type.Incomplete.Stream_{Microsoft.FSharp.Core.FSharpFunc{``0,``1}},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ Sequential application on effects.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_LessMultiply``2(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``1})">
+<summary>
+ Sequentially compose two effects, discarding any value produced by the first.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_LessBarGreater``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ An associative binary operation on applicative functors.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_LessBarBarGreater``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ An associative binary operation on applicative functors.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_GreaterMinus``2(PTR.Context.Type.Incomplete.Stream_{``0},System.Tuple{Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.FSharpFunc{``0,``1}},``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_GreaterMinus``1(PTR.Context.Type.Incomplete.Stream_{``0},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_GreaterGreaterEquals``2(PTR.Context.Type.Incomplete.Stream_{``0},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Incomplete.Stream_{``1}})">
+<summary>
+ Sequentially compose two effects, passing any value produced by the first as an argument to the second.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_EqualsLessLess``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Incomplete.Stream_{``1}},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ Sequentially compose two effects, passing any value produced by the first as an argument to the second.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.op_BarPercentGreater``2(PTR.Context.Type.Incomplete.Stream_{``0},Microsoft.FSharp.Core.FSharpFunc{``0,``1})">
+<summary>
+ Lift a function onto effects.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.Empty``1">
+<summary>
+ The identity element for the composition operator.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_`1.Append``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ An associative composition operation.
+</summary>
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_`1">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.NonEmpty`1">
+<summary>
+ Represents a sequence that has at least one element.
+</summary>
+</member>
+<member name="T:PTR.Context.Type.Incomplete.UnitList`1">
+<summary>
+ List constructor used in the `NonEmpty` sequence type.
+</summary>
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Store`2">
+<summary>
+ The &apos;Store&apos; holds a constant value along with a modifiable &apos;accessor&apos;
+ function which maps the &apos;stored value&apos; to the &apos;focus&apos;.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.iter``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},PTR.Context.Type.Incomplete.SearchTree{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.fold``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},``0,PTR.Context.Type.Incomplete.SearchTree{``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.initDeep``1(System.Int32,Microsoft.FSharp.Core.FSharpFunc{System.Int32,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.initWide``1(System.Int32,Microsoft.FSharp.Core.FSharpFunc{System.Int32,PTR.Context.Type.Incomplete.SearchTree{``0}})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.unfoldf``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{System.Tuple{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Incomplete.SearchTree{``1}},``0}}},``0)">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.unfold``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{System.Tuple{``1,``0}}},``0)">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.toSeq``1(PTR.Context.Type.Incomplete.SearchTree{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.ofSeq``1(System.Collections.Generic.IEnumerable{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.ofList``1(Microsoft.FSharp.Collections.FSharpList{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.ofArray``1(``0[])">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.Compose.flatten``1(PTR.Context.Type.Incomplete.SearchTree{PTR.Context.Type.Incomplete.SearchTree{``0}})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.Compose.bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Incomplete.SearchTree{``1}},PTR.Context.Type.Incomplete.SearchTree{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.Compose.ap``2(PTR.Context.Type.Incomplete.SearchTree{``0},PTR.Context.Type.Incomplete.SearchTree{Microsoft.FSharp.Core.FSharpFunc{``0,``1}})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.Compose.map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Incomplete.SearchTree{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.SearchTree.Compose.wrap``1(``0)">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.SearchTree.Compose">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.SearchTree">
+
+</member>
+<member name="P:PTR.Context.Type.Incomplete.Stream.stream">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.cacheStream``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.exit``1">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.withStream``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.Unit}},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.mapStream``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.skipWhile``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.skip``1(System.Int32,PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.takeWhile``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.take``1(System.Int32,PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.choose``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe{``1}},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.filter``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.iter``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.fold``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},``0,PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.append``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.snoc``1(``0,PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.cons``1(``0,PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.empty``1">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.ofSeq``1(System.Collections.Generic.IEnumerable{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.ofList``1(Microsoft.FSharp.Collections.FSharpList{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.ofArray``1(``0[])">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.toStream``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Monoid.mappend``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Monoid.mempty``1">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose.Monoid">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Semigroup.sappend``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose.Semigroup">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Applicative.Alternative.alt``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0}},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+<summary>
+ Create a new item if the previous was empty, else keep the original.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Applicative.Alternative.optional``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+<summary>
+ Return one or none results on effects.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Applicative.Alternative.asum``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0}})">
+ <summary>The sum of a collection of effects.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Applicative.Alternative.orElse``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+<summary>
+ An associative binary operation on applicative functors.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Applicative.Alternative.empty``1">
+<summary>
+ The identity of orElse.
+</summary>
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose.Applicative.Alternative">
+<summary>
+ A monoid on applicative functors.
+</summary>
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose.Applicative">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose.Monad.StreamBuilder">
+<summary>
+ Monadic computation builder specialised to the given monad.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Monad.Plus.relate``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,``3},Microsoft.FSharp.Core.FSharpFunc{``1,``3},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Monad.Plus.recover``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0}},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Monad.Plus.guard(System.Boolean)">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Monad.Plus.mplus``1(PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Cont{Microsoft.FSharp.Core.Unit,``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream.Compose.Monad.Plus.mzero``1">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose.Monad.Plus">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose.Monad">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream.Compose">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream">
+
+</member>
+<member name="P:PTR.Context.Type.Incomplete.Stream_.stream">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.cacheStream``1(PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.exit``1">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.withStream``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.Unit}},PTR.Context.Type.Incomplete.Stream_{``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.mapStream``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.skipWhile``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.skip``1(System.Int32,PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.takeWhile``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.take``1(System.Int32,PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.choose``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{``1}},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.filter``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.iter``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.Unit},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.fold``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},``0,PTR.Context.Type.Incomplete.Stream_{``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.append``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.snoc``1(``0,PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.cons``1(``0,PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.empty``1">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.ofSeq``1(System.Collections.Generic.IEnumerable{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.ofList``1(Microsoft.FSharp.Collections.FSharpList{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.ofArray``1(``0[])">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monoid.mappend``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monoid.mempty``1">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Monoid">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Semigroup.sappend``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Semigroup">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Functor.tee``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.Unit}},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Functor.replace``2(``0,PTR.Context.Type.Incomplete.Stream_{``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Functor.map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Functor">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.replicateA``1(System.Int32,PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ Performs the effect &apos;n&apos; times.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.zipWithA``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Incomplete.Stream_{``2}}},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1})">
+ <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results.
+ If one sequence is longer, its extra elements are ignored.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.forA``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Incomplete.Stream_{``1}},System.Collections.Generic.IEnumerable{``0})">
+ <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.sequenceA``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Incomplete.Stream_{``0}})">
+ <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.filterA``1(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Incomplete.Stream_{System.Boolean}},System.Collections.Generic.IEnumerable{``0})">
+ <summary>Generalizes the sequence-based filter function.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.when_(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Incomplete.Stream_{Microsoft.FSharp.Core.Unit}})">
+<summary>
+ Conditional execution of effectful expressions.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.andThen``2(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``1})">
+<summary>
+ Sequentially compose two effects, discarding any value produced by the first.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.map3``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.FSharpFunc{``2,``3}}},PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``1},PTR.Context.Type.Incomplete.Stream_{``2})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.map2``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.ap``2(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{Microsoft.FSharp.Core.FSharpFunc{``0,``1}})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.wrap``1(``0)">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.Alternative.alt``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Incomplete.Stream_{``0}},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ Create a new item if the previous was empty, else keep the original.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.Alternative.optional``1(PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ Return one or none results on effects.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.Alternative.asum``1(System.Collections.Generic.IEnumerable{PTR.Context.Type.Incomplete.Stream_{``0}})">
+ <summary>The sum of a collection of effects.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.Alternative.orElse``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+<summary>
+ An associative binary operation on applicative functors.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.Alternative.empty``1">
+<summary>
+ The identity of orElse.
+</summary>
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative.Alternative">
+<summary>
+ A monoid on applicative functors.
+</summary>
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Applicative">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.StreamBuilder">
+<summary>
+ Monadic computation builder specialised to the given monad.
+</summary>
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.flatten``1(PTR.Context.Type.Incomplete.Stream_{PTR.Context.Type.Incomplete.Stream_{``0}})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Incomplete.Stream_{``1}},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.wrap``1(``0)">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.Plus.relate``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,``3},Microsoft.FSharp.Core.FSharpFunc{``1,``3},PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``1})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.Plus.recover``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Incomplete.Stream_{``0}},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.Plus.guard(System.Boolean)">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.Plus.mplus``1(PTR.Context.Type.Incomplete.Stream_{``0},PTR.Context.Type.Incomplete.Stream_{``0})">
+
+</member>
+<member name="M:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.Plus.mzero``1">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Monad.Plus">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose.Monad">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_.Compose">
+
+</member>
+<member name="T:PTR.Context.Type.Incomplete.Stream_">
+
+</member>
 <member name="T:PTR.Context.Extension.Builder.Cont.Combine.AsList">
 <summary>
  Multiple `returns` result in the entire workflow returning a list of results.
@@ -3593,28 +3823,6 @@
 </summary>
 </member>
 <member name="T:PTR.Context.Extension.Builder.Lens.Combine">
-<summary>
- Adds default implementations of the `Combine` method to the specified workflow builder.
-
- NOTE: Only &apos;ONE&apos; `Combine` module should be opened at a time in any scope.
-</summary>
-</member>
-<member name="T:PTR.Context.Extension.Builder.Maybe.Combine.AsList">
-<summary>
- Multiple `returns` result in the entire workflow returning a list of &apos;Just&apos; results.
-</summary>
-</member>
-<member name="T:PTR.Context.Extension.Builder.Maybe.Combine.Append">
-<summary>
- Multiple `returns` result in all of the &apos;Just&apos; results being `appended` together.
-</summary>
-</member>
-<member name="T:PTR.Context.Extension.Builder.Maybe.Combine.FirstJust">
-<summary>
- The first `return` that results in a `Just`-value is returned if at least one `Just` exists, Nothing otherwise.
-</summary>
-</member>
-<member name="T:PTR.Context.Extension.Builder.Maybe.Combine">
 <summary>
  Adds default implementations of the `Combine` method to the specified workflow builder.
 
