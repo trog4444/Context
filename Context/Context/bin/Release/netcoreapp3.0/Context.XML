@@ -1,0 +1,938 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Context</name></assembly>
+<members>
+<member name="T:PTR.Context.Type.Cont.Cont`2">
+ <summary>A "continuation-passing style" (CPS) computation that uses an intermediate
+ value of type 'T' within a continuation to produce a final result of type 'R'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Traverse``4(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Cont.Cont{``1,``2}},``3)">
+ <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Sequence``2(System.Collections.Generic.IEnumerable{PTR.Context.Type.Cont.Cont{``0,``1}})">
+ <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.append``2(PTR.Context.Type.Cont.Cont{``0,``1},PTR.Context.Type.Cont.Cont{``0,``1})">
+ <summary>An associative binary operation on contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.RecW``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Cont.Cont{``0,``0},``0},Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Cont.Cont{``0,``0},``0}},PTR.Context.Type.Cont.Cont{``0,``0})">
+ <summary>Deconstructs a comonad through recursive (effectful) computations. Computation proceeds through the use of a continuation function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Duplicate``2(PTR.Context.Type.Cont.Cont{``0,``1})">
+ <summary>Takes a comonadic container and produces a container of containers.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Extend``3(Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Cont.Cont{``0,``1},``2},PTR.Context.Type.Cont.Cont{``0,``1})">
+ <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Extract``1(PTR.Context.Type.Cont.Cont{``0,``0})">
+ <summary>Retrieve a value out of a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Cont.Cont{``2,``0})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.When``1(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Cont.Cont{``0,Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of contextual expressions.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.AndThen``3(PTR.Context.Type.Cont.Cont{``0,``1},PTR.Context.Type.Cont.Cont{``0,``2})">
+ <summary>Sequence two contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Map2``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Cont.Cont{``3,``0},PTR.Context.Type.Cont.Cont{``3,``1})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Ap``3(PTR.Context.Type.Cont.Cont{``0,``1},PTR.Context.Type.Cont.Cont{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="P:PTR.Context.Type.Cont.Cont.cont">
+ <summary>Monadic workflow object.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.RecM1``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Cont.Cont{``0,``1},PTR.Context.Type.Cont.Cont{``0,``2}},Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Cont.Cont{``0,``2}}},``1)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.RecM``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Cont.Cont{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Cont.Cont{``1,``2}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Flatten``2(PTR.Context.Type.Cont.Cont{``0,PTR.Context.Type.Cont.Cont{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Cont.Cont{``1,``2}},PTR.Context.Type.Cont.Cont{``1,``0})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.unit``2(``0)">
+ <summary>Inject a value into the context type.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.CacheCont``2(PTR.Context.Type.Cont.Cont{``0,``1})">
+ <summary>Caches the result(s) of a `Cont` computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.TryCC``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{System.Exception,``1}},``0)">
+ <summary>Attempt to apply `fOk` on an input and return a continuation. If the function fails,
+ return a continuation with the result of applying `fErr` to the input and exception.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.GetCC``3(``0)">
+ <summary>Allows looping with a given continuation function and input.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.CallCC``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Cont.Cont{``1,``2}},PTR.Context.Type.Cont.Cont{``1,``0}})">
+ <summary>Call with current continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Reset``2(PTR.Context.Type.Cont.Cont{``0,``0})">
+ <summary>reset 'm' delimits the continuation of any shift inside 'm'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Shift``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Cont.Cont{``1,``1}})">
+ <summary>shift 'f' captures the continuation up to the nearest enclosing 'reset' and passes it to 'f'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Exit``2(``0)">
+ <summary>End the current continuation chain with a specific value.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.WithCont``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``1}},PTR.Context.Type.Cont.Cont{``1,``2})">
+ <summary>Apply a function to transform the continuation passed to a CPS computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.MapCont``2(Microsoft.FSharp.Core.FSharpFunc{``0,``0},PTR.Context.Type.Cont.Cont{``0,``1})">
+ <summary>Apply a function to transform the result of a continuation-passing computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.EvalCont``1(PTR.Context.Type.Cont.Cont{``0,``0})">
+ <summary>The result of running a CPS computation with the identity as the final continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.RunCont``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Cont.Cont{``1,``0})">
+ <summary>The result of running a CPS computation with a given final continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Cont.Cont.Make``2(System.Func{System.Func{``0,``1},``1})">
+ <summary>Create a new Continuation from a .Net Func (primary use is for interop).</summary>
+</member>
+<member name="T:PTR.Context.Type.Cont.Cont.Workflow.ContBuilder">
+ <summary>Monadic workflow builder.</summary>
+</member>
+<member name="T:PTR.Context.Type.Cont.Cont.Workflow">
+ <summary>Monadic workflow-related types and values.</summary>
+</member>
+<member name="T:PTR.Context.Type.Cont.Cont">
+ <summary>Operations on Conts.</summary>
+</member>
+<member name="T:PTR.Context.Type.Either.Either`2">
+ <summary>The Either type represents values with two possibilities:
+ a value of type Either<A, B> is either 'Left L' or 'Right R'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Traverse``4(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Either.Either{``1,``2}},``3)">
+ <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Sequence``3(``0)">
+ <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.BimapFoldBack``5(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``2,``1}}},Microsoft.FSharp.Core.FSharpFunc{``3,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``4,``1}}},``1,PTR.Context.Type.Either.Either{``0,``3})">
+ <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary
+</member>
+<member name="M:PTR.Context.Type.Either.Either.BimapFold``5(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``2,``0}}},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``3,System.Tuple{``4,``0}}},``0,PTR.Context.Type.Either.Either{``1,``3})">
+ <summary>Combines the functionality of map and fold, returning the pair of the final context-value and state.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Bifoldm``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``1},PTR.Context.Type.Either.Either{``0,``2})">
+ <summary>Applies a function to all element(s) of up to two possible source(s), threading an accumulator argument through the computation. The accumulator type is a monoid, and the folding function is the 'append' function for the given type. The default 'seed' is the monoid's 'empty' value.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Bifoldr``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``1},``1}},Microsoft.FSharp.Core.FSharpFunc{``2,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``1},``1}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``1},PTR.Context.Type.Either.Either{``0,``2})">
+ <summary>Applies a function to all element(s) of up to two possible sources, threading an accumulator argument through the computation(s). The accumulator is a thunk that is only called as needed by the folding function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Bifoldl``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},Microsoft.FSharp.Core.FSharpFunc{``1,``0}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},Microsoft.FSharp.Core.FSharpFunc{``2,``0}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Either.Either{``1,``2})">
+ <summary>Applies a function to all element(s) of two possible sources, threading an accumulator argument through the computation(s). The accumulator is a thunk that is only called as needed by the folding function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.BifoldBack``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``1}},Microsoft.FSharp.Core.FSharpFunc{``2,Microsoft.FSharp.Core.FSharpFunc{``1,``1}},``1,PTR.Context.Type.Either.Either{``0,``2})">
+ <summary>Applies a function to all element(s) of two possible sources, threading an accumulator argument through the computation(s).</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Bifold``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``2,``0}},``0,PTR.Context.Type.Either.Either{``1,``2})">
+ <summary>Applies a function to all element(s) of two possible sources, threading an accumulator argument through the computation(s).</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.MapFoldBack``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``2,``1}}},``1,PTR.Context.Type.Either.Either{``3,``0})">
+ <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary
+</member>
+<member name="M:PTR.Context.Type.Either.Either.MapFold``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``2,``0}}},``0,PTR.Context.Type.Either.Either{``3,``1})">
+ <summary>Combines the functionality of map and fold, returning the pair of the final context-value and state.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Foldm``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Either.Either{``2,``0})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator type is a monoid, and the folding function is the 'append' function for the given type. The default 'seed' is the monoid's 'empty' value.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Foldr``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``1},``1}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``1},PTR.Context.Type.Either.Either{``2,``0})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator is a thunk that is only called as needed by the folding function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Foldl``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},Microsoft.FSharp.Core.FSharpFunc{``1,``0}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Either.Either{``2,``1})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator is a thunk that is only called as needed by the folding function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.FoldBack``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``1}},``1,PTR.Context.Type.Either.Either{``2,``0})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Fold``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},``0,PTR.Context.Type.Either.Either{``2,``1})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.append``2(PTR.Context.Type.Either.Either{``0,``1},PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>An associative binary operation on contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.MapSnd``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Either.Either{``2,``0})">
+ <summary>Map covariantly over the second argument.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.MapFst``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Either.Either{``0,``2})">
+ <summary>Map covariantly over the first argument.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Bimap``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``3},PTR.Context.Type.Either.Either{``0,``2})">
+ <summary>Map over both arguments at the same time.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Either.Either{``2,``0})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.orElseWith``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Either.Either{``0,``1}},PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>An associative binary operation on contexts providing for choice and failure.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.orElse``2(PTR.Context.Type.Either.Either{``0,``1},PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>An associative binary operation on contexts providing for choice and failure.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.When``1(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Either.Either{``0,Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of contextual expressions.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.AndThen``3(PTR.Context.Type.Either.Either{``0,``1},PTR.Context.Type.Either.Either{``0,``2})">
+ <summary>Sequence two contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Map2``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Either.Either{``3,``0},PTR.Context.Type.Either.Either{``3,``1})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Ap``3(PTR.Context.Type.Either.Either{``0,``1},PTR.Context.Type.Either.Either{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="P:PTR.Context.Type.Either.Either.either">
+ <summary>Monadic workflow object.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.RecM1``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Either.Either{``0,``1},PTR.Context.Type.Either.Either{``0,``2}},Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Either.Either{``0,``2}}},``1)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.RecM``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Either.Either{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Either.Either{``1,``2}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Flatten``2(PTR.Context.Type.Either.Either{``0,PTR.Context.Type.Either.Either{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Either.Either{``1,``2}},PTR.Context.Type.Either.Either{``1,``0})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.unit``2(``0)">
+ <summary>Inject a value into the context type.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Partition``3(``0)">
+ <summary>Partitions a list of Either into two sequences. All the Left elements are extracted, in order, to the first component of the output. Similarly the Right elements are extracted to the second component of the output.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Rights``3(``0)">
+ <summary>Extracts from a sequence of Eithers all the Right elements in order.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.Lefts``3(``0)">
+ <summary>Extracts from a sequence of Eithers all the Left elements in order.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.OfResult``2(Microsoft.FSharp.Core.FSharpResult{``0,``1})">
+ <summary>Convert a Result-value into an Either. An 'Ok' will yield a Right while an 'Error' will yield a Left.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.ToResult``2(PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>Convert a Either-value into a Result. A Right will yield an 'Ok' while a Left will yield an 'Error'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.OfChoice``2(Microsoft.FSharp.Core.FSharpChoice{``0,``1})">
+ <summary>Convert a Choice-value into an Either. A Choice1Of2 will yield a Right while a Choice2Of2 will yield a Left.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.ToChoice``2(PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>Convert a Either-value into a Choice. A Right will yield a Choice1Of2 while a Left will yield a Choice2Of2.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.ToSeq``2(PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>Convert a Either-value into a sequence. a 'Right'-value will yield a singleton sequence while a 'Left'-value will yield an empty sequence.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.FromRightWith``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Either.Either{``1,``0})">
+ <summary>Return the contents of a Right-value or a default value otherwise.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.FromRight``2(``0,PTR.Context.Type.Either.Either{``1,``0})">
+ <summary>Return the contents of a Right-value or a default value otherwise.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.FromLeftWith``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>Return the contents of a Left-value or a default value otherwise.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.FromLeft``2(``0,PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>Return the contents of a Left-value or a default value otherwise.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.IsRight``2(PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>Return true if the given Either-value is a 'Right'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.IsLeft``2(PTR.Context.Type.Either.Either{``0,``1})">
+ <summary>Return true if the given Either-value is a 'Left'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Either.Either.case``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``1},PTR.Context.Type.Either.Either{``0,``2})">
+ <summary>Performs an action based on case-analysis of the given union-type.</summary>
+</member>
+<member name="T:PTR.Context.Type.Either.Either.Workflow.EitherBuilder">
+ <summary>Monadic workflow builder.</summary>
+</member>
+<member name="T:PTR.Context.Type.Either.Either.Workflow">
+ <summary>Monadic workflow-related types and values.</summary>
+</member>
+<member name="T:PTR.Context.Type.Either.Either">
+ <summary>Operations on Either values.</summary>
+</member>
+<member name="T:PTR.Context.Type.Lens.Lens`2">
+ <summary>Acts like a property of an object that can be accessed through a `getter` and/or `setter`.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.App``2">
+ <summary>Arrow that allows application of arrow inputs to other inputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Fanin``3(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``2,``1})">
+ <summary>Split the input between the two argument arrows and merge their outputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Merge``4(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``2,``3})">
+ <summary>Split the input between the two argument arrows, retagging and merging their outputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Feed2``3(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Feed marked inputs through the argument arrow, passing the rest through unchanged to the output. A mirror of 'feed1'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Feed1``3(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Feed marked inputs through the argument arrow, passing the rest through unchanged to the output. A mirror of 'feed2'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Fanout``3(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``0,``2})">
+ <summary>Fanout: send the input to both argument arrows and combine their output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Split``4(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``2,``3})">
+ <summary>Split the input between the two argument arrows and combine their output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.ArrSnd``3(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Send the second component of the input through the argument arrow, and copy the rest unchanged to the output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.ArrFst``3(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Send the first component of the input through the argument arrow, and copy the rest unchanged to the output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Arr``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1})">
+ <summary>Lift a function to an arrow.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Compose``3(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``2,``0})">
+ <summary>Compose two members of a category together.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Identity``1">
+ <summary>Identity element of a category.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Traverse``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Lens.Lens{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
+ <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Sequence``2(System.Collections.Generic.IEnumerable{PTR.Context.Type.Lens.Lens{``0,``1}})">
+ <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.append``2(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>An associative binary operation on contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.RMap``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Lens.Lens{``2,``0})">
+ <summary>Map the second argument covariantly.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.LMap``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Lens.Lens{``1,``2})">
+ <summary>Map the first argument contravariantly.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Dimap``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``3},PTR.Context.Type.Lens.Lens{``1,``2})">
+ <summary>Map over both arguments at the same time.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Lens.Lens{``2,``0})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.When``1(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Lens.Lens{``0,Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of contextual expressions.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.AndThen``3(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``0,``2})">
+ <summary>Sequence two contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Map2``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Lens.Lens{``3,``0},PTR.Context.Type.Lens.Lens{``3,``1})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Ap``3(PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="P:PTR.Context.Type.Lens.Lens.lens">
+ <summary>Monadic workflow object.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.RecM1``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Lens.Lens{``0,``1},PTR.Context.Type.Lens.Lens{``0,``2}},Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Lens.Lens{``0,``2}}},``1)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.RecM``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Lens.Lens{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Lens.Lens{``1,``2}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Flatten``2(PTR.Context.Type.Lens.Lens{``0,PTR.Context.Type.Lens.Lens{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Lens.Lens{``1,``2}},PTR.Context.Type.Lens.Lens{``1,``0})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.unit``2(``0)">
+ <summary>Inject a value into the context type.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.CacheLens``2(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Caches both the 'getter' and 'setter' functions inside a Lens.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.SndL``2">
+ <summary>Lens' equivalent of the standard 'snd' function on tuples.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.FstL``2">
+ <summary>Lens' equivalent of the standard 'fst' function on tuples.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.ModL``2(Microsoft.FSharp.Core.FSharpFunc{``0,``0},``1,PTR.Context.Type.Lens.Lens{``1,``0})">
+ <summary>Retrieve a value with a 'getter', apply a function to it, then apply a 'setter' to the result and the initial value.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.setL``2(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Retrieve the "setter" from a Lens.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.getL``2(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Retrieve the "getter" from a Lens.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.runLens``2(``0,PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Run a Lens by applying a `getter` to the given value, then apply both to the `setter` to retrieve a final value.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.newLens``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}})">
+ <summary>Create a Lens given an accessor function and a setter function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Make``2(System.Func{``0,``1},System.Func{``0,``1,``0})">
+ <summary>Create a Lens given an accessor function and a setter function.</summary>
+</member>
+<member name="T:PTR.Context.Type.Lens.Lens.Workflow.LensBuilder">
+ <summary>Monadic workflow builder.</summary>
+</member>
+<member name="T:PTR.Context.Type.Lens.Lens.Workflow">
+ <summary>Monadic workflow-related types and values.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Pattern.|LensSet|``2(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Active pattern that can be used to extract the "setter" within a Lens.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Pattern.|LensGet|``2(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Active pattern that can be used to extract the "getter" within a Lens.</summary>
+</member>
+<member name="M:PTR.Context.Type.Lens.Lens.Pattern.|Lens|``2(PTR.Context.Type.Lens.Lens{``0,``1})">
+ <summary>Active pattern that can be used to extract both the "getter" and "setter" within a Lens.</summary>
+</member>
+<member name="T:PTR.Context.Type.Lens.Lens.Pattern">
+ <summary>Active patterns on Lens values.</summary>
+</member>
+<member name="T:PTR.Context.Type.Lens.Lens">
+ <summary>Operations on Lenses.</summary>
+</member>
+<member name="T:PTR.Context.Type.Maybe.Maybe`1">
+ <summary>The Maybe type encapsulates an optional value.
+ A value of type Maybe a either contains a value of type a (represented as Just a),
+ or it is empty (represented as Nothing).
+ Using Maybe is a good way to deal with cases where a valid result 'may' not exist.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.MapFoldBack``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``2,``1}}},``1,PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.MapFold``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``2,``0}}},``0,PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Combines the functionality of map and fold, returning the pair of the final context-value and state.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Foldm``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator type is a monoid, and the folding function is the 'append' function for the given type. The default 'seed' is the monoid's 'empty' value.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Foldr``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``1},``1}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``1},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator is a thunk that is only called as needed by the folding function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Foldl``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},Microsoft.FSharp.Core.FSharpFunc{``1,``0}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator is a thunk that is only called as needed by the folding function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.FoldBack``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``1}},``1,PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Fold``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0}},``0,PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Traverse``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe.Maybe{``1}},``2)">
+ <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Sequence``2(``0)">
+ <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.MConcat``2(``0)">
+ <summary>Combine elements of a contextual sequence using monoidal composition.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.MTimes``1(System.Int32,PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Repeat an operation on a contect a specified number of times.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.append``1(PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>An associative binary operation on contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.orElseWith``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Maybe.Maybe{``0}},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>An associative binary operation on contexts providing for choice and failure.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.orElse``1(PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>An associative binary operation on contexts providing for choice and failure.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.When(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Maybe.Maybe{Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of contextual expressions.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.AndThen``2(PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Sequence two contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Map2``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Ap``2(PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{Microsoft.FSharp.Core.FSharpFunc{``0,``1}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Filter``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Filter out element(s) that do not satisfy the predicate.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.joinBy``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Boolean}},PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Combine two monads using a function similar to a 'SQL style' inner join function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.join``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,``3},Microsoft.FSharp.Core.FSharpFunc{``1,``3},PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Combine two monads using a 'SQL style' inner join function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Guard(System.Boolean)">
+ <summary>Conditional blocking of contextual computations.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.empty``1">
+ <summary>An empty context.</summary>
+</member>
+<member name="P:PTR.Context.Type.Maybe.Maybe.maybe">
+ <summary>Monadic workflow object.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.RecM1``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Maybe.Maybe{``0},PTR.Context.Type.Maybe.Maybe{``1}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe.Maybe{``1}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.RecM``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe.Maybe{``1}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe.Maybe{``1}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Flatten``1(PTR.Context.Type.Maybe.Maybe{PTR.Context.Type.Maybe.Maybe{``0}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe.Maybe{``1}},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.unit``1(``0)">
+ <summary>Inject a value into the context type.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.TryLookup``3(``0,``1)">
+ <summary>Returns the element associated with a given key as a 'Just'-value, if that key-value pair exists; returns 'Nothing' otherwise.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input source is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.TryNth``1(System.Int32,System.Collections.Generic.IEnumerable{``0})">
+ <summary>Returns the nth element in a sequence as a 'Just'-value, if that element exists; returns 'Nothing' otherwise.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.TryTail``2(``0)">
+ <summary>Returns the tail elements in a sequence as a 'Just'-value, if that tail exists; returns 'Nothing' otherwise.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.TryHead``2(``0)">
+ <summary>Returns the first element in a sequence as a 'Just'-value, if that value exists; returns 'Nothing' otherwise.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.TryPick``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe.Maybe{``1}},``2)">
+ <summary>Applies the given function to successive elements of the collection, returning the first result to return 'Just x'. Returns Nothing if no result is found.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.TryFind``2(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},``1)">
+ <summary>Applies a predicate to successive elements of the collection and returns the first value to evaluate to 'true' as a 'Just'-value. If no elements satisfy the predicate, return 'Nothing'.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Justs``2(``0)">
+ <summary>Filters a sequence of Maybes, and returns the 'x' values from all 'Just(x)'s.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.Choose``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Maybe.Maybe{``1}},``2)">
+ <summary>Applies the given function to each element of the collection. Returns each value 'x' for which the function returns 'Just x'.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.OfObj``1(``0)">
+ <summary>Convert an object (or any nullable-type) into a Maybe. A 'null' value will yield a Nothing.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.OfNullable``1(System.Nullable{``0})">
+ <summary>Convert a Nullable-value into a Maybe.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.ToNullable``1(PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Convert a Maybe into a Nullable-value.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.OfVOption``1(Microsoft.FSharp.Core.FSharpValueOption{``0})">
+ <summary>Convert an Option-value into a Maybe. A Some will yield a Just while a None will yield a Nothing.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.ToVOption``1(PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Convert a Maybe-value into an option. A Just will yield a Some while a Nothing will yield a None.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.OfOption``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+ <summary>Convert an Option-value into a Maybe. A Some will yield a Just while a None will yield a Nothing.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.ToOption``1(PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Convert a Maybe-value into an option. A Just will yield a Some while a Nothing will yield a None.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.ToSeq``1(PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Convert a Maybe-value into a sequence. a 'Just'-value will yield a singleton sequence while a 'Nothing'-value will yield an empty sequence.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.DefaultWith``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>If the given Maybe-value is a 'Just', return its value, otherwise return the default.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.DefaultValue``1(``0,PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>If the given Maybe-value is a 'Just', return its value, otherwise return the default.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.FromMaybeWith``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},Microsoft.FSharp.Core.FSharpFunc{``1,``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>If the given Maybe-value is a 'Just', return its value with the given function applied to it, otherwise return the default.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.FromMaybe``2(``0,Microsoft.FSharp.Core.FSharpFunc{``1,``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>If the given Maybe-value is a 'Just', return its value with the given function applied to it, otherwise return the default.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.IsNothing``1(PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Return true if the given Maybe-value is a 'Nothing'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.IsJust``1(PTR.Context.Type.Maybe.Maybe{``0})">
+ <summary>Return true if the given Maybe-value is a 'Just'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Maybe.Maybe.case``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0},Microsoft.FSharp.Core.FSharpFunc{``1,``0},PTR.Context.Type.Maybe.Maybe{``1})">
+ <summary>Performs an action based on case-analysis of the given union-type.</summary>
+</member>
+<member name="T:PTR.Context.Type.Maybe.Maybe.Workflow.MaybeBuilder">
+ <summary>Monadic workflow builder.</summary>
+</member>
+<member name="T:PTR.Context.Type.Maybe.Maybe.Workflow">
+ <summary>Monadic workflow-related types and values.</summary>
+</member>
+<member name="T:PTR.Context.Type.Maybe.Maybe">
+ <summary>Operations on Maybe values.</summary>
+</member>
+<member name="T:PTR.Context.Type.Reader.Reader`2">
+ <summary>Computations which read values from a shared environment.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.App``2">
+ <summary>Arrow that allows application of arrow inputs to other inputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Fanin``3(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``2,``1})">
+ <summary>Split the input between the two argument arrows and merge their outputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Merge``4(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``2,``3})">
+ <summary>Split the input between the two argument arrows, retagging and merging their outputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Feed2``3(PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>Feed marked inputs through the argument arrow, passing the rest through unchanged to the output. A mirror of 'feed1'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Feed1``3(PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>Feed marked inputs through the argument arrow, passing the rest through unchanged to the output. A mirror of 'feed2'.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Fanout``3(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``0,``2})">
+ <summary>Fanout: send the input to both argument arrows and combine their output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Split``4(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``2,``3})">
+ <summary>Split the input between the two argument arrows and combine their output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.ArrSnd``3(PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>Send the second component of the input through the argument arrow, and copy the rest unchanged to the output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.ArrFst``3(PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>Send the first component of the input through the argument arrow, and copy the rest unchanged to the output.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Arr``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1})">
+ <summary>Lift a function to an arrow.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Compose``3(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``2,``0})">
+ <summary>Compose two members of a category together.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Identity``1">
+ <summary>Identity element of a category.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Traverse``4(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Reader.Reader{``1,``2}},``3)">
+ <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Sequence``3(``0)">
+ <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.append``2(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>An associative binary operation on contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.RMap``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Reader.Reader{``2,``0})">
+ <summary>Map the second argument covariantly.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.LMap``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Reader.Reader{``1,``2})">
+ <summary>Map the first argument contravariantly.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Dimap``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``3},PTR.Context.Type.Reader.Reader{``1,``2})">
+ <summary>Map over both arguments at the same time.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Reader.Reader{``2,``0})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.When``1(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.Reader.Reader{``0,Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of contextual expressions.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.AndThen``3(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``0,``2})">
+ <summary>Sequence two contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Map2``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.Reader.Reader{``3,``0},PTR.Context.Type.Reader.Reader{``3,``1})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Ap``3(PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="P:PTR.Context.Type.Reader.Reader.reader">
+ <summary>Monadic workflow object.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.RecM1``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.Reader.Reader{``0,``1},PTR.Context.Type.Reader.Reader{``0,``2}},Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.Reader.Reader{``0,``2}}},``1)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.RecM``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Reader.Reader{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Reader.Reader{``1,``2}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Flatten``2(PTR.Context.Type.Reader.Reader{``0,PTR.Context.Type.Reader.Reader{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.Reader.Reader{``1,``2}},PTR.Context.Type.Reader.Reader{``1,``0})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.unit``2(``0)">
+ <summary>Inject a value into the context type.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.CacheReader``2(PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>Store computed results to prevent recomputation on the same inputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Uncurry1``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Convert a 2-arity, curried function into a function on a struct 2-tuple.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Uncurry``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Convert a 2-arity, curried function into a function on a 2-tuple.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Curry1``3(Microsoft.FSharp.Core.FSharpFunc{System.ValueTuple{``0,``1},``2})">
+ <summary>Convert a function on a struct 2-tuple to a 2-arity, curried function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Curry``3(Microsoft.FSharp.Core.FSharpFunc{System.Tuple{``0,``1},``2})">
+ <summary>Convert a function on a 2-tuple to a 2-arity, curried function.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Flip``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Flip a function then wrap it inside of a Reader.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Local``2(Microsoft.FSharp.Core.FSharpFunc{``0,``0},PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>Executes a computation in a modified environment.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Ask``1">
+ <summary>Retrieves the current environment.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.WithReader``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.Reader.Reader{``1,``2})">
+ <summary>Execute a computation in a modified environment.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.RunReader``2(``0,PTR.Context.Type.Reader.Reader{``0,``1})">
+ <summary>Runs a Reader and extracts the final value from it.</summary>
+</member>
+<member name="M:PTR.Context.Type.Reader.Reader.Make``2(System.Func{``0,``1})">
+ <summary>Create a new Reader from a .Net Func (primary use is for interop).</summary>
+</member>
+<member name="T:PTR.Context.Type.Reader.Reader.Workflow.ReaderBuilder">
+ <summary>Monadic workflow builder.</summary>
+</member>
+<member name="T:PTR.Context.Type.Reader.Reader.Workflow">
+ <summary>Monadic workflow-related types and values.</summary>
+</member>
+<member name="T:PTR.Context.Type.Reader.Reader">
+ <summary>Operations on Readers.</summary>
+</member>
+<member name="T:PTR.Context.Type.RWS.RWS`4">
+ <summary>A computation that, when given an input environment and an initial state, returns a modified state, a 'log', and an output.</summary>
+</member>
+<member name="T:PTR.Context.Type.RWS.RWSResult`3">
+ <summary>Result of an 'RWS' computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Traverse``6(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.RWS.RWS{``1,``2,``3,``4}},``5)">
+ <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Sequence``5(``0)">
+ <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.append``4(PTR.Context.Type.RWS.RWS{``0,``1,``2,``3},PTR.Context.Type.RWS.RWS{``0,``1,``2,``3})">
+ <summary>An associative binary operation on contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.MapSnd``5(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.RWS.RWS{``2,``3,``4,``0})">
+ <summary>Map covariantly over the second argument.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.MapFst``5(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.RWS.RWS{``2,``3,``0,``4})">
+ <summary>Map covariantly over the first argument.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Bimap``6(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``3},PTR.Context.Type.RWS.RWS{``4,``5,``0,``2})">
+ <summary>Map over both arguments at the same time.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Map``5(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.RWS.RWS{``2,``3,``4,``0})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.When``3(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.RWS.RWS{``0,``1,``2,Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of contextual expressions.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.AndThen``5(PTR.Context.Type.RWS.RWS{``0,``1,``2,``3},PTR.Context.Type.RWS.RWS{``0,``1,``2,``4})">
+ <summary>Sequence two contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Map2``6(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.RWS.RWS{``3,``4,``5,``0},PTR.Context.Type.RWS.RWS{``3,``4,``5,``1})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Ap``5(PTR.Context.Type.RWS.RWS{``0,``1,``2,``3},PTR.Context.Type.RWS.RWS{``0,``1,``2,Microsoft.FSharp.Core.FSharpFunc{``3,``4}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="P:PTR.Context.Type.RWS.RWS.rws">
+ <summary>Monadic workflow object.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.RecM1``5(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.RWS.RWS{``0,``1,``2,``3},PTR.Context.Type.RWS.RWS{``0,``1,``2,``4}},Microsoft.FSharp.Core.FSharpFunc{``3,PTR.Context.Type.RWS.RWS{``0,``1,``2,``4}}},``3)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.RecM``5(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.RWS.RWS{``1,``2,``3,``4}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.RWS.RWS{``1,``2,``3,``4}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Flatten``4(PTR.Context.Type.RWS.RWS{``0,``1,``2,PTR.Context.Type.RWS.RWS{``0,``1,``2,``3}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Bind``5(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.RWS.RWS{``1,``2,``3,``4}},PTR.Context.Type.RWS.RWS{``1,``2,``3,``0})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.unit``4(``0)">
+ <summary>Inject a value into the context type.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.CacheRWS``4(PTR.Context.Type.RWS.RWS{``0,``1,``2,``3})">
+ <summary>Cache the results of a 'RWS' computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Tell``3(``0)">
+ <summary>Create an RWS with just a log.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Local``4(Microsoft.FSharp.Core.FSharpFunc{``0,``0},PTR.Context.Type.RWS.RWS{``0,``1,``2,``3})">
+ <summary>Executes a computation in a modified environment.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Ask``3">
+ <summary>Retrieves the current environment.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Modify``3(Microsoft.FSharp.Core.FSharpFunc{``0,``0})">
+ <summary>Maps an old state to a new state inside a state computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Put``3(``0)">
+ <summary>Replace the state inside the computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Get``3">
+ <summary>Retrieves the current state.
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.WithRWS``5(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``2,``1}}},PTR.Context.Type.RWS.RWS{``2,``1,``3,``4})">
+ <summary>Executes action with an initial environment and state modified by applying 'f'.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.MapRWS``6(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,Microsoft.FSharp.Core.FSharpFunc{``2,PTR.Context.Type.RWS.RWSResult{``0,``3,``4}}}},PTR.Context.Type.RWS.RWS{``5,``0,``1,``2})">
+ <summary>Map the return value, final state, and output of a computation using the given function.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.ExecRWS``4(``0,``1,PTR.Context.Type.RWS.RWS{``0,``1,``2,``3})">
+ <summary>Evaluate a computation with the given initial state and environment, returning the final state and output, discarding the final value.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.EvalRWS``4(``0,``1,PTR.Context.Type.RWS.RWS{``0,``1,``2,``3})">
+ <summary>Evaluate a computation with the given initial state and environment, returning the final value and output, discarding the final state.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.RunRWS``4(``0,``1,PTR.Context.Type.RWS.RWS{``0,``1,``2,``3})">
+ <summary>Unwrap an 'RWS' computation as a function.</summary>
+</member>
+<member name="M:PTR.Context.Type.RWS.RWS.Make``4(System.Func{``0,``1,System.ValueTuple{``1,``2,``3}})">
+ <summary>Create a new RWS from a .Net Func (primary use is for interop).</summary>
+</member>
+<member name="T:PTR.Context.Type.RWS.RWS.Workflow.RWSBuilder">
+ <summary>Monadic workflow builder.</summary>
+</member>
+<member name="T:PTR.Context.Type.RWS.RWS.Workflow">
+ <summary>Monadic workflow-related types and values.</summary>
+</member>
+<member name="T:PTR.Context.Type.RWS.RWS">
+ <summary>Operations on RWS's.</summary>
+</member>
+<member name="T:PTR.Context.Type.State.State`2">
+ <summary>Stateful computations, i.e. computations that consume an initial state and return a value along with a new state.</summary>
+</member>
+<member name="T:PTR.Context.Type.State.StateValue`2">
+ <summary>Result of a stateful computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Traverse``4(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.State.State{``1,``2}},``3)">
+ <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.State.State.Sequence``3(``0)">
+ <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+ <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+</member>
+<member name="M:PTR.Context.Type.State.State.append``2(PTR.Context.Type.State.State{``0,``1},PTR.Context.Type.State.State{``0,``1})">
+ <summary>An associative binary operation on contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},PTR.Context.Type.State.State{``2,``0})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.When``1(System.Boolean,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,PTR.Context.Type.State.State{``0,Microsoft.FSharp.Core.Unit}})">
+ <summary>Conditional execution of contextual expressions.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.AndThen``3(PTR.Context.Type.State.State{``0,``1},PTR.Context.Type.State.State{``0,``2})">
+ <summary>Sequence two contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Map2``4(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},PTR.Context.Type.State.State{``3,``0},PTR.Context.Type.State.State{``3,``1})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Ap``3(PTR.Context.Type.State.State{``0,``1},PTR.Context.Type.State.State{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="P:PTR.Context.Type.State.State.state">
+ <summary>Monadic workflow object.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.RecM1``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{PTR.Context.Type.State.State{``0,``1},PTR.Context.Type.State.State{``0,``2}},Microsoft.FSharp.Core.FSharpFunc{``1,PTR.Context.Type.State.State{``0,``2}}},``1)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.RecM``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.State.State{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.State.State{``1,``2}}},``0)">
+ <summary>Recursively generate a context using a continuation.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Flatten``2(PTR.Context.Type.State.State{``0,PTR.Context.Type.State.State{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,PTR.Context.Type.State.State{``1,``2}},PTR.Context.Type.State.State{``1,``0})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.unit``2(``0)">
+ <summary>Inject a value into the context type.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.NewSV``2(``0,``1)">
+ <summary>Create a new StateValue-pair from two provided values.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.CacheState``2(PTR.Context.Type.State.State{``0,``1})">
+ <summary>Store computed results to prevent recomputation on the same inputs.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Modify``1(Microsoft.FSharp.Core.FSharpFunc{``0,``0})">
+ <summary>Maps an old state to a new state inside a state computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Put``1(``0)">
+ <summary>Replace the state inside the computation.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Get``1">
+ <summary>Retrieves the current state.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.WithState``2(Microsoft.FSharp.Core.FSharpFunc{``0,``0},PTR.Context.Type.State.State{``0,``1})">
+ <summary>'withState f st' executes action 'st' on a state modified by applying 'f'.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.MapState``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.Tuple{``0,``2}}},PTR.Context.Type.State.State{``0,``1})">
+ <summary>Map both the return value and final state of a computation using the given function.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.ExecState``2(``0,PTR.Context.Type.State.State{``0,``1})">
+ <summary>Execute a state computation with the given initial state and return the final state, discarding the final value.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.EvalState``2(``0,PTR.Context.Type.State.State{``0,``1})">
+ <summary>Evaluate a state computation with the given initial state and return the final value, discarding the final state.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.RunState``2(``0,PTR.Context.Type.State.State{``0,``1})">
+ <summary>Run a state computation with the given initial state and return the final state and value from it.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Make``2(System.Func{``0,System.ValueTuple{``0,``1}})">
+ <summary>Create a new State from a .Net Func (primary use is for interop).</summary>
+</member>
+<member name="T:PTR.Context.Type.State.State.Workflow.StateBuilder">
+ <summary>Monadic workflow builder.</summary>
+</member>
+<member name="T:PTR.Context.Type.State.State.Workflow">
+ <summary>Monadic workflow-related types and values.</summary>
+</member>
+<member name="M:PTR.Context.Type.State.State.Pattern.|SVPair|``2(PTR.Context.Type.State.StateValue{``0,``1})">
+ <summary>Returns the state and value of a Stateful computation result as a pair (tuple).</summary>
+</member>
+<member name="T:PTR.Context.Type.State.State.Pattern">
+ <summary>Active patterns on State values.</summary>
+</member>
+<member name="T:PTR.Context.Type.State.State">
+ <summary>Operations on States.</summary>
+</member>
+</members>
+</doc>

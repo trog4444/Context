@@ -1,64 +1,63 @@
-﻿namespace PTR.Context.Incomplete.Extension
+﻿namespace PTR.Context.Operators
 
 
-module Operators =
+[<AutoOpen>]
+module ContextOperators =
 
-    open PTR.Context.Type
-
-    type Maybe<'T> with
+    let inline ( >>= ) m f =
+        (^``Monad<a>``: (member SelectMany: System.Func< ^a, ^``Monad<b>``> -> ^``Monad<b>``)
+            (m, System.Func<_,_>f))
     
-        static member inline Wrap x = Just x
-        
-        member inline s.Bind k =
-            match s with Nothing -> Nothing | Just a -> k a
-        
-        member inline s.Map2 (struct (t, f)) =
-            match s with Nothing -> Nothing | Just a -> match t with Nothing -> Nothing | Just b -> Just (f a b)
-        
-        member inline s.Map f =
-            match s with Nothing -> Nothing | Just a -> Just (f a)
-        
-        member inline s.OrElse t = match s with Nothing -> t | Just _ -> s
-    
-        static member inline Append (struct (s, t)) =
-            match s with
-            | Nothing -> t
-            | Just a  -> match t with
-                         | Nothing -> s
-                         | Just b  -> Just ((^A: (static member Append: ^A -> ^A -> ^A) (a, b)))
-    
-        static member inline Empty () = Nothing
+    let inline ( =<< ) (f: ^a -> ^``Monad<b>``) (m: ^``Monad<a>``)
+        : ^``Monad<b>`` = m >>= f
 
-
-    let inline ( >>= ) m k =
-        (^Ta: (member Bind: (^a -> ^Tb) -> ^Tb) (m, k))
-
-    let inline ( =<< ) k m = m >>= k
 
     let inline ( <*> ) ff fv =
-        (^Tf: (member Map2: struct (^Ta * ((^a -> ^b) -> ^a -> ^b)) -> ^Tb) (ff, (fv, fun f a -> f a)))
+        (^``Applicative<a -> b>``: (member Select2: ^``Applicative<a>`` * System.Func<(^a -> ^b), ^a, ^b> -> ^``Applicative<b>``)
+            (ff, fv, System.Func<_,_,_>(fun f a -> f a)))
+    
+    let inline ( <**> ) (fv: ^``Applicative<a>``) (ff: ^``Applicative<a -> b>``)
+        : ^``Applicative<b>`` = ff <*> fv
 
-    let inline ( <**> ) fv ff = ff <*> fv
 
-    let inline ( *> ) fa fb = 
-        (^Ta: (member Map2: struct (^Tb * (^a -> ^b -> ^b)) -> ^Tb) (fa, (fb, fun _ b -> b)))
+    let inline ( *> ) fa fb =
+        (^``Applicative<a>``:
+            (member Select2: ^``Applicative<b>`` * System.Func< ^a, ^b, ^b> -> ^``Applicative<b>``)
+                (fa, fb, System.Func<_,_,_>(fun _ b -> b)))
+        
+    let inline ( <* ) fb (fa: ^``Applicative<a>``) : ^``Applicative<b>`` = fa *> fb
 
-    let inline ( <* ) fb fa = fa *> fb
 
     let inline ( <|> ) f1 f2 =
-        (^T: (member OrElse: ^T -> ^T) (f1, f2))
+        (^``Alternative<a>``:
+            (member OrElse: ^``Alternative<a>`` -> ^``Alternative<a>``) (f1, f2))
+        
+    let inline ( <||> ) f2 f1 : ^``Alternative<a>`` = f1 <|> f2
 
-    let inline ( <||> ) f2 f1 = f1 <|> f2
+
 
     let inline ( |%> ) fa f =
-        (^Ta: (member Map: (^a -> ^b) -> ^Tb) (fa, f))
+        (^``Functor<a>``:
+            (member Select: System.Func< ^a, ^b> -> ^``Functor<b>``) (fa, System.Func<_,_>f))
+    
+    let inline ( <%| ) (f: ^a -> ^b) (fa: ^``Functor<a>``) : ^``Functor<b>`` = fa |%> f
 
-    let inline ( <%| ) f fa = fa |%> f
 
-    let inline ( %> ) fa b = fa |%> fun _ -> b
+    let inline ( %> ) (fa: ^``Functor<a>``) (b: ^b) : ^``Functor<b>`` = fa |%> fun _ -> b
 
-    let inline ( <% ) b fa = fa %> b
+    let inline ( <% ) (b: ^b) (fa: ^``Functor<a>``) : ^``Functor<b>`` = fa %> b
+
+
+
+    let inline ( =>> ) w j =
+        (^``Comonad<a>``:
+            (member ContinueWith: System.Func< ^``Comonad<a>``, ^b> -> ^``Comonad<b>``)
+                (w, System.Func<_,_>j))
+      
+    let inline ( <<= ) (j: ^``Comonad<a>`` -> ^b) w : ^``Comonad<b>`` = w =>> j
+
+
 
     let inline ( ++ ) e1 e2 =
-        (^T: (static member Append: ^T -> ^T -> ^T) (e1, e2))
-
+        (^``Semigroup<a>``:
+            (static member Append: ^``Semigroup<a>`` -> ^``Semigroup<a>`` -> ^``Semigroup<a>``) (e1, e2))

@@ -1,364 +1,411 @@
-﻿namespace PTR.Context.Type
+﻿namespace PTR.Context.Type.Either
 
 
 [<Struct>]
-type Either<'A, 'B> = Left of L: ^A | Right of R: ^B
+type Either<'L, 'R> = Left of L: 'L | Right of R: 'R with
+
+    member inline s.Match (onLeft: System.Func< ^L, ^T>, onRight: System.Func< ^R , ^T>) : ^T =
+        match s with
+        | Right r -> onRight.Invoke(r)
+        | Left l -> onLeft.Invoke(l)        
+
+    static member inline Unit(x: ^a) : Either< ^e, ^a> = Right x
+
+    member inline s.Select(f: System.Func< ^R, ^S>) : Either< ^L, ^S> =
+        match s with Right a -> Right (f.Invoke(a)) | Left e -> Left e
+
+    member inline s.Select2 (second: Either< ^L, ^S>, f: System.Func< ^R, ^S, ^T>) : Either< ^L, ^T> =
+        match s, second with
+        | Right a, Right b -> Right (f.Invoke(a, b))
+        | Left e, _ | _, Left e -> Left e
+    
+    member inline s.SelectMany (f: System.Func< ^R, Either< ^L, ^S>>) : Either< ^L, ^S> =
+        match s with Right a -> f.Invoke(a) | Left e -> Left e
+
+    member inline s.SelectMany(f: System.Func< ^R, Either< ^L, ^S>>, g: System.Func< ^R, ^S, ^T>) : Either< ^L, ^T> =
+        match s with
+        | Left e -> Left e
+        | Right a -> match f.Invoke(a) with
+                     | Right b -> Right (g.Invoke(a, b))
+                     | Left e -> Left e
+
+    member inline s.Join(t: Either< ^L, ^S>, kt: System.Func< ^R, ^K>, ku: System.Func< ^S, ^K>, rs: System.Func< ^R, ^S, ^T>) : Either< ^L, ^T> =
+        s.Select2(t, rs)
+
+    member inline s.OrElse (second: Either< ^L, ^R>) : Either< ^L, ^R> =
+        match s with Right _ -> s | Left _ -> second
+
+    static member inline Append (first: Either< ^e, ^a>, second: Either< ^e, ^a>) : Either< ^e, ^a> =
+        match first, second with
+        | Right a, Right b -> Right (^a : (static member Append: ^a -> ^a -> ^a) (a, b))
+        | Left e, _ | _, Left e -> Left e
 
 
 module Either =
- 
+
+// Primitives
+
+    let inline case onLeft onRight (either: Either< ^e, ^a>) : ^r =
+        match either with
+        | Right a -> onRight a
+        | Left e -> onLeft e
+
     [<CompiledName("IsLeft")>]
-    let isLeft either = match either with Left _ -> true | Right _ -> false
+    let isLeft (either: Either<'a, 'b>) =
+        match either with
+        | Right _ -> false
+        | Left _ -> true
 
     [<CompiledName("IsRight")>]
-    let isRight either = match either with Left _ -> false | Right _ -> true
-
-    [<CompiledName("OfEither")>]
-    let inline ofEither fLeft fRight (either: Either< ^a, ^b>) : ^c =
-        match either with Left a -> fLeft a | Right b -> fRight b
+    let isRight (either: Either<'a, 'b>) =
+        match either with        
+        | Right _ -> true
+        | Left _ -> false
 
     [<CompiledName("FromLeft")>]
-    let fromLeft (def: 'a) either : ^a = match either with Left a -> a | Right _ -> def
+    let fromLeft (def: 'a) (either: Either< ^a, 'b>) : ^a =
+        match either with
+        | Right _ -> def
+        | Left l -> l        
+
+    [<CompiledName("FromLeftWith")>]
+    let inline fromLeftWith (defThunk: unit -> ^a) (either: Either< ^a, ^b>) : ^a =
+        match either with
+        | Right _ -> defThunk ()
+        | Left l -> l
 
     [<CompiledName("FromRight")>]
-    let fromRight (def: 'b) either : ^b = match either with Left _ -> def | Right b -> b
+    let fromRight (def: 'b) (either: Either<'a, ^b>) : ^b =
+        match either with
+        | Right r -> r
+        | Left _ -> def
+
+    [<CompiledName("FromRightWith")>]
+    let inline fromRightWith (defThunk: unit -> ^b) (either: Either< ^a, ^b>) : ^b =
+        match either with
+        | Right r -> r
+        | Left _ -> defThunk ()
+
+
+// Isomorphisms
+
+    //[<CompiledName("ToArray")>]
+    //let inline toArray (either: Either< ^e, ^a>) : ^a [] =
+    //    match either with        
+    //    | Right a -> Array.singleton a
+    //    | Left _ -> Array.empty
+
+    //[<CompiledName("ToList")>]
+    //let inline toList (either: Either< ^e, ^a>) : ^a list =
+    //    match either with        
+    //    | Right a -> List.singleton a
+    //    | Left _ -> List.empty
+
+    [<CompiledName("ToSeq")>]
+    let inline toSeq (either: Either< ^e, ^a>) : seq< ^a> =
+        match either with
+        | Right a -> Seq.singleton a
+        | Left _ -> Seq.empty        
+
+    [<CompiledName("ToChoice")>]
+    let inline toChoice (either: Either< ^e, ^a>) : Choice< ^a, ^e> =
+        match either with
+        | Right a -> Choice1Of2 a
+        | Left e -> Choice2Of2 e
+
+    [<CompiledName("OfChoice")>]
+    let inline ofChoice (choice: Choice< ^a, ^e>) : Either< ^e, ^a> =
+        match choice with
+        | Choice1Of2 a -> Right a
+        | Choice2Of2 e -> Left e
+
+    [<CompiledName("ToResult")>]
+    let inline toResult (either: Either< ^e, ^a>) : Result< ^a, ^e> =
+        match either with
+        | Right a -> Ok a
+        | Left e -> Error e
+
+    [<CompiledName("OfResult")>]
+    let inline ofResult (result: Result< ^a, ^e>) : Either< ^e, ^a> =
+        match result with
+        | Ok a -> Right a
+        | Error e -> Left e
+
+
+// Collections
 
     [<CompiledName("Lefts")>]
-    let lefts eithers = seq { for e in eithers do match e with Left a -> yield a | Right _ -> () }
+    let lefts (eithers: #seq<Either<'a, 'b>>) : ^a seq =
+        seq { for x in eithers do
+                  match x with
+                  | Right _ -> ()
+                  | Left a -> yield a }
 
     [<CompiledName("Rights")>]
-    let rights eithers = seq { for e in eithers do match e with Left _ -> () | Right b -> yield b }
+    let rights (eithers: #seq<Either<'a, 'b>>) : ^b seq =
+        seq { for x in eithers do
+                  match x with
+                  | Right b -> yield b
+                  | Left _ -> () }
 
     [<CompiledName("Partition")>]
-    let partition (eithers: Either<'a, 'b> seq) =
-        let f e (struct (ls, rs)) = match e with Left a -> struct (a::ls, rs) | Right b -> struct (ls, b::rs)
-        let z = struct ([], [])
-        match (match eithers with
-               | :? array<Either< ^a, ^b>> as s -> Array.foldBack f s z
-               | :? list< Either< ^a, ^b>> as s -> List.foldBack  f s z
-               | _ -> Seq.foldBack f eithers z) with struct (a, b) -> a, b
+    let partition (eithers: #seq<Either<'a, 'b>>) : ^a seq * ^b seq =
+        let xs = Seq.cache eithers
+        seq { for x in xs do
+                  match x with
+                  | Right _ -> ()
+                  | Left a -> yield a },
+        seq { for x in xs do
+                  match x with
+                  | Right b -> yield b
+                  | Left _ -> () }
 
-    [<CompiledName("Hush")>]
-    let hush (either: Either<'``_``, 'a>) : ^a option =
-        match either with Left _ -> None | Right a -> Some a
+// Monad
 
+    let unit (x: 'a) : Either<'e, ^a> = Right x
 
-    module Convert =
+    [<CompiledName("Bind")>]
+    let inline bind f (m: Either< ^e, ^a>) : Either< ^e, ^b> =
+        match m with
+        | Right a -> f a
+        | Left e -> Left e
+
+    [<CompiledName("Flatten")>]
+    let flatten (mm: Either<'e, Either< ^e, 'a>>) : Either< ^e, ^a> =
+        match mm with
+        | Right m -> m
+        | Left e -> Left e
+
+    [<CompiledName("RecM")>]
+    let inline recM f (x: ^a) : Either< ^e, ^b> =
+        let rec go m = bind j m
+        and k a = go (unit a)
+        and j a = f k a
+        j x
+
+    [<CompiledName("RecM1")>]
+    let inline recM1 f (x: ^a) : Either< ^e, ^b> =
+        let rec go m = bind k m
+        and k a = f go a
+        k x
+
     
-        [<CompiledName("OfSeq")>]
-        let ofSeq (source: 'a seq) : Either<string, ^a> =
-            if isNull source then Left "Input sequence was null."
-            elif Seq.isEmpty source then Left "Input sequence was empty."
-            else Right (Seq.head source)
+    module Workflow =
 
-        [<CompiledName("ToSeq")>]
-        let toSeq (either: Either<'a, 'b>) : ^b seq =
-            match either with Left _ -> Seq.empty | Right a -> Seq.singleton a    
+        type EitherBuilder () =
+            member inline _.Return(x: ^a) : Either< ^e, ^a> = unit x
+            member inline _.ReturnFrom (m: Either< ^e, ^a>) : Either< ^e, ^a> = m
+            member inline _.Bind (m: Either< ^e, ^a>, f) = bind f m
+            
+            member inline _.Zero() : Either< ^e, unit> = unit ()
 
-        [<CompiledName("OfChoice")>]
-        let ofChoice (choice: Choice<'b, 'a>) : Either< ^a, ^b> =
-            match choice with Choice1Of2 b -> Right b | Choice2Of2 a -> Left a
+            member inline _.Using (disp: ^d, body: ^d -> Either< ^e, ^a>) : Either< ^e, ^a> when ^d :> System.IDisposable =
+                using disp body
 
-        [<CompiledName("ToChoice")>]
-        let toChoice (either: Either<'a, 'b>) : Choice< ^b, ^a> =
-            match either with Right b -> Choice1Of2 b | Left a -> Choice2Of2 a
+            member inline _.TryWith(body, handler) : Either< ^e, ^a> =
+                try body with e -> handler e
+            member inline _.TryFinally(body, finalizer) : Either< ^e, ^a> =
+                try body finally finalizer ()
 
-        [<CompiledName("OfResult")>]
-        let ofResult (result: Result<'b, 'err>) : Either< ^err, ^b> =
-            match result with Ok b -> Right b | Error err -> Left err
-
-        [<CompiledName("ToResult")>]
-        let toResult (either: Either<'err, 'b>) : Result< ^b, ^err> =
-            match either with Right b -> Ok b | Left err -> Error err
-
-
-    module Compose =
-
-        module Monad =
-
-            [<CompiledName("Wrap")>]
-            let inline wrap x : Either< ^a, ^b> = Right x
-
-            [<CompiledName("Bind")>]
-            let inline bind (k: ^b -> Either< ^a, ^c>) m =
-                match m with Left a -> Left a | Right b -> k b
-
-            [<CompiledName("Flatten")>]
-            let flatten (mm: Either<'a, Either< ^a, 'b>>) : Either< ^a, ^b> =
-                match mm with
-                | Left e  -> Left e
-                | Right m -> m
-
-
-            [<Sealed>]
-            type EitherBuilder () =
-                member inline s.Bind(m, k) = bind k m
-                member inline s.Return x = wrap x
-                member inline s.ReturnFrom m : Either< ^a, ^b> = m
-                member inline s.Zero () = s.Return ()
- 
-                member inline s.TryWith (body, handler) = try s.ReturnFrom(body ()) with e -> handler e
-                member inline s.TryFinally (body, finalizer) = try s.ReturnFrom(body ()) finally finalizer ()
- 
-                member inline s.Using(disp: ^d when ^d :> System.IDisposable, body) =
-                    s.TryFinally((fun () -> body disp), disp.Dispose)
- 
-                member inline s.While(guard, body) =
-                    let rec loop = function
-                    | false -> s.Zero ()
-                    | true -> s.Bind(body (), fun () -> loop (guard ()))
-                    loop (guard ())
- 
-                member inline s.For(seq: ^b seq, body) : Either< ^a, unit> =
-                    s.Using(seq.GetEnumerator(), fun enum -> s.While(enum.MoveNext, fun () -> body enum.Current))
-
-
-            [<CompiledName("RecM")>]
-            let inline recM f (x: ^b) : Either< ^a, ^c> =
+            member inline _.While(guard, body) : Either< ^e, unit> =
                 let rec go = function
-                | Left a  -> Left a
-                | Right b -> f lp b
-                and lp b = go (Right b)
-                go (Right x)
-      
-            [<CompiledName("FoldrM")>]
-            let inline foldrM (f: ^b -> ^s -> Either< ^a, ^s>) (s0: ^s) (source: ^b seq) : Either< ^a, ^s> =
-                let inline g k x s = bind k (f x s)
-                match source with
-                | :? array< ^b> as s -> Array.fold g wrap s s0
-                | :? list<  ^b> as s -> List.fold  g wrap s s0
-                | _ -> Seq.fold g wrap source s0
+                | false -> unit ()
+                | true  -> bind k (body ())
+                and k () = go (guard ()) in k ()
 
-            [<CompiledName("FoldlM")>]
-            let inline foldlM (f: ^s -> ^b -> Either< ^a, ^s>) (s0: ^s) (source: ^b seq) : Either< ^a, ^s> =
-                use e = source.GetEnumerator()
-                let mutable s = s0
-                let mutable g = true
-                let mutable a0 = Unchecked.defaultof< ^a>
-                while g && e.MoveNext() do
-                    match f s e.Current with
-                    | Left a  -> g <- false ; a0 <- a
-                    | Right b -> s <- b
-                if g then Right s else Left a0
+            member inline _.For(seq: #seq< ^a>, body) : Either< ^e, unit> =
+                use e = seq.GetEnumerator()
+                let rec go = function
+                | false -> unit ()
+                | true  -> b e.Current
+                and b x = bind k (body x)
+                and k () = go (e.MoveNext()) in k ()
 
 
-        module Applicative =
-
-            [<CompiledName("Wrap")>]
-            let inline wrap (x: ^b) : Either< ^a, ^b> = Right x
-
-            [<CompiledName("Ap")>]
-            let inline ap fv (ff: Either< ^a, (^b -> ^c)>) : Either< ^a, ^c> =
-                match ff with
-                | Left a  -> Left a
-                | Right f -> match fv with
-                             | Left a  -> Left a
-                             | Right v -> Right (f v)
-
-            [<CompiledName("Map2")>]
-            let inline map2 (f: ^b -> ^c -> ^d) fc fd : Either< ^a, ^d> =
-                match fc with
-                | Left a  -> Left a
-                | Right b -> match fd with
-                             | Left a  -> Left a
-                             | Right c -> Right (f b c)
-
-            [<CompiledName("Map3")>]
-            let inline map3 (f: ^b -> ^c -> ^d -> ^e) fb fc fd : Either< ^a, ^e> =
-                match fb with
-                | Left a  -> Left a
-                | Right b -> match fc with
-                             | Left a  -> Left a
-                             | Right c -> match fd with
-                                          | Left a  -> Left a
-                                          | Right d -> Right (f b c d)
-
-            [<CompiledName("AndThen")>]
-            let andThen (fc: Either<'a, 'c>) fb : Either< ^a, ^c> =
-                match fb with Left a -> Left a | Right _ -> fc
-
-            [<CompiledName("When")>]
-            let inline when_ condition f : Either< ^a, unit> =
-                if condition then f () else wrap ()
-
-            [<CompiledName("FilterA")>]
-            let inline filterA (p: ^b -> Either< ^a, bool>) (source: ^b seq) =
-                match source with
-                | :? array< ^b> as s ->
-                    let mutable i = 0
-                    let mutable a0 = Unchecked.defaultof< ^a>
-                    let mutable g = true
-                    let ra = ResizeArray<_>(s.Length)
-                    while g && i < s.Length do
-                        match p s.[i] with
-                        | Left a -> g <- false ; a0 <- a
-                        | Right false -> i <- i + 1
-                        | Right true  -> ra.Add(s.[i]) ; i <- i + 1
-                    if g then Right (ra :> _ seq) else Left a0
-                | :? list<  ^b> as s ->
-                    let ra = ResizeArray<_>(s.Length)
-                    let rec go = function
-                    | [] -> Right (ra :> _ seq)
-                    | x::xs ->
-                        match p x with
-                        | Left a  -> Left a
-                        | Right false -> go xs
-                        | Right true  -> ra.Add(x) ; go xs
-                    go s
-                | _ ->
-                    let mutable a0 = Unchecked.defaultof< ^a>
-                    let mutable g = true
-                    use e = source.GetEnumerator()
-                    let xs = seq {
-                        while g && e.MoveNext() do
-                            match p e.Current with
-                            | Left a -> a0 <- a ; g <- false
-                            | Right false -> ()
-                            | Right true  -> yield e.Current } |> Seq.cache
-                    do for _ in xs do ()
-                    if g then Right xs else Left a0
+    let either = Workflow.EitherBuilder()
 
 
-            [<CompiledName("SequenceA")>]
-            let inline sequenceA (source: Either< ^a, ^b> seq) : Either< ^a, ^b seq> =
-                match source with
-                | :? array<Either< ^a, ^b>> as s ->
-                    let mutable i = 0
-                    let mutable a0 = Unchecked.defaultof< ^a>
-                    let mutable g = true
-                    let ra = ResizeArray<_>(s.Length)
-                    while g && i < s.Length do
-                        match s.[i] with
-                        | Left a  -> g <- false ; a0 <- a
-                        | Right b -> ra.Add(b) ; i <- i + 1
-                    if g then Right (ra :> _ seq) else Left a0
-                | :? list<Either< ^a, ^b>> as s ->
-                    let ra = ResizeArray<_>(s.Length)
-                    let rec go = function
-                    | [] -> Right (ra :> _ seq)
-                    | x::xs ->
-                        match x with
-                        | Left a  -> Left a
-                        | Right b -> ra.Add(b) ; go xs
-                    go s
-                | _ ->
-                    let mutable a0 = Unchecked.defaultof< ^a>
-                    let mutable g = true
-                    use e = source.GetEnumerator()
-                    let xs = seq {
-                        while g && e.MoveNext() do
-                            match e.Current with
-                            | Left a  -> a0 <- a ; g <- false
-                            | Right b -> yield b } |> Seq.cache
-                    do for _ in xs do ()
-                    if g then Right xs else Left a0
+// Applicative
 
-            [<CompiledName("ForA")>]
-            let inline forA (f: ^b -> Either< ^a, ^c>) (source: ^b seq) : Either< ^a, ^c seq> =
-                match source with
-                | :? array< ^b> as s -> sequenceA (Array.map f s)
-                | :? list<  ^b> as s -> sequenceA [| for x in s -> f x |]
-                | _ -> sequenceA (Seq.map f source)
+    [<CompiledName("Ap")>]
+    let inline ap (fv: Either< ^e, ^a>) (ff: Either< ^e, (^a -> ^b)>) : Either< ^e, ^b> =
+        match ff, fv with
+        | Right f, Right v -> Right (f v)
+        | Left e, _ | _, Left e -> Left e        
 
-            [<CompiledName("ZipWithA")>]
-            let inline zipWithA (f: ^b -> ^c -> Either< ^a, ^d>) source1 source2 : Either< ^a, ^d seq> =
-                sequenceA (Seq.map2 f source1 source2)
+    [<CompiledName("Map2")>]
+    let inline map2  (f: ^a -> ^b -> ^c) (fa: Either< ^e, ^a>) (fb: Either< ^e, ^b>) : Either< ^e, ^c> =
+        match fa, fb with
+        | Right a, Right b -> Right (f a b)
+        | Left e, _ | _, Left e -> Left e
 
-            [<CompiledName("ReplicateA")>]
-            let replicateA count (fb: Either<'a, 'b>) : Either< ^a, ^b seq> =
-                match fb with Left a -> Left a | Right b -> Right (Seq.replicate (max 0 count) b)
+    [<CompiledName("AndThen")>]
+    let andThen (second: Either<'e, 'b>) (first: Either< ^e, 'a>) : Either< ^e, ^b> =
+        match first with
+        | Right _ -> second
+        | Left e -> Left e
+
+    [<CompiledName("When")>]
+    let inline when_ condition f : Either< ^e, unit> =
+        if condition then f () else unit ()
 
 
-        module Functor =
+// Alternative
 
-            [<CompiledName("Map")>]
-            let inline map (f: ^b -> ^c) fa : Either< ^a, ^c> =
-                match fa with Left a -> Left a | Right b -> Right (f b)
+    let orElse (second: Either<'e, 'a>) (first: Either< ^e, ^a>) : Either< ^e, ^a> =
+      match first with
+      | Right _ -> first
+      | Left _ -> second
 
-            [<CompiledName("Replace")>]
-            let replace (b: 'c) (fb: Either<'a, 'b>) : Either< ^a, ^c> =
-                match fb with Left a -> Left a | Right _ -> Right b
-
-            [<CompiledName("Tee")>]
-            let inline tee (f: ^b -> ^c) (g: ^b -> ^c -> unit) fa : Either< ^a, ^c> =
-                match fa with
-                | Left a  -> Left a
-                | Right b -> let c = f b in g b c ; Right c
+    let inline orElseWith (second: unit -> Either< ^e, ^a>) (first: Either< ^e, ^a>) : Either< ^e, ^a> =
+      match first with
+      | Right _ -> first
+      | Left _ -> second ()
 
 
-        module Bifunctor =
+// Functor
 
-            [<CompiledName("Bimap")>]
-            let inline bimap f g (bf: Either< ^a, ^b>) : Either< ^c, ^d> =
-                match bf with Left a -> Left (f a) | Right b -> Right (g b)
-
-            [<CompiledName("MapFst")>]
-            let inline mapFst f (bf: Either< ^a, ^b>) : Either< ^c, ^b> =
-                match bf with Left a -> Left (f a) | Right b -> Right b
-
-            [<CompiledName("MapSnd")>]
-            let inline mapSnd g (bf: Either< ^a, ^b>) : Either< ^a, ^c> =
-                match bf with Left a -> Left a | Right b -> Right (g b)
+    [<CompiledName("Map")>]
+    let inline map (f: ^a -> ^b) (fa: Either< ^e, ^a>) : Either< ^e, ^b> =
+        match fa with
+        | Right a -> Right (f a)
+        | Left e -> Left e
 
 
-        module Semigroup =
+// Bifunctor
 
-            [<CompiledName("SAppend")>]
-            let sappend e1 (e2: Either<'a, 'b>) : Either< ^a, ^b> =
-                match e1 with
-                | Left _  -> e2
-                | Right _ -> e1
+    [<CompiledName("Bimap")>]
+    let inline bimap (f: ^a -> ^c) (g: ^b -> ^d) (bf: Either< ^a, ^b>) : Either< ^c, ^d> =
+        match bf with        
+        | Right b -> Right (g b)
+        | Left a -> Left (f a)
+
+    [<CompiledName("MapFst")>]
+    let inline mapFst (f: ^a -> ^c) (bf: Either< ^a, ^b>) : Either< ^c, ^b> =
+        match bf with
+        | Right b -> Right b
+        | Left a -> Left (f a)        
+
+    [<CompiledName("MapSnd")>]
+    let inline mapSnd (g: ^b -> ^c) (bf: Either< ^a, ^b>) : Either< ^a, ^c> =
+        match bf with
+        | Right b -> Right (g b)
+        | Left a -> Left a
+
+
+// Semigroup
+
+    let append (first: Either<'e, 'a>) (second: Either< ^e, ^a>) : Either< ^e, ^a> =
+        match first with        
+        | Right _ -> first
+        | Left _ -> second
+
+
+// Traversable
+
+    [<CompiledName("Sequence")>]
+    let inline sequence (source: #seq<Either< ^e, ^a>>) : Either< ^e, seq< ^a>> =
+        use e = source.GetEnumerator()
+        let mutable b = true
+        let mutable er = Unchecked.defaultof< ^e>
+        let ra = ResizeArray< ^a>()
+        while b && e.MoveNext() do
+            match e.Current with
+            | Right a -> ra.Add(a)
+            | Left er' -> b <- false ; er <- er'
+        if b then Right (System.Linq.Enumerable.AsEnumerable(ra)) else Left er
+            
+    [<CompiledName("Traverse")>]
+    let inline traverse (f: ^a -> Either< ^e, ^b>) (source: #seq< ^a>) : Either< ^e, seq< ^b>> =
+        sequence (System.Linq.Enumerable.Select(source, f))
+
+
+// Foldable
+
+    [<CompiledName("Fold")>]
+    let inline fold folder seed (source: Either< ^e, ^a>) : ^s =
+        match source with
+        | Right a -> folder seed a
+        | Left _ -> seed        
+
+    [<CompiledName("FoldBack")>]
+    let inline foldBack folder seed (source: Either< ^e, ^a>) : ^s =
+        match source with
+        | Right a -> folder a seed
+        | Left _ -> seed
+
+    [<CompiledName("Foldl")>]
+    let inline foldl folder seed (source: Either< ^e, ^a>) : ^s =
+        match source with
+        | Right a -> folder seed a
+        | Left _ -> seed ()        
     
+    [<CompiledName("Foldr")>]
+    let inline foldr folder seed (source: Either< ^e, ^a>) : ^s =
+        match source with
+        | Right a -> folder a seed
+        | Left _ -> seed ()
 
-    let either = Compose.Monad.EitherBuilder ()
+    [<CompiledName("Foldm")>]
+    let inline foldm f (source: Either< ^e, ^a>) : ^m when ^m : (static member Append: ^m -> ^m -> ^m) =
+        match source with
+        | Right a -> f a
+        | Left _ -> (^m : (static member Empty: unit -> ^m) ())
+
+    [<CompiledName("MapFold")>]
+    let inline mapFold mapping (seed: ^s) (source: Either< ^e, ^a>) : Either< ^e, ^b> * ^s =
+        match source with
+        | Right a -> let r, s = mapping seed a in Right r, s
+        | Left e -> Left e, seed
+
+    [<CompiledName("MapFoldBack")>]
+    let inline mapFoldBack mapping (seed: ^s) (source: Either< ^e, ^a>) : Either< ^e, ^b> * ^s =
+        match source with
+        | Right a -> let r, s = mapping a seed in Right r, s
+        | Left e -> Left e, seed
 
 
+// Bifoldable
 
-//open Either
-//open Compose
- 
-//// @ Operators @
-//type Either<'A, 'B> with
+    [<CompiledName("Bifold")>]
+    let inline bifold (fold1: ^s -> ^a -> ^s) (fold2: ^s -> ^b -> ^s) (seed: ^s) (source: Either< ^a, ^b>) : ^s =
+        match source with
+        | Right b -> fold2 seed b
+        | Left a -> fold1 seed a
 
-//// @ Primitive @
+    [<CompiledName("BifoldBack")>]
+    let inline bifoldBack (fold1: ^a -> ^s -> ^s) (fold2: ^b -> ^s -> ^s) (seed: ^s) (source: Either< ^a, ^b>) : ^s =
+        match source with
+        | Right b -> fold2 b seed
+        | Left a -> fold1 a seed
 
-//    /// Return the contents of a Right-value or a default value otherwise.
-//    static member inline ( >- ) (m, d) = fromRight d m
-//    /// Return the contents of a Right-value or a default value otherwise.
-//    static member inline ( -< ) (d, m) = fromRight d m
+    [<CompiledName("Bifoldl")>]
+    let inline bifoldl (fold1: (unit -> ^s) -> ^a -> ^s) (fold2: (unit -> ^s) -> ^b -> ^s) (seed: unit -> ^s) (source: Either< ^a, ^b>) : ^s =
+        match source with
+        | Right b -> fold2 seed b
+        | Left a -> fold1 seed a
 
-//// @ Monad @
+    [<CompiledName("Bifoldr")>]
+    let inline bifoldr (fold1: ^a -> (unit -> ^s) -> ^s) (fold2: ^b -> (unit -> ^s) -> ^s) (seed: unit -> ^s) (source: Either< ^a, ^b>) : ^s =
+        match source with
+        | Right b -> fold2 b seed
+        | Left a -> fold1 a seed
 
-//    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-//    static member inline ( >>= ) (m, k) = Monad.bind k m
-//    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-//    static member inline ( =<< ) (k, m) = Monad.bind k m
+    [<CompiledName("Bifoldm")>]
+    let inline bifoldm (f1: ^a -> ^m) (f2: ^b -> ^m) (source: Either< ^a, ^b>)
+        : ^m when ^m : (static member Append: ^m -> ^m -> ^m) =
+        match source with
+        | Right b -> f2 b
+        | Left a -> f1 a
 
-//// @ Applicative @
+    [<CompiledName("BimapFold")>]
+    let inline bimapFold (mapping1: ^s -> ^a -> ^b * ^s) (mapping2: ^s -> ^c -> ^d * ^s) (seed: ^s) (source: Either< ^a, ^c>) : Either< ^b, ^d> * ^s =
+        match source with
+        | Right b -> let r, s = mapping2 seed b in Right r, s
+        | Left a -> let r, s = mapping1 seed a in Left r, s
 
-//    /// Sequential application on effects.
-//    static member inline ( <*> ) (ff, fx) = Applicative.ap fx ff
-//    /// Sequential application on effects.
-//    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
-
-//    /// Sequentially compose two effects, discarding any value produced by the first.
-//    static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
-//    /// Sequentially compose two effects, discarding any value produced by the first.
-//    static member inline ( <* ) (fb, fa) = Applicative.andThen fb fa
-
-//// @ Functor @    
-
-//    /// Lift a function onto effects.
-//    static member inline ( |%> ) (fa, f) = Functor.map f fa
-//    /// Lift a function onto effects.
-//    static member inline ( <%| ) (f, fa) = Functor.map f fa
-
-//    /// Replace all locations in the input with the same value.
-//    static member inline ( %> ) (b, fa) = Functor.replace b fa
-//    /// Replace all locations in the input with the same value.
-//    static member inline ( <% ) (fa, b) = Functor.replace b fa
-
-//// @ Semigroup @
-
-//    /// An associative composition operation.
-//    static member inline Append (e1, e2) = Semigroup.sappend e1 e2
+    [<CompiledName("BimapFoldBack")>]
+    let inline bimapFoldBack (mapping1: ^a -> ^s -> ^b * ^s) (mapping2: ^c -> ^s -> ^d * ^s) (seed: ^s) (source: Either< ^a, ^c>) : Either< ^b, ^d> * ^s =
+        match source with
+        | Right b -> let r, s = mapping2 b seed in Right r, s
+        | Left a -> let r, s = mapping1 a seed in Left r, s

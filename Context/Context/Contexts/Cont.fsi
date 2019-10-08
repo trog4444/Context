@@ -1,14 +1,36 @@
-﻿namespace PTR.Context.Type
+﻿namespace PTR.Context.Type.Cont
 
 
-/// A "continuation-passing style" (CPS) computation that uses an intermediate
-/// value of type `T` within a CPS computation to produce a final result of type `R`.</summary>
+/// <summary>A "continuation-passing style" (CPS) computation that uses an intermediate
+/// value of type 'T' within a continuation to produce a final result of type 'R'.</summary>
 [<Struct; NoComparison; NoEquality>]
-type Cont<'R, 'T> = Cont of ((^T -> ^R) -> ^R)
+type Cont<'R, 'T> = Cont of (('T -> 'R) -> 'R) with
+
+    member inline Invoke : cont: System.Func< ^T, ^R> -> ^R
+
+    static member inline Unit : x: ^a -> Cont< ^r, ^a>
+    
+    member inline Select : f: System.Func< ^T, ^U> -> Cont< ^R, ^U>
+    member inline Select2 : second: Cont< ^R, ^U> * f: System.Func< ^T, ^U, ^V> -> Cont< ^R, ^V>
+    member inline SelectMany : f: System.Func< ^T, Cont< ^R, ^U>> -> Cont< ^R, ^U>
+    member inline SelectMany : f: System.Func< ^T, Cont< ^R, ^U>> * g: System.Func< ^T, ^U, ^V> -> Cont< ^R, ^V>
+    
+    member inline Join : t: Cont< ^R, ^U> * kt: System.Func< ^T, ^K> * ku: System.Func< ^U, ^K> * rs: System.Func< ^T, ^U, ^V> -> Cont< ^R, ^V>
+
+    member inline ContinueWith : f: System.Func<Cont< ^R, ^T>, ^U> -> Cont< ^R, ^U>
+
+    static member inline Append : first: Cont< ^r, ^a> * second: Cont< ^r, ^a> -> Cont< ^r, ^a>
+        when ^a : (static member Append: ^a -> ^a -> ^a)
 
 
 /// <summary>Operations on Conts.</summary>
 module Cont =
+
+// Primitives
+
+    /// <summary>Create a new Continuation from a .Net Func (primary use is for interop).</summary>
+    [<CompiledName("Make")>]
+    val inline make : f: System.Func<System.Func< ^T, ^R>, ^R> -> Cont< ^R, ^T>
 
     /// <summary>The result of running a CPS computation with a given final continuation.</summary>
     [<CompiledName("RunCont")>]
@@ -36,7 +58,7 @@ module Cont =
 
     /// <summary>reset 'm' delimits the continuation of any shift inside 'm'.</summary>
     [<CompiledName("Reset")>]
-    val reset: Cont<'r, 'r> -> Cont<'r0, ^r>
+    val inline reset: Cont< ^r, ^r> -> Cont< ^r0, ^r>
 
     /// <summary>Call with current continuation.</summary>
     [<CompiledName("CallCC")>]
@@ -53,159 +75,144 @@ module Cont =
 
     /// <summary>Caches the result(s) of a `Cont` computation.</summary>
     [<CompiledName("CacheCont")>]
-    val cacheCont: Cont<'r, 'a> -> Cont< ^r, ^a> when 'a : equality
+    val inline cacheCont: Cont< ^r, ^a> -> Cont< ^r, ^a> when ^a : equality
 
 
-    /// <summary>Compositional operations on Conts.</summary>
-    module Compose =
+// Monad
 
-        /// <summary>Supplementary Monad operations on the given type.</summary>
-        module Monad =
+    /// <summary>Inject a value into the context type.</summary>
+    val inline unit : x: ^a -> Cont< ^r, ^a>
 
-            /// <summary>Lift a value onto an effectful context.</summary>
-            [<CompiledName("Wrap")>]
-            val inline wrap: x: ^a -> Cont< ^r, ^a>
+    /// <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+    [<CompiledName("Bind")>]
+    val inline bind : f: (^a -> Cont< ^r, ^b>) -> m: Cont< ^r, ^a> -> Cont< ^r, ^b>
 
-            /// <summary>Sequentially compose two effects, passing any value produced by the first as an argument to the second.</summary>
-            [<CompiledName("Bind")>]
-            val inline bind: k: (^a -> Cont< ^r, ^b>) -> Cont< ^r, ^a> -> Cont< ^r, ^b>
+    /// <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+    [<CompiledName("Flatten")>]
+    val inline flatten : mm: Cont< ^r, Cont< ^r, ^a>> -> Cont< ^r, ^a>
 
-            /// <summary>Removes one layer of monadic context from a nested monad.</summary>
-            [<CompiledName("Flatten")>]
-            val inline flatten: Cont< ^r, Cont< ^r, ^a>> -> Cont< ^r, ^a>
+    /// <summary>Recursively generate a context using a continuation.</summary>
+    [<CompiledName("RecM")>]
+    val inline recM : f: ((^a -> Cont< ^r, ^b>) -> ^a -> Cont< ^r, ^b>) -> x: ^a -> Cont< ^r, ^b>
 
-
-            /// <summary>Monadic computation builder specialised to the given monad.</summary>
-            [<Sealed>]
-            type ContBuilder =
-                new: unit -> ContBuilder
-                member inline Bind: m: Cont< ^r, ^a> * k: (^a -> Cont< ^r, ^b>) -> Cont< ^r, ^b>
-                member inline Return: x: ^a -> Cont< ^r, ^a>
-                member inline ReturnFrom: m: Cont< ^r, ^a> -> Cont< ^r, ^a>
-                member inline Zero: unit -> Cont< ^r, unit>
-
-                member inline TryWith: body: (unit -> Cont< ^r, ^a>) * handler: (exn -> Cont< ^r, ^a>) -> Cont< ^r, ^a>
-                member inline TryFinally: body: (unit -> Cont< ^r, ^a>) * finalizer: (unit -> unit) -> Cont< ^r, ^a>
-
-                member inline Using: disp: ^d * body: (^d -> Cont< ^r, ^a>) -> Cont< ^r, ^a> when ^d :> System.IDisposable
-
-                member inline While: guard: (unit -> bool) * body: (unit -> Cont< ^r, unit>) -> Cont< ^r, unit>
-
-                member inline For: seq: ^a seq * body: (^a -> Cont< ^r, unit>) -> Cont< ^r, unit>
+    /// <summary>Recursively generate a context using a continuation.</summary>
+    [<CompiledName("RecM1")>]
+    val inline recM1 : f: ((Cont< ^r, ^a> -> Cont< ^r, ^b>) -> ^a -> Cont< ^r, ^b>) -> x: ^a -> Cont< ^r, ^b>
 
 
-            /// <summary>Build a monad through recursive (effectful) computations. Computation proceeds through the use of a continuation function applied to the intermediate result.
-            /// The default monadic 'identity' function is used in each iteration where the continuation is applied.</summary>
-            [<CompiledName("RecM")>]
-            val inline recM: f: ((^a -> Cont< ^r, ^a>) -> ^a -> Cont< ^r, ^a>) -> x: ^a -> Cont< ^r, ^a>
+    /// <summary>Monadic workflow-related types and values.</summary>
+    module Workflow =
 
-            /// <summary>Monadic fold over a structure associating to the right.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            [<CompiledName("FoldrM")>]
-            val inline foldrM: f: (^a -> ^s -> Cont< ^r, ^s>) -> s0: ^s -> source: ^a seq -> Cont< ^r, ^s>
+        /// <summary>Monadic workflow builder.</summary>
+        type ContBuilder =
+            new : unit -> ContBuilder
+            
+            member inline Return : x: ^a -> Cont< ^r, ^a>
+            member inline ReturnFrom : m: Cont< ^r, ^a> -> Cont< ^r, ^a>
+            member inline Bind: m: Cont< ^r, ^a> * (^a -> Cont< ^r, ^b>) -> Cont< ^r, ^b>
+            
+            member inline Zero : unit -> Cont< ^r,unit>
 
-            /// <summary>Monadic fold over a structure associating to the left.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            [<CompiledName("FoldlM")>]
-            val inline foldlM: f: (^s -> ^a -> Cont< ^r, ^s>) -> s0: ^s -> source: ^a seq -> Cont< ^r, ^s>
+            member inline Using : disp: ^d * body: (^d -> Cont< ^r, ^a>) -> Cont< ^r, ^a> when ^d :> System.IDisposable
 
+            member inline TryWith : body: Cont< ^r, ^a> * handler: (exn -> Cont< ^r, ^a>) -> Cont< ^r, ^a>
+            member inline TryFinally : body: Cont< ^r, ^a> * finalizer: (unit -> unit) -> Cont< ^r, ^a>
 
-        /// <summary>Supplementary Applicative operations on the given type.</summary>
-        module Applicative =
-
-            /// <summary>Lift a value onto an effectful context.</summary>
-            [<CompiledName("Wrap")>]
-            val inline wrap: x: ^a -> Cont< ^r, ^a>
-
-            /// <summary>Sequential application on effects.</summary>
-            [<CompiledName("Ap")>]
-            val inline ap: Cont< ^r, ^a> -> Cont< ^r, (^a -> ^b)> -> Cont< ^r, ^b>
-
-            /// <summary>Lift a binary function on effects.</summary>
-            [<CompiledName("Map2")>]
-            val inline map2: f: (^a -> ^b -> ^c) -> Cont< ^r, ^a> -> Cont< ^r, ^b> -> Cont< ^r, ^c>
-
-            /// <summary>Lift a ternary function on effects.</summary>
-            [<CompiledName("Map3")>]
-            val inline map3: f: (^a -> ^b -> ^c -> ^d) -> Cont< ^r, ^a> -> Cont< ^r, ^b> -> Cont< ^r, ^c> -> Cont< ^r, ^d>
-
-            /// <summary>Sequentially compose two effects, discarding any value produced by the first.</summary>
-            [<CompiledName("AndThen")>]
-            val inline andThen: Cont< ^r, ^b> -> Cont< ^r, ^a> -> Cont< ^r, ^b>
-
-            /// <summary>Conditional execution of effectful expressions.</summary>
-            [<CompiledName("When")>]
-            val inline when_: condition: bool -> f: (unit -> Cont< ^r, unit>) -> Cont< ^r, unit>
-
-            /// <summary>Generalizes the sequence-based filter function.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            [<CompiledName("FilterA")>]
-            val inline filterA: p: (^a -> Cont< ^r, bool>) -> source: ^a seq -> Cont< ^r, ^a list>
-
-            /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            [<CompiledName("SequenceA")>]
-            val inline sequenceA: source: Cont< ^r, ^a> seq -> Cont< ^r, ^a list>
-
-            /// <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            [<CompiledName("ForA")>]
-            val inline forA: f: (^a -> Cont< ^r, ^b>) -> source: ^a seq -> Cont< ^r, ^b list>
-
-            /// <summary>Produce an effect for each pair of elements in the sequences from left to right, then evaluate each effect and collect the results. If one sequence is longer, its extra elements are ignored.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            [<CompiledName("ZipWithA")>]
-            val inline zipWithA: f: (^a -> ^b -> Cont< ^r, ^c>) -> source1: ^a seq -> source2: ^b seq -> Cont< ^r, ^c list>
-
-            /// <summary>Performs the effect 'n' times.</summary>
-            [<CompiledName("ReplicateA")>]
-            val inline replicateA: count: int -> Cont< ^r, ^a> -> Cont< ^r, ^a seq>
+            member inline While : guard: (unit -> bool) * body: (unit -> Cont< ^r,unit>) -> Cont< ^r,unit>
+            
+            member inline For : seq: #seq< ^a> * body: (^a -> Cont< ^r,unit>) -> Cont< ^r,unit>
 
 
-        /// <summary>Supplementary Functor operations on the given type.</summary>
-        module Functor =
-
-            /// <summary>Lift a function onto effects.</summary>
-            [<CompiledName("Map")>]
-            val inline map: f: (^a -> ^b) -> Cont< ^r, ^a> -> Cont< ^r, ^b>
-
-            /// <summary>Replace all locations in the input with the same value.</summary>
-            [<CompiledName("Replace")>]
-            val replace: b: 'b -> Cont<'r, 'a> -> Cont< ^r, ^b>
-
-            /// <summary>Perform an operation, store its result, perform an action using both the input and output, and finally return the output.</summary>
-            [<CompiledName("Tee")>]
-            val inline tee: f: (^a -> ^b) -> g: (^a -> ^b -> unit) -> Cont< ^r, ^a> -> Cont< ^r, ^b>
+    /// <summary>Monadic workflow object.</summary>
+    val cont : Workflow.ContBuilder
 
 
-        /// <summary>Supplementary Comonad operations on the given type.</summary>
-        module Comonad =
+// Applicative
 
-            /// <summary>Retrieve a value out of a context.</summary>
-            [<CompiledName("Extract")>]
-            val extract: Cont<'r, ^r> -> ^r
+    /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+    [<CompiledName("Ap")>]
+    val inline ap : fv: Cont< ^r, ^a> -> ff: Cont< ^r,(^a -> ^b)> -> Cont< ^r, ^b>
 
-            /// <summary>Sequentially compose two co-effects.</summary>
-            [<CompiledName("Extend")>]
-            val inline extend: j: (Cont< ^r, ^a> -> ^b) -> Cont< ^r, ^a> -> Cont< ^r, ^b>
+    /// <summary>Lift a binary function onto contexts.</summary>
+    [<CompiledName("Map2")>]
+    val inline map2 : f: (^a -> ^b -> ^c) -> fa: Cont< ^r, ^a> -> fb: Cont< ^r, ^b> -> Cont< ^r, ^c>
 
-            /// <summary>Takes a comonadic container and produces a container of containers.</summary>
-            [<CompiledName("Duplicate")>]
-            val duplicate: Cont<'r, 'a> -> Cont< ^r, Cont< ^r, ^a>>
+    /// <summary>Sequence two contexts.</summary>
+    [<CompiledName("AndThen")>]
+    val inline andThen : second: Cont< ^r, ^b> -> first: Cont< ^r, ^a> -> Cont< ^r, ^b>
 
-            /// <summary>Deconstructs a comonad through recursive (effectful) computations. Computation proceeds through the use of a continuation function.</summary>
-            [<CompiledName("RecW")>]
-            val inline recW: f: ((Cont< ^r, ^r> -> ^r) -> Cont< ^r, ^r> -> ^r) -> Cont< ^r, ^r> -> ^r
-
-
-        /// <summary>Types with a binary, associative composition operation.</summary>
-        module Semigroup =
-
-            /// <summary>An associative composition operation.</summary>
-            [<CompiledName("SAppend")>]
-            val inline sappend: Cont< ^r, ^a> -> Cont< ^r, ^a> -> Cont< ^r, ^a>
-                when ^a: (static member Append: ^a -> ^a -> ^a)
+    /// <summary>Conditional execution of contextual expressions.</summary>
+    [<CompiledName("When")>]
+    val inline when_: condition: bool -> f: (unit -> Cont< ^r, unit>) -> Cont< ^r, unit>
 
 
-    /// <summary>Creates a computation expression for the given type.</summary>
-    val cont: Compose.Monad.ContBuilder
+// Functor
+
+    /// <summary>Lift a function onto a context.</summary>
+    [<CompiledName("Map")>]
+    val inline map : f: (^a -> ^b) -> fa: Cont< ^r, ^a> -> Cont< ^r, ^b>
+
+
+// Comonad
+
+    /// <summary>Retrieve a value out of a context.</summary>
+    [<CompiledName("Extract")>]
+    val extract : w: Cont<'a, ^a> -> ^a
+
+    /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
+    [<CompiledName("Extend")>]
+    val inline extend : j: (Cont< ^r, ^a> -> ^b) -> w: Cont< ^r, ^a> -> Cont< ^r, ^b>
+
+    /// <summary>Takes a comonadic container and produces a container of containers.</summary>
+    [<CompiledName("Duplicate")>]
+    val duplicate : w: Cont<'r, 'a> -> Cont< ^r, Cont< ^r, ^a>>
+
+    /// <summary>Deconstructs a comonad through recursive (effectful) computations. Computation proceeds through the use of a continuation function.</summary>
+    [<CompiledName("RecW")>]
+    val inline recW : f: ((Cont< ^a, ^a> -> ^a) -> Cont< ^a, ^a> -> ^a) -> w: Cont< ^a, ^a> -> ^a
+
+
+// Semigroup
+
+    /// <summary>An associative binary operation on contexts.</summary>
+    val inline append : first: Cont< ^r, ^a> -> second: Cont< ^r, ^a> -> Cont< ^r, ^a>
+        when ^a : (static member Append: ^a -> ^a -> ^a)
+
+
+// Foldable
+
+    [<CompiledName("Fold")>]
+    val inline fold : folder: (^s -> ^a -> ^s) -> seed: ^s -> source: Cont<unit, ^a> -> ^s
+
+    [<CompiledName("FoldBack")>]
+    val inline foldBack : folder: (^a -> ^s -> ^s) -> seed: ^s -> source: Cont<unit, ^a> -> ^s
+    
+    [<CompiledName("Foldr")>]
+    val inline foldr : folder: (^a -> (unit -> ^s) -> ^s) -> seed: (unit -> ^s) -> source: Cont<unit, ^a> -> ^s
+
+    [<CompiledName("Foldl")>]
+    val inline foldl : folder: ((unit -> ^s) -> ^a -> ^s) -> seed: (unit -> ^s) -> source: Cont<unit, ^a> -> ^s
+
+    [<CompiledName("Foldm")>]
+    val inline foldm : f: (^a -> ^m) -> source: Cont<unit, ^a> -> ^m
+        when ^m : (static member Append: ^m -> ^m -> ^m)
+        and  ^m : (static member Empty: unit -> ^m)
+
+    [<CompiledName("MapFold")>]
+    val inline mapFold : mapping: (^s -> ^a -> ^b * ^s) -> seed: ^s -> source: Cont<unit, ^a> -> Cont<unit, ^b> * ^s
+
+    [<CompiledName("MapFoldBack")>]
+    val inline mapFoldBack : mapping: (^a -> ^s -> ^b * ^s) -> seed: ^s -> source: Cont<unit, ^a> -> Cont<unit, ^b> * ^s
+
+
+// Traversable
+
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    [<CompiledName("Sequence")>]
+    val inline sequence : source: seq<Cont< ^r, ^a>> -> Cont< ^r, seq< ^a>>
+
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    [<CompiledName("Traverse")>]
+    val inline traverse : f: (^a -> Cont< ^r, ^b>) -> source: #seq< ^a> -> Cont< ^r, seq< ^b>>

@@ -1,25 +1,205 @@
 ﻿!! @Maybe.Monad.foldlM => rewrote to break on Nothing, test if faster
-!! @Reader => continue testing inline vs noinline
-!! @Arrow operators => CANNOT use existing operators (|||, ***, etc)
 !! @RWS => change return type from tuple to RWSValue or something
 !! @RWS & State &? Writer => Convert module to change inbetween return types and tuples
 !! can go back and add type annotations to non-inlined functions => this allows them
 	=> !! to still be usable w/o type monomorphic restriction
-!! test Store -- verify all typeclass laws are obeyed & add replace, map2, andthen, etc
-
 !! Reader sappend isnt right
 !! make sure %> =>    functor %> val %> val %> val
-!! optimize recM (like in Cont)
 !! finish unfolds in DList
 !! finish Tree (list of lists?)
 
-!!!! figure out operators
+!! see Maybe & Either versions of filterA, sequenceA, forA, etc & find best version
+    !! pattern matching & using ResizeArray may be best option
+!! foldrM AND foldlM fails (stackoverflow) for Writer & RWS (due to append?)
+!! operators dont seem to work well when used with extension methods
+!! Writer -<- does filterA (in Haskell) add log to total if the bool is false?
+!! look in to optimizing filterA / replicateA / sequenceA etc with resizearray instead of list
+
+!! in Context -> Edit Project File for Incomplete files to not compile
+
+!! choose whether to implement combine/yield/for/while as custom classes or extension methods
+
+!! decide where to put 'eq' & 'comp' and potentially other ~isomorphic functions (see Maybe)
+
+!! add s.Match member to all multi-union types (mostly for c# interop, so maybe use System.Func?)
+
+?? added 'Reducer' to incomplete
+    ?? as is, it may not be a functor (contrafunctor?)
+        ?? maybe switch Result & Input in param order
+    ?? may need to expand types so state-types and result-types can change between |>'s
+    
+?? -- maybe optimized Reader (foldrM) by replacing lots of binds with
+    an imperative loop
+    | can do same for State?
+
+?? Reader monoid is NOT same as Cat => Monoid requires Monoid => Monoid (a -> b)
+
+!! replaced Builders via extension methods with separate classes
+        -- beginning in Maybe
+
+!! see @ 2019-09-28
+    -- unifying libs in all types
+    // done:
+        => [Cont Either Lens Maybe Reader RWS State]
+?? what overload combo of Combine, Yield/From, & For do I need to get listing right?
+?? remove For, While, redo Using?
+
+?? Replace all .With methods -> replace funcs with values so that
+    -> it behaves like { x with ... } (preserving types) rather than
+    -> acting as map, bimap, mapFst, etc...
+
+?? move Generic to Prelude - it is only really useful for heterogeneous collections
+?? removed ToArray and ToList from applicable types
+!! changed map, map2, bind, extend, filter, etc for C# interop (query expression names)
+    -- all except Writer and Incomplete
+!! need to add XML doc to member methods
+
+
+^^^ Commit
+2019-10-07
+    -- updated s.With methods to reproduce the { s with ... } functionality of records
+    -- reimplemented Writer as it was before (this makes it almost un-usable in C#)
+    -- updated rev to 1.0.2.0
+    -- removed tryX functions from Maybe (moved to Prelude)
+
+2019-10-04
+    -- changed map, map2, bind, extend, filter, etc for C# interop (query expression names)
+        -- added Join to all types (- RWS Writer)
+            -- when you use 'on 1 equals 1' it acts as map2, in general
+            -- on types that support MonadPlus, the 'equals' clause CAN return 'empty' if the two sides are <>
+                ^^ Maybe
+    -- removed CompiledName attributes for unit, append, etc so they dont conflict with static members
+    -- added 'make' function to function types to replace static New method (ie basically ctor but takes a .net func)
+    -- removed ToArray and ToList from applicable types
+    
+
+2019-10-03
+    -- added orElseWith to [Either Maybe]
+    -- added Foldable to Cont
+    -- added static New method to [Cont Reader State] that take System.Funcs for C# interop
+
+2019-10-02
+    -- renamed Tagged to Phantom
+    -- removed Contract
+    -- Changed Writer to a class
+        -- added Extend and Extract as members
+        -- WriterAppend & WriterMonoid are subclasses that can be used in monad/applicative
+        -- cant use sig file with this method
+        -- only method I can think of to get Bind and Map2 as members
+            -- unless changed type of Writer (as record) for w to be a monoid
+                -- with Append /Empty member
+                -- or a seq (backed by resize array)
+                 -- or a func (w -> w -> w), like I tried before
+
+
+2019-10-01
+    -- added Generic type * module * pattern (Incomplete)
+    -- added several 'tryX' functions to Maybe
+
+2019-09-30
+    -- added 'Linq' expressions to MaybeBuilder + optional overloading
+    -- moved 'Isomorphism' type members back into regular module
+        -- and added toArray and toList
+        -- added to/of\VOption to Maybe
+        -- added to/of\Result to Either
+    -- added Filter to Maybe as static method
+    -- moved 'Collections' to main module rather than separate module
+    -- added joinBy to Maybe and renamed innerJoin to join
+    -- changed members (like Map2, Bind, etc) to be non-static and to take Funcs (for C# interop)
+        -- updated operators & moved that folder up from Extensions
+
+2019-09-29
+    -- added Extensions module to Maybe Builder (for Bind overloads)
+    -- began adding Coroutine
+    -- added tryFind to Maybes
+    -- finished updated Either
+
+@2019-09-28
+    -- removed modules (Functor, Monad, etc) and began unifying libs with standard f# libs
+    -- added & removed some functions from Maybe
+        -- renamed sequenceA and forA to sequence and traverse
+        ++ added case function to perform pattern matching as a function
+        ++ added folds
+    -- replaced Builders via extension methods with separate classes
+        -- beginning in Maybe
+
+2019-09-26
+    -- added Equivalence type (begun)
+
+2019-09-25
+    -- fixed stackoverflow for recMx for RWS.recMx
+    -- added .Match to Either & Maybe
+
+2019-09-24
+    -- fixed stackoverflow for recMx for Writer.recMx
+
+2019-09-23
+    -- fixed stackoverflow issue in Writer and RWS types for foldxM functions
+    -- maybe optimized Reader (foldrM)
+    -- in all non-Incomplete types, changed type to NOT use ^resolved type (ex: Reader<'E, 'R> = Reader of (^E -> ^R) becomes Reader of ('E -> 'R)
+        ** this was shown to not affect performance, but lessens restrictions on certain functions
+    -- generalized recM in all non-Incomplete types so return type can differ from input type
+        !! Writer and RWS stack overflow due to append op on large loops
+
+2019-09-22
+    -- add 'defaultWith' to Maybe like Option
+    -- added 'Reduced' to incomplete
+        -- as is, it may not be a functor (contrafunctor?)
+        -- may need to expand types so state-types and result-types can change between |>'s
+
+2019-09-20
+    -- moved Contract to Incomplete
+    -- Reader | removed both konst functions. Added curry1 & uncurry1 for struct tuples
+        -- changed Compiled version to use a type synonym.
+        -- 'ctor' is no longer inlined, likewise 'dtor'
+            -- interactive AND compiled versions need to be tested for performance
+
+2019-09-15
+    -- revised ALL recM1 (at least in Contexts folder ie not Incomplete)
+        such that the return type can change (ie Maybe a -> Maybe b)
+    -- made Stream2 module (for testing only -- still needs to be separate sln)
+    -- added bind failwith map back in to all monads
+
+2019-09-11
+    -- added Suspension type to Incomplete
+
+2019-09-10
+    -- unsealed all builder classes (can now implement custom combine methods as new classes
+        instead of as extension methods)
+    -- updated version to 1.0.1.1 from 1.0.1.0
+    -- added extend ( =>> ) & ( <<= ) to Operators
+    -- set in Context -> Edit Project File for Incomplete files to not compile
+    -- added Identity type to Incomplete
+    -- added 'eq' & 'comp' to Maybe
+
+2019-09-09
+    -- finished fsi files for non-incomplete Contexts (still does NOT include operators/methods)
+    -- re-added Builders for all non-incomplete Contexts
+    -- added recM1 back to all (non-incomplete) Contexts
+    -- moved Context types into separate namespaces (eg PTR.Context.Type.'Typename')
+    -- got operators working (sort of)
+
+2019-09-08
+    -- added BinaryTree to Incomplete
+    -- renamed Tree to RoseTree
+    -- changed State to NOT change state type (ie went from 3 type args to 2)
+
+2019-09-07
+    -- added Contract to Incomplete
+
+2019-09-06
+    -- continued sig files (incomplete)
+    -- changed >>. & .<< operators for Arrow to >-> & <-< & removed Arrow operators (from Lens)
+    -- Began changing RWS & State to NOT change state type variable thru computations
+
+2019-09-03
+    -- began adding CompiledName attributes (for interop with CSharp)
 
 ^^^ Commit
 2019-09-03
     -- began adding fsi files (done Maybe, Cont, Either)
     -- moved `Delay` & `Run` methods of builders into Extensions/Builders
-    -- began removing recMp
+    -- began removing recM1
     -- POSSIBLY replace static operators with methods
 
 2019-08-28
@@ -67,7 +247,7 @@
 	!! began trying to reduce size of DLL
 		-- reimplemented some functions to NOT use other inline funcs
 		-- replaced (?some) instances of `>>` with lambdas
-		-- removed composeM, bind2, bind3, & bindMap => users of lib can just use workflow for same effect
+		-- removed composeM, bind2, bind3, & bind failwith map => users of lib can just use workflow for same effect
 			-- also remove composeW and extendMap for Comonads
 		-- removed inline from empty, ask, mempty, identity, app, etc
 		-- removed inline from replace for cases where NOT implemented in terms of map

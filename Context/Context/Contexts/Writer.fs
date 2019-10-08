@@ -1,331 +1,348 @@
-﻿namespace PTR.Context.Type
+﻿namespace PTR.Context.Type.Writer
 
 
-/// Type that holds both a `log` and `value`.
 [<Struct>]
-type Writer<'Log, 'Value> = { Log: ^Log ; Value: ^Value }
+type Writer<'Log, 'Value> = { Log: 'Log ; Value: 'Value } with
+
+    member inline s.With(log: ^Log) = { Writer.Log = log ; Value = s.Value }
+    member inline s.With(value: ^Value) = { Writer.Log = s.Log ; Value = value }
+
+    member inline s.Apply(f: System.Func< ^Log, ^Value, ^Result>) : ^Result =
+        f.Invoke(s.Log, s.Value)
+
+    static member inline Unit(x: ^a) : Writer< ^w, ^a> when ^w : (static member Empty: unit -> ^w) =
+        { Writer.Value = x ; Log = (^w : (static member Empty: unit -> ^w) ()) }
+
+    member inline s.Select(f: System.Func< ^Value, ^NextValue>) : Writer< ^Log, ^NextValue> =
+        { Writer.Log = s.Log ; Value = f.Invoke(s.Value) }
+
+    member inline s.Extend(f: System.Func<Writer< ^Log, ^Value>, ^NextValue>) : Writer< ^Log, ^NextValue> =
+        { Writer.Log = s.Log ; Value = f.Invoke(s) }
+
+    static member inline Append(first: Writer< ^w, ^a>, second: Writer< ^w, ^a>) =
+        { Writer.Log = (^w : (static member Append: ^w -> ^w -> ^w) (first.Log, second.Log))
+        ; Value = (^a : (static member Append: ^a -> ^a -> ^a) (first.Value, second.Value)) }
 
 
-/// Operations on `Writer` values.
 module Writer =
 
-    /// Active patterns on `Writer` values.
+    let inline private append' a b = (^w : (static member Append: ^w -> ^w -> ^w) (a, b))
+    let inline private empty' () = (^w : (static member Empty: unit -> ^w) ())
+
+
     module Pattern =
   
-        /// Return a 'Writer'-value as a log/value pair.
-        let inline ( |Writer| ) (w: Writer< ^w, ^c>) = Writer (struct (w.Log, w.Value))
+        let inline ( |Writer| ) (writer: Writer< ^w, ^v>) = Writer (struct (writer.Log, writer.Value))
   
-        /// Return the log from a 'Writer'.
-        let inline ( |WriterLog| ) (w: Writer< ^w, ^c>) = WriterLog w.Log
+        let inline ( |WriterLog| ) (w: Writer< ^w, ^v>) = WriterLog w.Log
   
-        /// Return the value from a 'Writer'.
-        let inline ( |WriterValue| ) (w: Writer< ^w, ^c>) = WriterValue w.Value
+        let inline ( |WriterValue| ) (w: Writer< ^w, ^v>) = WriterValue w.Value
 
 
-    /// Convert between values of type `Writer` and related types.
-    module Convert =
+// Primitives
 
-        /// Convert a pair `Writer`.
-        let ofPair (log: 'w) (value: 'a) : Writer< ^w, ^a> = { Writer.Log = log ; Value = value }
-
-        /// Convert a `Writer` to a pair.
-        let toPair { Writer.Log = l: 'w ; Value = v: 'a } : ^w * ^a = l, v
-
-        /// Convert a `Writer` to a pair.
-        let toPair1 { Writer.Log = l: 'w ; Value = v: 'a } : struct (^w * ^a) = struct (l, v)
-
-
-    /// Unwrap a Writer as a (log, value) pair.
+    [<CompiledName("RunWriter")>]
     let inline runWriter f (w: Writer< ^w, ^a>) : ^b = f w.Log w.Value
 
-    /// Create a Writer with just a logger.
-    let tell (log: 'w) : Writer< ^w, unit> = { Writer.Log = log ; Value = () }
+    [<CompiledName("Tell")>]
+    let tell (entry: 'w) : Writer< ^w, unit> = { Writer.Log = entry ; Value = () }
 
-    /// Takes a Writer and combines its value and logger into a new value pair,
-    /// while maintaining the same logger.
+    [<CompiledName("Listen")>]
     let listen (w: Writer<'w, 'v>) : Writer< ^w, (^w * ^v)> =
         { Writer.Log = w.Log ; Value = (w.Log, w.Value) }
 
-    /// Adds the result of applying 'f' to the logger and combines it with the original value.
+    [<CompiledName("Listens")>]
     let inline listens f (w: Writer< ^w, ^a>) : Writer< ^w, (^a * ^b)> =
         { Writer.Log = w.Log ; Value = (w.Value, f w.Log) }
 
 
-    /// Compositional operations on `Writer` values.
-    module Compose =
+// Isomorphisms
 
-        /// Supplementary Monad operations on the given type.
-        module Monad =
+    [<CompiledName("Write")>]
+    let write (log: 'w) (value: 'a) : Writer< ^w, ^a> = { Writer.Log = log ; Value = value }
 
-            /// Lift a value onto an effectful context.
-            let inline wrap (x: ^a) : Writer< ^w, ^a> =
-                { Writer.Log = (^w : (static member inline Empty: unit -> ^w) ())
-                ; Value = x }
+    [<CompiledName("ToPair")>]
+    let toPair { Writer.Log = l: 'w ; Value = v: 'a } : ^w * ^a = l, v
 
-            /// Sequentially compose two effects, passing any value produced by the first
-            /// as an argument to the second.
-            let inline bind (k: ^a -> Writer< ^w, ^b>) (m: Writer< ^w, ^a>) =
-                let w2 = k m.Value
-                { w2 with Writer.Log = (^w: (static member Append: ^w -> ^w -> ^w) (m.Log, w2.Log)) }
-
-            /// Removes one layer of monadic context from a nested monad.
-            let inline flatten mm : Writer< ^w, ^a> = bind id mm
+    [<CompiledName("ToPair1")>]
+    let toPair1 { Writer.Log = l: 'w ; Value = v: 'a } : struct (^w * ^a) = struct (l, v)
 
 
-            /// Monadic computation builder specialised to the given monad.
-            type WriterBuilder () =
-                member inline s.Bind(m, k) = bind k m
-                member inline s.Return x = wrap x
-                member inline s.ReturnFrom m : Writer< ^w, ^a> = m
-                member inline s.Zero () = s.Return ()
+// Monad
+
+    let inline unit (x: ^a) : Writer< ^w, ^a> when ^w : (static member Empty: unit -> ^w) =
+        { Writer.Log = empty' () ; Value = x }
+
+    [<CompiledName("Bind")>]
+    let inline bind (f: ^a -> Writer< ^w, ^b>) (m: Writer< ^w, ^a>) : Writer< ^w, ^b> =
+        let w = f m.Value in { w with Writer.Log = append' m.Log w.Log }
+
+    [<CompiledName("Flatten")>]
+    let inline flatten (mm: Writer< ^w, Writer< ^w, ^a>>) : Writer< ^w, ^a> =
+        { Writer.Log = append' mm.Log mm.Value.Log
+        ; Value = mm.Value.Value }
+
+    [<CompiledName("RecM")>]
+    let inline recM f (x: ^a) : Writer< ^w, ^b> =
+        let mt : ^w = empty' ()
+        let mutable mt' = mt
+        let unit' a = mt' <- append' mt' mt ; { Writer.Log = mt' ; Value = a }
+        let bind' k m = k m.Value
+        let rec go m = bind' j m
+        and k a = go (unit' a)
+        and j a = f k a
+        j x
+
+    [<CompiledName("RecM1")>]
+    let inline recM1 f (x: ^a) : Writer< ^w, ^b> =
+        let mutable l : ^w = empty' ()
+        let bind' k (m: Writer< ^w, ^a>) = l <- append' l m.Log ; k m.Value
+        let rec go m = bind' k m
+        and k a = f go a
+        { k x with Writer.Log = l }
+
+    //[<CompiledName("FoldrM")>]
+    //let inline foldrM (f: ^a -> ^s -> Writer< ^w, ^s>) (s0: ^s) (source: ^a seq) : Writer< ^w, ^s> =
+    //    //let g k x s = bind k (f x s)
+    //    //match source with
+    //    //| :? array< ^a> as s -> Array.fold g wrap s s0
+    //    //| :? list<  ^a> as s -> List.fold  g wrap s s0
+    //    //| _ -> Seq.fold g wrap source s0
+    //    let mutable lg = empty' ()
+    //    let mutable st = s0
+    //    let act a () =
+    //        let w = f a st
+    //        lg <- append' lg w.Log
+    //        st <- w.Value
+    //    match source with
+    //    | :? array< ^a> as s -> Array.foldBack act s ()
+    //    | :? list<  ^a> as s -> List.foldBack act s ()
+    //    | _ -> Seq.foldBack act source ()
+    //    { Writer.Log = lg ; Value = st }
+    //
+    //[<CompiledName("FoldlM")>]
+    //let inline foldlM (f: ^s -> ^a -> Writer< ^w, ^s>) (s0: ^s) (source: ^a seq) : Writer< ^w, ^s> =
+    //    //let g x k s = bind k (f s x)
+    //    //match source with
+    //    //| :? array< ^a> as s -> Array.foldBack g s wrap s0
+    //    //| :? list<  ^a> as s -> List.foldBack  g s wrap s0
+    //    //| _ -> Seq.foldBack g source wrap s0
+    //    let mutable lg = empty' ()
+    //    let mutable st = s0
+    //    for a in source do
+    //        let w = f st a
+    //        lg <- append' lg w.Log
+    //        st <- w.Value
+    //    { Writer.Log = lg ; Value = st }
+
+
+    module Workflow =
+
+        type WriterBuilder () =
+            member inline _.Bind(m: Writer< ^w, ^a>, f) : Writer< ^w, ^b> when ^w : (static member Append: ^w -> ^w -> ^w) = bind f m
+            member inline _.Return x : Writer< ^w, ^a> when ^w : (static member Empty: unit -> ^w) = unit x
+            member inline _.ReturnFrom m : Writer< ^w, ^a> = m
+            member inline _.Zero() : Writer< ^w, unit> when ^w : (static member Empty: unit -> ^w) = unit ()
  
-                member inline s.Delay f = f ()
-                member inline s.Run f = f
+            member inline _.TryWith(body, handler) : Writer< ^w, ^a> = try body with e -> handler e
+            member inline _.TryFinally(body, finalizer) : Writer< ^w, ^a> = try body finally finalizer ()
  
-                member inline s.TryWith (body, handler) = try s.ReturnFrom(body ()) with e -> handler e
-                member inline s.TryFinally (body, finalizer) = try s.ReturnFrom(body ()) finally finalizer ()
- 
-                member inline s.Using(disp: #System.IDisposable, body) =
-                    s.TryFinally((fun () -> body disp), fun () -> match box disp with null -> () | _ -> disp.Dispose ())
- 
-                member inline s.While(guard, body) =
-                    let rec loop = function
-                    | false -> s.Zero ()
-                    | true -> s.Bind(body (), fun x -> loop (guard x))
-                    loop (guard ())
- 
-                member inline s.For(seq: _ seq, body) =
-                    s.Using(seq.GetEnumerator(), fun enum -> s.While(enum.MoveNext, s.Delay(fun () -> body enum.Current)))      
+            member inline _.Using(disp: ^d, body) : Writer< ^w, ^a> when ^d :> System.IDisposable =
+                using disp body
 
-            
+            member inline _.While(guard, body) : Writer< ^w, unit> =                    
+                let rec go = function
+                | false -> unit ()
+                | true  -> bind k (body ())
+                and k () = go (guard ()) in k ()
 
-            /// Build a monad through recursive (effectful) computations.
-            /// Computation proceeds through the use of a continuation function applied to the intermediate result.
-            /// The default monadic 'identity' function is used in each iteration where the continuation is applied.
-            let inline recM f x : Writer< ^w, ^a> =
-                let rec go m = bind (f wrapgo) m
-                and wrapgo x = go (wrap x)
-                go (f wrap x)
-
-            /// Build a monad through recursive (effectful) computations.
-            /// Computation proceeds through the use of a continuation function applied to an 'effect' applied over the intermediate result.
-            /// Any constructor can be used in each iteration, in the case of union-types.
-            let inline recMp f x : Writer< ^w, ^a> =
-                let rec go m = bind (f go) m in go (f id x)
-
-            /// <summary>Monadic fold over a structure associating to the right.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline foldrM (f: ^a -> ^s -> Writer< ^w, ^s>) (s0: ^s) (source: ^a seq) : Writer< ^w, ^s> =
-                let g k x s = bind k (f x s)
-                Seq.fold g wrap source s0
-
-            /// <summary>Monadic fold over a structure associating to the left.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline foldlM (f: ^s -> ^a -> Writer< ^w, ^s>) (s0: ^s) (source: ^a seq) : Writer< ^w, ^s> =
-                let g x k s = bind k (f s x)
-                Seq.foldBack g source wrap s0
+            member inline _.For(seq: #seq< ^a>, body) : Writer< ^w, unit> =
+                use e = seq.GetEnumerator()
+                let rec go = function
+                | false -> unit ()
+                | true  -> b e.Current
+                and b x = bind k (body x)
+                and k () = go (e.MoveNext()) in k ()
 
 
-        /// Supplementary Applicative operations on the given type.
-        module Applicative =
-
-            /// Lift a value onto an effectful context.
-            let inline wrap (x: ^a) : Writer< ^w, ^a> =
-                { Writer.Log = (^w : (static member inline Empty: unit -> ^w) ())
-                ; Value = x }
-
-            /// Sequential application on effects.
-            let inline ap (mv: Writer< ^w, ^a>) (mf: Writer< ^w, ^a -> ^b>) =
-                { Writer.Log = (^w: (static member Append: ^w -> ^w -> ^w) (mf.Log, mv.Log))
-                ; Value = mf.Value mv.Value }
-
-            /// Lift a binary function on effects.
-            let inline map2 f (ma: Writer< ^w, ^a>) (mb: Writer< ^w, ^b>) : Writer< ^w, ^c> =
-                { Writer.Log = (^w: (static member Append: ^w -> ^w -> ^w) (ma.Log, mb.Log))
-                ; Value = f ma.Value mb.Value }
-
-            /// Lift a ternary function on effects.
-            let inline map3 f (ma: Writer< ^w, ^a>) (mb: Writer< ^w, ^b>) (mc: Writer< ^w, ^c>) : Writer< ^w, ^d> =
-                let app a b = (^w: (static member Append: ^w -> ^w -> ^w) (a, b))
-                { Writer.Log = app ma.Log (app mb.Log mc.Log)
-                ; Value = f ma.Value mb.Value mc.Value }
-
-            /// Sequentially compose two effects, discarding any value produced by the first.
-            let inline andThen mb ma : Writer< ^w, ^b> =
-                { mb with Log = (^w: (static member Append: ^w -> ^w -> ^w) (ma.Log, mb.Log)) }
-
-            /// Conditional execution of effectful expressions.
-            let inline when_ condition f : Writer< ^w, unit> =
-                if condition then f () else wrap ()
-
-            /// <summary>Generalizes the sequence-based filter function.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline filterA (p: ^a -> Writer< ^w, bool>) source =  
-                Seq.foldBack (fun x -> map2 (fun flg xs -> if flg then x::xs else xs) (p x)) source (wrap [])
-
-            /// <summary>Evaluate each effect in the sequence from left to right, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline sequenceA (source: Writer< ^w, ^a> seq) : Writer< ^w, ^a list> =
-                Seq.foldBack (map2 (fun x xs -> x::xs)) source (wrap [])
-
-            /// <summary>Produce an effect for the elements in the sequence from left to right then evaluate each effect, and collect the results.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline forA f source : Writer< ^w, ^b list> =
-                sequenceA (Seq.map f source)
-
-            /// <summary>Produce an effect for each pair of elements in the sequences from left to right,
-            /// then evaluate each effect and collect the results.
-            /// If one sequence is longer, its extra elements are ignored.</summary>
-            /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-            let inline zipWithA f source1 source2 : Writer< ^w, ^c list> =
-                sequenceA (Seq.map2 f source1 source2)
-
-            /// Performs the effect 'n' times.
-            let inline replicateA count (fa: Writer< ^w, ^a>) : Writer< ^w, ^a list> =
-                sequenceA (Seq.replicate (max 0 count) fa)
+    let writer = Workflow.WriterBuilder ()
 
 
-        /// Supplementary Functor operations on the given type.
-        module Functor =
+// Applicative
 
-            /// Lift a function onto effects.
-            let inline map f (m: Writer< ^w, ^a>) : Writer< ^w, ^b> =
-                { Writer.Log = m.Log ; Value = f m.Value }
+    [<CompiledName("Ap")>]
+    let inline ap (fv: Writer< ^w, ^a>) (ff: Writer< ^w, ^a -> ^b>) : Writer< ^w, ^b>
+        when ^w : (static member Append: ^w -> ^w -> ^w) =
+        { Writer.Log = append' ff.Log fv.Log
+        ; Value = ff.Value fv.Value }
 
-            /// Replace all locations in the input with the same value.
-            let replace (b: 'b) { Writer.Log = log: 'w } : Writer< ^w, ^b> =
-                { Writer.Log = log ; Value = b }
+    [<CompiledName("Map2")>]
+    let inline map2 f (fa: Writer< ^w, ^a>) (fb: Writer< ^w, ^b>) : Writer< ^w, ^c> =
+        { Writer.Log = append' fa.Log fb.Log
+        ; Value = f fa.Value fb.Value }
 
-            /// Perform an operation, store its result, perform an action using both
-            /// the input and output, and finally return the output.
-            let inline tee f (g: ^a -> ^b -> unit) { Writer.Log = log ; Value = a } : Writer< ^w, ^b> =
-                let b = f a
-                do g a b
-                { Writer.Log = log ; Value = b }
+    //[<CompiledName("Map3")>]
+    //let inline map3 f (fa: Writer< ^w, ^a>) (fb: Writer< ^w, ^b>) (fc: Writer< ^w, ^c>) : Writer< ^w, ^d> =
+    //    { Writer.Log = append' fa.Log (append' fb.Log fc.Log)
+    //    ; Value = f fa.Value fb.Value fc.Value }
 
+    [<CompiledName("AndThen")>]
+    let inline andThen fb (fa: Writer< ^w, ^a>) : Writer< ^w, ^b> =
+        { fb with Log = append' fa.Log fb.Log }
 
-        /// A two paramater functor where both the first and second arguments are covariant.
-        module Bifunctor =
+    [<CompiledName("When")>]
+    let inline when_ condition f : Writer< ^w, unit> =
+        if condition then f () else unit ()
 
-            /// Map over both arguments at the same time.
-            let inline bimap (f: ^l1 -> ^l2) (g: ^a -> ^b) { Writer.Log = l ; Value = v } : Writer< ^l2, ^b> =
-                { Writer.Log = f l ; Value = g v }
-
-            /// Map covariantly over the first argument.
-            let inline mapFst (f: ^l1 -> ^l2) { Writer.Log = l ; Value = v } : Writer< ^l2, ^a> =
-                { Writer.Log = f l ; Value = v }
-
-            /// Map covariantly over the second argument.
-            let inline mapSnd (g: ^a -> ^b) { Writer.Log = l ; Value = v } : Writer< ^w, ^b> =
-                { Writer.Log = l ; Value = g v }
-
-
-        /// Adjunction to the given functor.
-        module Adjoint =
-
-            /// Construct a functor's adjoint within itself.
-            let inline unit a : ^e -> Writer< ^e, ^a> = fun e -> { Writer.Log = e ; Value = a }
-
-            /// Deconstruct a functor's Left-adjoint (containing that functor) into a value.
-            let inline counit { Writer.Log = (e: ^e) ; Value = r } : ^a = r e
-
-            /// Lift a function on a functor's Left-adjoint into itself.
-            let inline leftAdjunct f (a: ^a) : (^e -> ^b) = fun e -> f { Writer.Log = e ; Value = a }
-
-            /// Deconstruct a functor's Left-adjoint using itself.
-            let inline rightAdjunct (f: ^a -> (^e -> ^b)) { Writer.Log = e ; Value = a } = f a e
-
-            /// Monadic 'bind' from the right-ajoint over its left-adjoint.
-            let inline rightBind f (r: ^e -> Writer< ^c, ^a>) : (^e -> Writer< ^d, ^b>) =
-                fun e -> match r e with w -> f w.Value w.Log
+    //[<CompiledName("FilterA")>]
+    //let inline filterA (p: ^a -> Writer< ^w, bool>) (source: ^a seq) =
+    //    let cons x b xs = if b then x::xs else xs
+    //    let g x xs = map2 (cons x) (p x) xs
+    //    let z = wrap []
+    //    match source with
+    //    | :? array< ^a> as s -> Array.foldBack g s z
+    //    | :? list<  ^a> as s -> List.foldBack  g s z
+    //    | _ -> Seq.foldBack g source z
+    //
+    //[<CompiledName("ZipWithA")>]
+    //let inline zipWithA f (source1: #seq< ^a>) (source2: #seq< ^b>) : Writer< ^w, ^c list> =
+    //    sequenceA (System.Linq.Enumerable.Zip(source1, source2, System.Func<_,_,_>f))
+    //
+    //[<CompiledName("ReplicateA")>]
+    //let inline replicateA (count: int) (fa: Writer< ^w, ^a>) : Writer< ^w, ^a seq> =
+    //    let mutable w = empty' ()
+    //    let xs = ResizeArray< ^a>(count)
+    //    for i = 0 to count - 1 do
+    //        w <- append' fa.Log w
+    //        xs.Add(fa.Value)
+    //    { Writer.Log = w ; Value = xs :> _ seq }
 
 
-        /// Supplementary Comonad operations on the given type.
-        module Comonad =
+// Functor
 
-            /// Retrieve a value out of a context.
-            let extract { Writer.Value = a: 'a } : ^a = a
-
-            /// Sequentially compose two co-effects.
-            let inline extend j (w: Writer< ^w, ^a>) : Writer< ^w, ^b> =
-                { Writer.Log = w.Log ; Value = j w }    
-
-            /// Takes a comonadic container and produces a container of containers.
-            let duplicate (w: Writer<'w, 'a>) : Writer< ^w, Writer< ^w, ^a>> =
-                { Writer.Log = w.Log ; Value = w }
-
-            /// Deconstructs a comonad through recursive (effectful) computations.
-            /// Computation proceeds through the use of a continuation function.
-            let inline recW f (w: Writer< ^w, ^a>) =
-                let rec go w = f go w in go (extend (f extract) w)
+    [<CompiledName("Map")>]
+    let inline map f (fa: Writer< ^w, ^a>) : Writer< ^w, ^b> =
+        { Writer.Log = fa.Log ; Value = f fa.Value }
 
 
-        /// Types with a binary, associative composition operation.
-        module Semigroup =
+// Bifunctor
 
-            /// An associative composition operation.
-            let inline sappend (a: Writer< ^w, ^a>) (b: Writer< ^w, ^a>) : Writer< ^w, ^a> =
-                { Writer.Log = (^w: (static member Append: ^w -> ^w -> ^w) (a.Log, b.Log))
-                ; Value = (^a: (static member Append: ^a -> ^a -> ^a) (a.Value, b.Value)) }
+    [<CompiledName("Bimap")>]
+    let inline bimap (f: ^w1 -> ^w2) (g: ^a -> ^b) (bf: Writer< ^w1, ^a>) : Writer< ^w2, ^b> =
+        { Writer.Log = f bf.Log ; Value = g bf.Value }
+
+    [<CompiledName("MapFst")>]
+    let inline mapFst (f: ^w1 -> ^w2) (bf: Writer< ^w1, ^a>) : Writer< ^w2, ^a> =
+        { Writer.Log = f bf.Log ; Value = bf.Value }
+
+    [<CompiledName("MapSnd")>]
+    let inline mapSnd (g: ^a -> ^b) (bf: Writer< ^w, ^a>) : Writer< ^w, ^b> =
+        { Writer.Log = bf.Log ; Value = g bf.Value }
 
 
-    /// Creates a computation expression for the given type.
-    let writer = Compose.Monad.WriterBuilder ()
+// Comonad
+
+    [<CompiledName("Extract")>]
+    let extract { Writer.Value = a: 'a } : ^a = a
+
+    [<CompiledName("Extend")>]
+    let inline extend j (w: Writer< ^w, ^a>) : Writer< ^w, ^b> =
+        { Writer.Log = w.Log ; Value = j w }    
+
+    [<CompiledName("Duplicate")>]
+    let duplicate (w: Writer<'w, 'a>) : Writer< ^w, Writer< ^w, ^a>> =
+        { Writer.Log = w.Log ; Value = w }
+
+    [<CompiledName("RecW")>]
+    let inline recW f (w: Writer< ^w, ^a>) =
+        let rec go w = f j w
+        and k w = f extract w
+        and j w = go (extend k w)
+        j w
 
 
+// Semigroup
 
-open Writer
-open Compose
- 
-// @ Operators @
-type Writer<'W, 'A> with
+    let inline append (e1: Writer< ^w, ^a>) (e2: Writer< ^w, ^a>) : Writer< ^w, ^a> =
+        { Writer.Log = append' e1.Log e2.Log
+        ; Value = append' e1.Value e2.Value }
 
-// @ Primitive @
 
-    /// Unwrap a Writer computation as a (log, value) pair, with the logger having been run.
-    static member inline ( >- ) (w, f) = runWriter f w
-    /// Unwrap a Writer computation as a (log, value) pair, with the logger having been run.
-    static member inline ( -< ) (f, w) = runWriter f w
+// Foldable
 
-// @ Monad @
+    [<CompiledName("Fold")>]
+    let inline fold folder (seed: ^s) (source: Writer< ^w, ^a>) : ^s = folder seed source.Value
 
-    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( >>= ) (m, k) = Monad.bind k m
-    /// Sequentially compose two effects, passing any value produced by the first as an argument to the second.
-    static member inline ( =<< ) (k, m) = Monad.bind k m
+    [<CompiledName("FoldBack")>]
+    let inline foldBack folder (seed: ^s) (source: Writer< ^w, ^a>) : ^s = folder source.Value seed
 
-// @ Applicative @
+    [<CompiledName("Foldl")>]
+    let inline foldl folder (seed: unit -> ^s) (source: Writer< ^w, ^a>) : ^s = folder seed source.Value
+    
+    [<CompiledName("Foldr")>]
+    let inline foldr folder (seed: unit -> ^s) (source: Writer< ^w, ^a>) : ^s = folder source.Value seed
 
-    /// Sequential application on effects.
-    static member inline ( <*> ) (ff, fx) = Applicative.ap fx ff
-    /// Sequential application on effects.
-    static member inline ( <**> ) (fx, ff) = Applicative.ap fx ff
+    [<CompiledName("Foldm")>]
+    let inline foldm f (source: Writer< ^w, ^a>)
+        : ^m when ^m : (static member Append: ^m -> ^m -> ^m) = f source.Value
 
-    /// Sequentially compose two effects, discarding any value produced by the first.
-    static member inline ( *> ) (fa, fb) = Applicative.andThen fb fa
-    /// Sequentially compose two effects, discarding any value produced by the first.
-    static member inline ( <* ) (fb, fa) = Applicative.andThen fb fa
+    [<CompiledName("MapFold")>]
+    let inline mapFold mapping (seed: ^s) (source: Writer< ^w, ^a>) : Writer< ^w, ^b> * ^s =
+        let r, s = mapping seed source.Value
+        { Writer.Log = source.Log ; Value = r }, s
 
-// @ Functor @
+    [<CompiledName("MapFoldBack")>]
+    let inline mapFoldBack mapping (seed: ^s) (source: Writer< ^w, ^a>) : Writer< ^w, ^b> * ^s =
+        let r, s = mapping source.Value seed
+        { Writer.Log = source.Log ; Value = r }, s
 
-    /// Lift a function onto effects.
-    static member inline ( |%> ) (fa, f) = Functor.map f fa
-    /// Lift a function onto effects.
-    static member inline ( <%| ) (f, fa) = Functor.map f fa
 
-    /// Replace all locations in the input with the same value.
-    static member inline ( %> ) (b, fa) = Functor.replace b fa
-    /// Replace all locations in the input with the same value.
-    static member inline ( <% ) (fa, b) = Functor.replace b fa
+// Bifoldable
 
-// @ Comonad @
+    [<CompiledName("Bifold")>]
+    let inline bifold (fold1: ^s -> ^a -> ^s) (fold2: ^s -> ^b -> ^s) (seed: ^s) (source: Writer< ^a, ^b>) : ^s =
+        fold2 (fold1 seed source.Log) source.Value
 
-    /// Sequentially compose two co-effects.
-    static member inline ( =>> ) (w, j) = Comonad.extend j w
-    /// Sequentially compose two co-effects.
-    static member inline ( <<= ) (j, w) = Comonad.extend j w
+    [<CompiledName("BifoldBack")>]
+    let inline bifoldBack (fold1: ^a -> ^s -> ^s) (fold2: ^b -> ^s -> ^s) (seed: ^s) (source: Writer< ^a, ^b>) : ^s =
+        fold2 source.Value (fold1 source.Log seed)
 
-// @ Semigroup @
+    [<CompiledName("Bifoldl")>]
+    let inline bifoldl (fold1: (unit -> ^s) -> ^a -> ^s) (fold2: (unit -> ^s) -> ^b -> ^s) (seed: unit -> ^s) (source: Writer< ^a, ^b>) : ^s =
+        fold2 (fun () -> fold1 seed source.Log) source.Value
 
-    /// An associative composition operation.
-    static member inline Append (e1, e2) = Semigroup.sappend e1 e2
+    [<CompiledName("Bifoldr")>]
+    let inline bifoldr (fold1: ^a -> (unit -> ^s) -> ^s) (fold2: ^b -> (unit -> ^s) -> ^s) (seed: unit -> ^s) (source: Writer< ^a, ^b>) : ^s =
+        fold2 source.Value (fun () -> fold1 source.Log seed)
+
+    [<CompiledName("Bifoldm")>]
+    let inline bifoldm (f1: ^a -> ^m) (f2: ^b -> ^m) (source: Writer< ^a, ^b>) =
+        (^m : (static member Append: ^m -> ^m -> ^m) (f1 source.Log, f2 source.Value))
+
+    [<CompiledName("BimapFold")>]
+    let inline bimapFold (mapping1: ^s -> ^a -> ^b * ^s) (mapping2: ^s -> ^c -> ^d * ^s) (seed: ^s) (source: Writer< ^a, ^c>) : Writer< ^b, ^d> * ^s =
+        let w, s = mapping1 seed source.Log
+        let v, s = mapping2 s source.Value
+        { Writer.Log = w ; Value = v }, s
+
+    [<CompiledName("BimapFoldBack")>]
+    let inline bimapFoldBack (mapping1: ^a -> ^s -> ^b * ^s) (mapping2: ^c -> ^s -> ^d * ^s) (seed: ^s) (source: Writer< ^a, ^c>) : Writer< ^b, ^d> * ^s =
+        let w, s = mapping1 source.Log seed
+        let v, s = mapping2 source.Value s
+        { Writer.Log = w ; Value = v }, s
+
+
+// Traversable
+
+    [<CompiledName("Sequence")>]
+    let inline sequence (source: #seq<Writer< ^w, ^a>>) : Writer< ^w, ^a seq> =
+        let mutable w : ^w = empty' ()
+        let ra = ResizeArray<_>()
+        for x in source do
+            w <- append' w x.Log
+            ra.Add(x.Value)
+        { Writer.Log = w ; Value = System.Linq.Enumerable.AsEnumerable(ra) }
+
+    [<CompiledName("Traverse")>]
+    let inline traverse (f: ^a -> Writer< ^w, ^b>) (source: #seq< ^a>) : Writer< ^w, ^b seq> =
+        sequence (System.Linq.Enumerable.Select(source, f))
