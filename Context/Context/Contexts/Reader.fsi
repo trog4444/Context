@@ -1,170 +1,135 @@
-﻿namespace PTR.Context.Type.Reader
-
-
-/// <summary>Computations which read values from a shared environment.</summary>
-[<Struct; NoComparison; NoEquality>]
-type Reader<'Env, 'Result> = Reader of ('Env -> 'Result) with
-
-   member inline Invoke : env: ^Env -> ^Result
-
-   static member inline Unit : x: ^a -> Reader< ^e, ^a>
-
-   member inline Select : f: System.Func< ^Result, ^NextResult> -> Reader< ^Env, ^NextResult>
-   member inline Select2 : first: Reader< ^Env, ^NextResult> * f: System.Func< ^Result, ^NextResult, ^FinalResult> -> Reader< ^Env, ^FinalResult>
-   member inline SelectMany : f: System.Func< ^Result, Reader< ^Env, ^NextResult>> -> Reader< ^Env, ^NextResult>
-   member inline SelectMany : f: System.Func< ^Result, Reader< ^Env, ^NextResult>> * g: System.Func< ^Result, ^NextResult, ^FinalResult> -> Reader< ^Env, ^FinalResult>   
-
-   member inline Join : t: Reader< ^Env, ^NextResult> * kt: System.Func< ^Result, ^K> * ku: System.Func< ^NextResult, ^K> * rs: System.Func< ^Result, ^NextResult, ^FinalResult> -> Reader< ^Env, ^FinalResult>
-
-   static member inline Append : first: Reader< ^e, ^a> * second: Reader< ^e, ^a> -> Reader< ^e, ^a>
-       when ^a : (static member Append: ^a -> ^a -> ^a)
+﻿namespace Rogz.Context.Data.Reader
 
 
 /// <summary>Operations on Readers.</summary>
 module Reader =
 
-// Primitives
+// Interop
 
-    
-    /// <summary>Create a new Reader from a .Net Func (primary use is for interop).</summary>
+    /// <summary>Create a Reader from the given function.</summary>
     [<CompiledName("Make")>]
-    val inline make : reader: System.Func< ^e, ^a> -> Reader< ^e, ^a>
+    val inline make: f: System.Func< ^e, ^a> -> Reader< ^e, ^a>
 
-    /// <summary>Runs a Reader and extracts the final value from it.</summary>
-    [<CompiledName("RunReader")>]
-    val inline runReader : env: ^e -> Reader< ^e, ^r> -> ^r
 
-    /// <summary>Execute a computation in a modified environment.</summary>
-    [<CompiledName("WithReader")>]
-    val inline withReader : f: (^e0 -> ^e) -> Reader< ^e,  ^r> -> Reader< ^e0, ^r>
+// Minimal
 
-    /// <summary>Retrieves the current environment.</summary>
+    /// <summary>Retreive the current environment.</summary>
     [<CompiledName("Ask")>]
     val ask<'e> : Reader< ^e, ^e>
 
     /// <summary>Executes a computation in a modified environment.</summary>
-    [<CompiledName("Local")>]
-    val inline local : localize: (^e -> ^e) -> Reader< ^e, ^r> -> Reader< ^e, ^r>    
+    val inline local: localize: (^e -> ^e) -> reader: Reader< ^e, ^a> -> Reader< ^e, ^a>
+
+
+// Primitives
+
+    /// <summary>Execute the given function with the supplied environment.</summary>
+    val inline runReader: env: ^e -> reader: Reader< ^e, ^a> -> ^a
 
     /// <summary>Flip a function then wrap it inside of a Reader.</summary>
-    [<CompiledName("Flip")>]
-    val inline flip : f: (^a -> ^e-> ^r) -> Reader< ^e, ^a -> ^r>
+    val inline flip: f: (^a -> ^e-> ^r) -> Reader< ^e, ^a -> ^r>
 
     /// <summary>Convert a function on a 2-tuple to a 2-arity, curried function.</summary>
-    [<CompiledName("Curry")>]
-    val inline curry : f: (^a * ^b -> ^c) -> Reader< ^a, ^b -> ^c>
+    val inline curry: f: (^a * ^b -> ^c) -> Reader< ^a, ^b -> ^c>
 
     /// <summary>Convert a function on a struct 2-tuple to a 2-arity, curried function.</summary>
-    [<CompiledName("Curry1")>]
-    val inline curry1 : f: (struct (^a * ^b) -> ^c) -> Reader< ^a, ^b -> ^c>
+    val inline curry1: f: (struct (^a * ^b) -> ^c) -> Reader< ^a, ^b -> ^c>
 
     /// <summary>Convert a 2-arity, curried function into a function on a 2-tuple.</summary>
-    [<CompiledName("Uncurry")>]
-    val inline uncurry : f: (^a -> ^b -> ^c) -> Reader< ^a * ^b, ^c>
+    val inline uncurry: f: (^a -> ^b -> ^c) -> Reader< ^a * ^b, ^c>
 
     /// <summary>Convert a 2-arity, curried function into a function on a struct 2-tuple.</summary>
-    [<CompiledName("Uncurry1")>]
-    val inline uncurry1 : f: (^a -> ^b -> ^c) -> Reader< struct (^a * ^b), ^c>
+    val inline uncurry1: f: (^a -> ^b -> ^c) -> Reader< struct (^a * ^b), ^c>
 
-    /// <summary>Store computed results to prevent recomputation on the same inputs.</summary>
-    [<CompiledName("CacheReader")>]
-    val inline cacheReader : Reader< ^e, ^r> -> Reader< ^e, ^r> when ^e : equality
+    /// <summary>Caches the result(s) of a computation.</summary>
+    val inline cache: reader: Reader< ^e, ^a> -> Reader< ^e, ^a> when ^e: equality
 
-
-// Monad
-
-    /// <summary>Inject a value into the context type.</summary>
-    val unit : x: 'a -> Reader<'e, ^a>
-
-    /// <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
-    [<CompiledName("Bind")>]
-    val inline bind : f: (^a -> Reader< ^e, ^b>) -> Reader< ^e, ^a> -> Reader< ^e, ^b>
-
-    /// <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
-    [<CompiledName("Flatten")>]
-    val flatten : Reader<'e, Reader< ^e, 'a>> -> Reader< ^e, ^a>
-
-    /// <summary>Recursively generate a context using a continuation.</summary>
-    [<CompiledName("RecM")>]
-    val inline recM : f: ((^a -> Reader< ^e, ^b>) -> ^a -> Reader< ^e, ^b>) -> x: ^a -> Reader< ^e, ^b>
-
-    /// <summary>Recursively generate a context using a continuation.</summary>
-    [<CompiledName("RecM1")>]
-    val inline recM1 : f: ((Reader< ^e, ^a> -> Reader< ^e, ^b>) -> ^a -> Reader< ^e, ^b>) -> x: ^a -> Reader< ^e, ^b>
+    /// <summary>Register an 'event' with an 'action' (i.e. a Reader that returns unit).</summary>
+    val inline register: event: (^e -> unit) -> reader: Reader< ^e, unit> -> Reader< ^e, unit>
 
 
-    /// <summary>Monadic workflow-related types and values.</summary>
-    module Workflow =
+// Isomorphisms
 
-        /// <summary>Monadic workflow builder.</summary>
-        type ReaderBuilder =
-            new : unit -> ReaderBuilder
-            
-            member inline Return : x: ^a -> Reader< ^e, ^a>
-            member inline ReturnFrom : m: Reader< ^e, ^a> -> Reader< ^e, ^a>
-            member inline Bind: m: Reader< ^e, ^a> * (^a -> Reader< ^e, ^b>) -> Reader< ^e, ^b>
-            
-            member inline Zero : unit -> Reader< ^e, unit>
-
-            member inline Using : disp: ^d * body: (^d -> Reader< ^e, ^a>) -> Reader< ^e, ^a> when ^d :> System.IDisposable
-
-            member inline TryWith : body: Reader< ^e, ^a> * handler: (exn -> Reader< ^e, ^a>) -> Reader< ^e, ^a>
-            member inline TryFinally : body: Reader< ^e, ^a> * finalizer: (unit -> unit) -> Reader< ^e, ^a>
-
-            member inline While : guard: (unit -> bool) * body: (unit -> Reader< ^e, unit>) -> Reader< ^e, unit>
-            
-            member inline For : seq: #seq< ^a> * body: (^a -> Reader< ^e, unit>) -> Reader< ^e, unit>
-
-
-    /// <summary>Monadic workflow object.</summary>
-    val reader : Workflow.ReaderBuilder
-
-
-// Applicative
-
-    /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
-    [<CompiledName("Ap")>]
-    val inline ap : fv: Reader< ^e, ^a> -> ff: Reader< ^e, (^a -> ^b)> -> Reader< ^e, ^b>
-
-    /// <summary>Lift a binary function onto contexts.</summary>
-    [<CompiledName("Map2")>]
-    val inline map2 : f: (^a -> ^b -> ^c) -> Reader< ^e, ^a> -> Reader< ^e, ^b> -> Reader< ^e, ^c>
-
-    /// <summary>Sequence two contexts.</summary>
-    [<CompiledName("AndThen")>]
-    val inline andThen : second: Reader< ^e, ^b> -> first: Reader< ^e, ^a> -> Reader< ^e, ^b>
-
-    /// <summary>Conditional execution of contextual expressions.</summary>
-    [<CompiledName("When")>]
-    val inline when_: condition: bool -> f: (unit -> Reader< ^e, unit>) -> Reader< ^e, unit>
+    /// <summary>Convert a Reader-value to a .NET Func.</summary>
+    [<CompiledName("ToFunc")>]
+    val inline toFunc: reader: Reader< ^e, ^a> -> System.Func< ^e, ^a>
 
 
 // Functor
 
     /// <summary>Lift a function onto a context.</summary>
-    [<CompiledName("Map")>]
-    val inline map : f: (^a -> ^b) -> Reader< ^e, ^a> -> Reader< ^e, ^b>
+    val inline map: f: (^a -> ^b) -> fa: Reader< ^e, ^a> -> Reader< ^e, ^b>
 
 
 // Profunctor
 
-    /// <summary>Map over both arguments at the same time.</summary>
-    [<CompiledName("Dimap")>]
-    val inline dimap : f: (^a0 -> ^a) -> g: (^b -> ^c) -> pf: Reader< ^a, ^b> -> Reader< ^a0, ^c>
+    /// <summary>Map over both arguments at the same time,
+    /// the first (i.e. 'left') contravariantly
+    /// and the second (i.e. 'right') covariantly.</summary>
+    val inline dimap : f: (^c -> ^a) -> g: (^b -> ^d) -> pf: Reader< ^a, ^b> -> Reader< ^c, ^d>
 
-    /// <summary>Map the first argument contravariantly.</summary>
-    [<CompiledName("LMap")>]
-    val inline lmap : f: (^a0 -> ^a) -> pf: Reader< ^a, ^b> -> Reader< ^a0, ^b>    
+    /// <summary>Map the first (i.e. 'left') argument contravariantly.</summary>
+    val inline mapl : f: (^c -> ^a) -> pf: Reader< ^a, ^b> -> Reader< ^c, ^b>
     
-    /// <summary>Map the second argument covariantly.</summary>
-    [<CompiledName("RMap")>]
-    val inline rmap : g: (^b -> ^c) -> pf: Reader< ^a, ^b> -> Reader< ^a, ^c>
+    /// <summary>Map the second (i.e. 'right') argument covariantly.</summary>
+    val inline mapr : g: (^b -> ^d) -> pf: Reader< ^a, ^b> -> Reader< ^a, ^d>
+
+
+// Applicative
+
+    /// <summary>Lift a value into a context.</summary>
+    val inline unit: value: ^a -> Reader< ^e, ^a>
+
+    /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+    val inline ap: fv: Reader< ^e, ^a> -> ff: Reader< ^e, (^a -> ^b)> -> Reader< ^e, ^b>
+
+    /// <summary>Lift a binary function onto contexts.</summary>
+    val inline map2: f: (^a -> ^b -> ^c) -> fa: Reader< ^e, ^a> -> fb: Reader< ^e, ^b> -> Reader< ^e, ^c>
+
+    /// <summary>Sequence two contexts, discarding the results of the first.</summary>
+    val inline andthen: second: Reader< ^e, ^b> -> first: Reader< ^e, ^a> -> Reader< ^e, ^b>
+
+
+// Monad
+
+    /// <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+    val inline bind: f: (^a -> Reader< ^e, ^b>) -> ma: Reader< ^e, ^a> -> Reader< ^e, ^b>
+
+    /// <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+    val inline flatten: mm: Reader< ^e, Reader< ^e, ^a>> -> Reader< ^e, ^a>
+
+    /// <summary>Recursively generate a monadic context using up to two continuation functions to produce different effects.</summary>
+    val inline fixM:
+        loop: ((^a -> Reader< ^e, ^b>) -> (Reader< ^e, ^a> -> Reader< ^e, ^b>) -> ^a -> Reader< ^e, ^b>) ->
+        em: Rogz.Context.Data.Either.Either< ^a, Reader< ^e, ^a>> -> Reader< ^e, ^b>
+
+    // foldlM
+    // foldrM
+
+    /// <summary>Computation expression / monadic-workflow type and operations for the given context.</summary>
+    [<RequireQualifiedAccess>]
+    module Workflow =
+
+        /// <summary>Computation expression for the given monadic context.</summary>
+        type ReaderBuilder =
+            new: unit -> ReaderBuilder
+            member inline Return: x: ^a -> Reader< ^e, ^a>
+            member inline ReturnFrom: m: Reader< ^e, ^a> -> Reader< ^e, ^a>
+            member inline Bind: m: Reader< ^e, ^a> * f: (^a -> Reader< ^e, ^b>) -> Reader< ^e, ^b>
+            member inline Zero: unit -> Reader< ^e, unit>
+            member inline Using: disp: ^d * f: (^d -> Reader< ^e, ^a>) -> Reader< ^e, ^a> when ^d :> System.IDisposable
+            member inline TryWith: m: Reader< ^e, ^a> * handler: (exn -> Reader< ^e, ^a>) -> Reader< ^e, ^a>
+            member inline TryFinally: m: Reader< ^e, ^a> * finalizer: (unit -> unit) -> Reader< ^e, ^a>
+
+
+    /// <summary>Computation expression instance for the given context.</summary>
+    val reader: Workflow.ReaderBuilder
 
 
 // Semigroup
 
     /// <summary>An associative binary operation on contexts.</summary>
-    val inline append : first: Reader< ^e, ^a> -> second: Reader< ^e, ^a> -> Reader< ^e, ^a>
+    val inline append: first: Reader< ^e, ^a> -> second: Reader< ^e, ^a> -> Reader< ^e, ^a>
         when ^a : (static member Append: ^a -> ^a -> ^a)
 
 
@@ -172,13 +137,11 @@ module Reader =
 
     /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    [<CompiledName("Sequence")>]
-    val inline sequence : source: #seq<Reader< ^e, ^a>> -> Reader< ^e, seq< ^a>>
+    val inline sequence: source: seq<Reader< ^e, ^a>> -> Reader< ^e, seq< ^a>>
 
     /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    [<CompiledName("Traverse")>]
-    val inline traverse : f: (^a -> Reader< ^e, ^b>) -> source: #seq< ^a> -> Reader< ^e, seq< ^b>>
+    val inline traverse: f: (^a -> Reader< ^e, ^b>) -> source: seq< ^a> -> Reader< ^e, seq< ^b>>
 
 
 // Cat
@@ -189,53 +152,45 @@ module Reader =
 
     /// <summary>Compose two members of a category together.</summary>
     [<CompiledName("Compose")>]
-    val inline compose : o2: Reader< ^b, ^c> -> o1: Reader< ^a, ^b> -> Reader< ^a, ^c>
+    val inline compose: o2: Reader< ^b, ^c> -> o1: Reader< ^a, ^b> -> Reader< ^a, ^c>
 
 
 // Arrow
 
     /// <summary>Lift a function to an arrow.</summary>
-    [<CompiledName("Arr")>]
-    val inline arr : f: (^a -> ^b) -> Reader< ^a, ^b>
+    val inline arr: f: (^a -> ^b) -> Reader< ^a, ^b>
 
     /// <summary>Send the first component of the input through the argument arrow, and copy the rest unchanged to the output.</summary>
-    [<CompiledName("ArrFst")>]
-    val inline arrFst : ar: Reader< ^a, ^b> -> Reader< ^a * ^c, ^b * ^c>
+    val inline first: ar: Reader< ^a, ^b> -> Reader< ^a * ^c, ^b * ^c>
 
     /// <summary>Send the second component of the input through the argument arrow, and copy the rest unchanged to the output.</summary>
-    [<CompiledName("ArrSnd")>]
-    val inline arrSnd : ar: Reader< ^a, ^b> -> Reader< ^c * ^a, ^c * ^b>
+    val inline second: ar: Reader< ^a, ^b> -> Reader< ^c * ^a, ^c * ^b>
 
     /// <summary>Split the input between the two argument arrows and combine their output.</summary>
-    [<CompiledName("Split")>]
-    val inline split : a2: Reader< ^c, ^d> -> a1: Reader< ^a, ^b> -> Reader< ^a * ^c, ^b * ^d>
+    val inline split: a2: Reader< ^c, ^d> -> a1: Reader< ^a, ^b> -> Reader< ^a * ^c, ^b * ^d>
 
     /// <summary>Fanout: send the input to both argument arrows and combine their output.</summary>
-    [<CompiledName("Fanout")>]
-    val inline fanout : a2: Reader< ^a, ^c> -> a1: Reader< ^a, ^b> -> Reader< ^a, ^b * ^c>
+    val inline fanout: a2: Reader< ^a, ^c> -> a1: Reader< ^a, ^b> -> Reader< ^a, ^b * ^c>
 
 
-// Choice
+// Arrow.Choice
+
+    open Rogz.Context.Data.Either
 
     /// <summary>Feed marked inputs through the argument arrow, passing the rest through unchanged to the output. A mirror of 'feed2'.</summary>
-    [<CompiledName("Feed1")>]
-    val inline feed1 : ar: Reader< ^a, ^b> -> Reader<Choice< ^a, ^c>, Choice< ^b, ^c>>
+    val inline feedl: ar: Reader< ^a, ^b> -> Reader<Either< ^a, ^c>, Either< ^b, ^c>>
 
     /// <summary>Feed marked inputs through the argument arrow, passing the rest through unchanged to the output. A mirror of 'feed1'.</summary>
-    [<CompiledName("Feed2")>]
-    val inline feed2 : ar: Reader< ^a, ^b> -> Reader<Choice< ^c, ^a>, Choice< ^c, ^b>>
+    val inline feedr: ar: Reader< ^a, ^b> -> Reader<Either< ^c, ^a>, Either< ^c, ^b>>
 
     /// <summary>Split the input between the two argument arrows, retagging and merging their outputs.</summary>
-    [<CompiledName("Merge")>]
-    val inline merge : a2: Reader< ^c, ^d> -> a1: Reader< ^a, ^b> -> Reader<Choice< ^a, ^c>, Choice< ^b, ^d>>
+    val inline merge: a2: Reader< ^c, ^d> -> a1: Reader< ^a, ^b> -> Reader<Either< ^a, ^c>, Either< ^b, ^d>>
 
     /// <summary>Split the input between the two argument arrows and merge their outputs.</summary>
-    [<CompiledName("Fanin")>]
-    val inline fanin : a2: Reader< ^c, ^b> -> a1: Reader< ^a, ^b> -> Reader<Choice< ^a, ^c>, ^b>
+    val inline fanin: a2: Reader< ^c, ^b> -> a1: Reader< ^a, ^b> -> Reader<Either< ^a, ^c>, ^b>
 
 
-// Apply
+// Arrow.Apply
 
     /// <summary>Arrow that allows application of arrow inputs to other inputs.</summary>
-    [<CompiledName("App")>]
     val app<'a, 'b> : Reader<Reader< ^a, ^b> * ^a, ^b>

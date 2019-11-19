@@ -1,214 +1,139 @@
-﻿namespace PTR.Context.Type.Reader
-
-
-[<Struct; NoComparison; NoEquality>]
-type Reader<'Env, 'Result> = Reader of ('Env -> 'Result) with
-
-    member inline s.Invoke(env: ^Env) = let (Reader r) = s in r env
-
-    static member inline Unit(x: ^a) : Reader< ^e, ^a> = Reader (fun _ -> x)
-
-    member inline s.Select(f: System.Func< ^Result, ^NextResult>) : Reader< ^Env, ^NextResult> =
-        let (Reader r) = s in Reader (fun e -> f.Invoke(r e))
-
-    member inline s.Select2((Reader r2), f: System.Func< ^Result, ^NextResult, ^FinalResult>) : Reader< ^Env, ^FinalResult> =
-        let (Reader r) = s in Reader (fun e -> f.Invoke(r e, r2 e))
-
-    member inline s.SelectMany(f: System.Func< ^Result, Reader< ^Env, ^NextResult>>) : Reader< ^Env, ^NextResult> =
-        let (Reader r) = s in Reader (fun e -> f.Invoke(r e).Invoke(e))
-
-    member inline s.SelectMany(f: System.Func< ^Result, Reader< ^Env, ^NextResult>>, g: System.Func< ^Result, ^NextResult, ^FinalResult>) : Reader< ^Env, ^FinalResult> =
-        let (Reader r) = s in Reader (fun e -> let a = r e in g.Invoke(a, f.Invoke(r e).Invoke(e)))
-
-    member inline s.Join(t: Reader< ^Env, ^NextResult>, kt: System.Func< ^Result, ^K>, ku: System.Func< ^NextResult, ^K>, rs: System.Func< ^Result, ^NextResult, ^FinalResult>) : Reader< ^Env, ^FinalResult> =
-        s.Select2(t, rs)
-
-    static member inline Append ((Reader r1), Reader r2) : Reader< ^e, ^a> =
-        Reader (fun e -> (^a : (static member Append: ^a -> ^a -> ^a) (r1 e, r2 e)))
+﻿namespace Rogz.Context.Data.Reader
 
 
 module Reader =
 
-// Primitives
+// Interop
 
     [<CompiledName("Make")>]
-    let inline make (reader: System.Func< ^e, ^a>) : Reader< ^e, ^a> = Reader reader.Invoke
+    let inline make (f: System.Func< ^e, ^a>) = Reader f.Invoke
 
-    [<CompiledName("RunReader")>]
-    let inline runReader (env: ^e) (Reader (r: ^e -> ^r)) : ^r = r env
-    
-    [<CompiledName("WithReader")>]
-    let inline withReader (f: ^e0 -> ^e) (Reader r) : Reader< ^e0, ^r> = Reader (fun e -> r (f e))
+
+// Minimal
 
     [<CompiledName("Ask")>]
     let ask<'e> : Reader< ^e, ^e> = Reader id
 
-    [<CompiledName("Local")>]
-    let inline local (localize: ^e -> ^e) (Reader r) : Reader< ^e, ^r> =
-        Reader (fun e -> r (localize e))    
+    let inline local (localize: ^e -> ^e) (Reader r) : Reader< ^e, ^a> =
+        Reader (fun e -> r (localize e))
 
-    [<CompiledName("Flip")>]
-    let inline flip (f: ^a -> ^e -> ^r) : Reader< ^e, (^a -> ^r)> =
-        Reader (fun e a -> f a e)
 
-    [<CompiledName("Curry")>]
+// Primitives
+
+    let inline runReader (env: ^e) (Reader r) : ^a = r env
+
+    let inline flip (f: ^a -> ^e-> ^r) = Reader (fun e a -> f a e)
+
     let inline curry (f: ^a * ^b -> ^c) = Reader (fun a b -> f (a, b))
 
-    [<CompiledName("Curry1")>]
-    let inline curry1 (f: struct (^a * ^b) -> ^c) = Reader (fun a b -> f (a, b))
+    let inline curry1 (f: struct (^a * ^b) -> ^c) = Reader (fun a b -> f (struct (a, b)))
 
-    [<CompiledName("Uncurry")>]
-    let inline uncurry (f: ^a -> ^b -> ^c) = Reader (fun (a, b) -> f a b)
+    let inline uncurry (f: ^a -> ^b -> ^c) : Reader< ^a * ^b, ^c> =
+        Reader (fun (a, b) -> f a b)
 
-    [<CompiledName("Uncurry1")>]
-    let inline uncurry1 (f: ^a -> ^b -> ^c) = Reader (fun struct (a, b) -> f a b)
+    let inline uncurry1 (f: ^a -> ^b -> ^c) : Reader< struct (^a * ^b), ^c> =
+        Reader (fun (struct (a, b)) -> f a b)
 
-    [<CompiledName("CacheReader")>]
-    let inline cacheReader (Reader f) : Reader< ^e, ^r> when ^e : equality =
+    let inline cache (Reader r) : Reader< ^e, ^a> when ^e: equality =
         let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
         Reader (fun e -> match d.TryGetValue(e) with
-                         | true, r  -> r
-                         | false, _ -> let r = f e in d.[e] <- r ; r)
+                         | true, res -> res
+                         | false, _ -> let res = r e in d.[e] <- res; res)
+
+    let inline register (event: ^e -> unit) (Reader r) : Reader< ^e, unit> =
+        Reader (fun e -> r e; event e)
+
+
+// Isomorphisms
+
+    [<CompiledName("ToFunc")>]
+    let inline toFunc (Reader r) : System.Func< ^e, ^a> = System.Func<_,_>r
+
+
+// Functor
+
+    let inline map (f: ^a -> ^b) (Reader r) : Reader< ^e, ^b> =
+        Reader (fun e -> f (r e))
+
+
+// Profunctor
+
+    let inline dimap (f: ^c -> ^a) (g: ^b -> ^d) (Reader r) : Reader< ^c, ^d> =
+        Reader (fun c -> g (r (f c)))
+
+    let inline mapl (f: ^c -> ^a) (Reader r) : Reader< ^c, ^b> =
+        Reader (fun c -> r (f c))
+
+    let inline mapr (g: ^b -> ^d) (Reader r) : Reader< ^a, ^d> =
+        Reader (fun a -> g (r a))
+
+
+// Applicative
+
+    let inline unit value : Reader< ^e, ^a> = Reader (fun _ -> value)
+
+    let inline ap (Reader rv) (Reader rf) : Reader< ^e, ^b> =
+        Reader (fun e -> rf e ((rv e): ^a))
+
+    let inline map2 (f: ^a -> ^b -> ^c) (Reader ra) (Reader rb) : Reader< ^e, ^c> =
+        Reader (fun e -> f (ra e) (rb e))
+
+    let inline andthen (Reader rb) (Reader ra) : Reader< ^e, ^b> =
+        Reader (fun e -> ignore ((ra e): ^a); rb e)
 
 
 // Monad
 
-    let unit (x: 'a) : Reader<'e, ^a> = Reader (fun _ -> x)
+    let inline bind (f: ^a -> Reader< ^e, ^b>) (Reader r) =
+        Reader (fun e -> let (Reader r2) = f (r e) in r2 e)
 
-    [<CompiledName("Bind")>]
-    let inline bind f (Reader (r: ^e -> ^a)) : Reader< ^e, ^b> =
-        Reader (fun e -> let (Reader rr) = f (r e) in rr e)
-
-    [<CompiledName("Flatten")>]
-    let flatten (Reader (rr: 'e -> Reader< ^e, 'a>)) : Reader< ^e, ^a> =
+    let inline flatten (Reader rr) : Reader< ^e, ^a> =
         Reader (fun e -> let (Reader r) = rr e in r e)
 
-    [<CompiledName("RecM")>]
-    let inline recM f (x: ^a) : Reader< ^e, ^b> =
-        let rec go m = bind j m
-        and k a = go (unit a)
-        and j a = f k a
-        j x
+    let inline fixM (loop: (^a -> Reader< ^e, ^b>) -> (Reader< ^e, ^a> -> Reader< ^e, ^b>) -> ^a -> Reader< ^e, ^b>) em =
+        Reader (fun e ->
+            let rec go (Reader r) = k (r e)
+            and k a = loop k go a
+            runReader e (match em with
+                         | Rogz.Context.Data.Either.Left a  -> k a
+                         | Rogz.Context.Data.Either.Right m -> go m))
 
-    [<CompiledName("RecM1")>]
-    let inline recM1 f (x: ^a) : Reader< ^e, ^b> =
-        let rec go m = bind k m
-        and k a = f go a
-        k x
+    // foldlM
+    // foldrM
 
-    //[<CompiledName("FoldrM")>]
-    //let inline foldrM f (s0: ^s) (source: ^a seq) : Reader< ^e, ^s> =             
-    //    Reader (fun e ->
-    //        let mutable s = s0
-    //        let act a () = s <- runReader e (f a s)
-    //        match source with
-    //        | :? array< ^a> as s -> Array.foldBack act s ()
-    //        | :? list<  ^a> as s -> List.foldBack  act s ()
-    //        | _ -> Seq.foldBack act source ()
-    //        s)
-    //
-    //[<CompiledName("FoldlM")>]
-    //let inline foldlM f (s0: ^s) (source: ^a seq) : Reader< ^e, ^s> =
-    //    Reader (fun e ->
-    //        let mutable z = s0
-    //        let inline r x = let (Reader rdr) = f z x in z <- rdr e
-    //        match source with
-    //        | :? array< ^a> as s -> for i = 0 to s.Length - 1 do r s.[i]
-    //        | :? ResizeArray< ^a> as s -> for i = 0 to s.Count - 1 do r s.[i]
-    //        | :? list<  ^a> as s -> for x in s do r x
-    //        | _ -> for x in source do r x
-    //        z)
-
-    
+    [<RequireQualifiedAccess>]
     module Workflow =
 
-        type ReaderBuilder () =
-            member inline _.Return(x: ^a) : Reader< ^e, ^a> = unit x
-            member inline _.ReturnFrom (m: Reader< ^e, ^a>) : Reader< ^e, ^a> = m
-            member inline _.Bind(m: Reader< ^e, ^a>, f) = bind f m
-            
+        type ReaderBuilder() =
+            member inline _.Return(x) : Reader< ^e, ^a> = unit x
+            member inline _.ReturnFrom(m) : Reader< ^e, ^a> = m
+            member inline _.Bind(m, f: ^a -> Reader< ^e, ^b>) = bind f m
             member inline _.Zero() : Reader< ^e, unit> = unit ()
-
-            member inline _.Using(disp: ^d, body: ^d -> Reader< ^e, ^a>) : Reader< ^e, ^a> when ^d :> System.IDisposable =
-                using disp body
-
-            member inline _.TryWith(body, handler) : Reader< ^e, ^a> =
-                try body with e -> handler e
-            member inline _.TryFinally(body, finalizer) : Reader< ^e, ^a> =
-                try body finally finalizer ()
-
-            member inline _.While(guard, body) : Reader< ^e, unit> =
-                let rec go = function
-                | false -> unit ()
-                | true  -> bind k (body ())
-                and k () = go (guard ()) in k ()
-
-            member inline _.For(seq: #seq< ^a>, body) : Reader< ^e, unit> =
-                use e = seq.GetEnumerator()
-                let rec go = function
-                | false -> unit ()
-                | true  -> b e.Current
-                and b x = bind k (body x)
-                and k () = go (e.MoveNext()) in k ()
+            member inline _.Using(disp: ^d, f: ^d -> Reader< ^e, ^a>) : Reader< ^e, ^a> when ^d :> System.IDisposable = using disp f
+            member inline _.TryWith(m: Reader< ^e, ^a>, handler) = try m with e -> handler e
+            member inline _.TryFinally(m: Reader< ^e, ^a>, finalizer) = try m finally finalizer ()
 
 
     let reader = Workflow.ReaderBuilder()
 
 
-// Applicative
-      
-    [<CompiledName("Ap")>]
-    let inline ap (Reader (rv: ^e -> ^a)) (Reader rf) : Reader< ^e, ^b> = Reader (fun e -> rf e (rv e))
-
-    [<CompiledName("Map2")>]
-    let inline map2 (f: ^a -> ^b -> ^c) (Reader ra) (Reader rb) : Reader< ^e, ^c> =
-        Reader (fun e -> f (ra e) (rb e))
-
-    [<CompiledName("AndThen")>]
-    let inline andThen (Reader rb) (Reader (ra: ^e -> ^a)) : Reader< ^e, ^b> =
-        Reader (fun e -> ignore (ra e); rb e)
-
-    [<CompiledName("When")>]
-    let inline when_ condition f : Reader< ^e, unit> =
-        if condition then f () else unit ()
-
-
-// Functor
-
-    [<CompiledName("Map")>]
-    let inline map (f: ^a -> ^b) (Reader r) : Reader< ^e, ^b> =
-        Reader (fun e -> f (r e))
-
-// Profunctor
-
-    [<CompiledName("Dimap")>]
-    let inline dimap (f: ^a0 -> ^a) (g: ^b -> ^c) (Reader r) : Reader< ^a0, ^c> =
-        Reader (fun a0 -> g (r (f a0)))
-
-    [<CompiledName("LMap")>]
-    let inline lmap (f: ^a0 -> ^a) (Reader r) : Reader< ^a0, ^b> = Reader (fun a0 -> r (f a0))
-
-    [<CompiledName("RMap")>]
-    let inline rmap (g: ^b -> ^c) (Reader r) : Reader< ^a, ^c> = Reader (fun a -> g (r a))
-
-        
 // Semigroup
 
-    let inline append (Reader (f: (^e -> ^a))) (Reader g) : Reader< ^e, ^a> when ^a: (static member Append: ^a -> ^a -> ^a) =
-        Reader (fun e -> (^a: (static member Append: ^a -> ^a -> ^a) (f e, g e)))
+    let inline append (Reader f) (Reader s) : Reader< ^e, ^a> =
+        Reader (fun e ->
+            (^a: (static member Append: ^a -> ^a -> ^a) (f e, s e)))
 
 
 // Traversable
 
-    [<CompiledName("Sequence")>]
-    let inline sequence (source: #seq<Reader< ^e, ^a>>) : Reader< ^e, ^a seq> =
-        Reader (fun e -> System.Linq.Enumerable.Select(source, fun (Reader r) -> r e))
-
-    [<CompiledName("Traverse")>]
-    let inline traverse (f: ^a -> Reader< ^e, ^b>) (source: #seq< ^a>) : Reader< ^e, ^b seq> =
+    let inline sequence (source: seq<Reader< ^e, ^a>>) : Reader< ^e, seq< ^a>> =
         Reader (fun e ->
-            let g a = let (Reader r) = f a in r e
-            System.Linq.Enumerable.Select(source, g))
+            System.Linq.Enumerable.Select(source, fun (Reader r) -> r e))
+
+    let inline traverse (f: ^a -> Reader< ^e, ^b>) (source: seq< ^a>) : Reader< ^e, seq< ^b>> =
+        Reader (fun e ->
+            System.Linq.Enumerable.Select(source,
+                                          fun x -> let (Reader r) = f x in r e))
 
 
 // Cat
@@ -217,59 +142,49 @@ module Reader =
     let identity<'a> : Reader< ^a, ^a> = Reader id
 
     [<CompiledName("Compose")>]
-    let inline compose (Reader rb) (Reader (ra: ^a -> ^b)) : Reader< ^a, ^c> =
-        Reader (fun a -> rb (ra a))
+    let inline compose (Reader rbc) (Reader rab) : Reader< ^a, ^c> =
+        Reader (fun a -> rbc ((rab a): ^b))
 
 
 // Arrow
 
-    [<CompiledName("Arr")>]
     let inline arr f : Reader< ^a, ^b> = Reader f
 
-    [<CompiledName("ArrFst")>]
-    let inline arrFst (Reader r) : Reader< ^a * ^c, ^b * ^c> = Reader (fun (a, c) -> r a, c)
+    let inline first (Reader r) : Reader< ^a * ^c, ^b * ^c> =
+        Reader (fun (a, c) -> r a, c)
 
-    [<CompiledName("ArrSnd")>]
-    let inline arrSnd (Reader r) : Reader< ^c * ^a, ^c * ^b> = Reader (fun (c, a) -> c, r a)
+    let inline second (Reader r) : Reader< ^c * ^a, ^c * ^b> =
+        Reader (fun (c, a) -> c, r a)
 
-    [<CompiledName("Split")>]
-    let inline split (Reader rb) (Reader ra) : Reader< ^a * ^c, ^b * ^d> =
-        Reader (fun (a, b) -> ra a, rb b)
+    let inline split (Reader cd) (Reader ab) : Reader< ^a * ^c, ^b * ^d> =
+        Reader (fun (a, c) -> ab a, cd c)
 
-    [<CompiledName("Fanout")>]
-    let inline fanout (Reader rb) (Reader ra) : Reader< ^a, ^b * ^c> =
-        Reader (fun e -> ra e, rb e)
+    let inline fanout (Reader ac) (Reader ab) : Reader< ^a, ^b * ^c> =
+        Reader (fun a -> ab a, ac a)
 
 
-// Choice
+// Arrow.Choice
 
-    [<CompiledName("Feed1")>]
-    let inline feed1 (Reader (f: ^a -> ^b)) =
-        Reader (function
-        | Choice1Of2 a -> Choice1Of2 (f a)
-        | Choice2Of2 c -> Choice2Of2 (c: ^c))
-      
-    [<CompiledName("Feed2")>]
-    let inline feed2 (Reader (f: ^a -> ^b)) =
-        Reader (function
-        | Choice1Of2 c -> Choice1Of2 (c: ^c)
-        | Choice2Of2 a -> Choice2Of2 (f a))
+    open Rogz.Context.Data.Either
 
-    [<CompiledName("Merge")>]
-    let inline merge (Reader (g: ^c -> ^d)) (Reader (f: ^a -> ^b)) = 
-        Reader (function
-        | Choice1Of2 x -> Choice1Of2 (f x)
-        | Choice2Of2 y -> Choice2Of2 (g y))
+    let inline feedl (Reader ab) : Reader<Either< ^a, ^c>, Either< ^b, ^c>> =
+        Reader (function Left a  -> Left (ab a)
+                       | Right c -> Right c)
 
-    [<CompiledName("Fanin")>]
-    let inline fanin (Reader g) (Reader f) : Reader<Choice< ^a, ^c>, ^b> =
-        Reader (function
-        | Choice1Of2 x -> f x
-        | Choice2Of2 y -> g y)
+    let inline feedr (Reader ab) : Reader<Either< ^c, ^a>, Either< ^c, ^b>> =
+        Reader (function Left c  -> Left c
+                       | Right a -> Right (ab a))
+
+    let inline merge (Reader cd) (Reader ab) : Reader<Either< ^a, ^c>, Either< ^b, ^d>> =
+        Reader (function Left a  -> Left (ab a)
+                       | Right c -> Right (cd c))
+
+    let inline fanin (Reader cb) (Reader ab) : Reader<Either< ^a, ^c>, ^b> =
+        Reader (function Left a  -> ab a
+                       | Right c -> cb c)
 
 
-// Apply
+// Arrow.Apply
 
-    [<CompiledName("App")>]
-    let app<'a, 'b> : Reader<Reader<'a, 'b> * ^a, ^b> =
-        Reader (fun ((Reader f), b) -> f b)
+    let app<'a, 'b> : Reader<Reader< ^a, ^b> * ^a, ^b> =
+        Reader (fun ((Reader r), a) -> r a)

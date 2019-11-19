@@ -1,0 +1,10 @@
+﻿add members to all types
+
+rethink how to implement all Linq methods (see ContextCS)
+^ test performance with making Linq as extensions (keeping basic ones like map(select), bind(selectmanyx1overload), map2(zip|join), filter(where), etc
+
+'import' all types from old Context (remove Lens), add Stream (one that ends in bool)
+
+test Operators
+
+Consider LINQ methods for Writer type :: they do NOT transfer (due to member constraints)

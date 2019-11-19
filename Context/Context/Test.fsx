@@ -1,138 +1,287 @@
-﻿let test (timeout_ms: int64) (name: string) (work: Async<'a>) =
-    let err = async {
-        let t = System.Diagnostics.Stopwatch.StartNew()
-        while t.ElapsedMilliseconds < timeout_ms do ()
-        return failwith "test timed out" }
-    let work = async { let t = System.Diagnostics.Stopwatch.StartNew()
-                       let! w = work
-                       System.GC.Collect()
-                       let time = t.ElapsedMilliseconds
-                       return Some (name, w, time) }
-    async {
-        do! Async.SwitchToThreadPool()
-        let! w = Async.Choice [work; err]
-        printfn "test result = %A" w.Value }
-
-// test result @ 50_000_000 => ((), 29493L)
-let inline unlim1 s f =
-    let rec st s () = go (f s)
-    and go s = Seq.append (Seq.singleton s) (Seq.delay (st s))
-    go s
-
-// test result @ 50_000_000 => ((), 5122L)
-let inline unlim1' s f =
-    let rec go s =
-        seq { yield s
-              yield! go (f s) }
-    go s
-
-// test result @ 50_000_000 => ((), 1669L)
-let inline unlim2 s f =
-    seq { let mutable s = s
-          yield s
-          while true do
-            s <- f s
-            yield s }
-
-// test result @ 50_000_000 => ((), 3183L)
-let inline unlim3 s f =
-    Seq.unfold (fun s -> Some (s, f s)) s
+﻿
+let inline fixs loop xs =
+    let rec go xs = Seq.collect k xs
+    and k a = loop k go a
+    match xs with Choice1Of2 a -> k a | Choice2Of2 xs -> go xs
 
 
-let inline taken f =
-    async {
-        let xs = System.Linq.Enumerable.AsEnumerable(f ())
-        ignore <| System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Take(xs, 50_000_000)) }
-let prep () = let mutable arr = Array.init 1000000 id
-              for _ in arr do ()
-              arr <- null
-              System.GC.Collect()
-let inc x = x + 1
-let time = 45_000L
-let testing = test time
-prep ()
-Async.Sequential [
-    testing "unlim1" (taken (fun () -> unlim1 1 inc))
-    testing "unlim1'" (taken (fun () -> unlim1' 1 inc))
-    testing "unlim2" (taken (fun () -> unlim2 1 inc))
-    testing "unlim3" (taken (fun () -> unlim3 1 inc)) ]
-|> fun w -> async { let! _ = w in () }
-|> Async.Start
+let loop f g a =
+    if a >= 100 then Seq.singleton (string a)
+    elif a % 2 = 0 then f (a + 1)
+    else g (Seq.replicate 5 a |> Seq.map ((+) 1))
 
 
-#load @"Contexts/Maybe.fs"
-#load @"Builders/Maybe.fs"
-//#load @"Contexts/Either.fs"
-//#load @"Builders/Either.fs"
-
-#load @"Operators/Operators.fs"
+let r = fixs loop <| Choice1Of2 1 |> Seq.toList
+let l = List.length r
 
 
-open PTR.Context.Type.Maybe
-open PTR.Context.Type.Maybe.Maybe
-//open PTR.Context.Builder.Maybe
-//open PTR.Context.Builder.Maybe.Build.Extensions
-//open PTR.Context.Builder.Maybe.Build.Linq
-//open PTR.Context.Type.Either
-//open PTR.Context.Type.Either.Either
-open PTR.Context.Operators
+let inline y2 f g x =
+    let rec go1 a = f go2 a
+    and go2 b = g go1 b
+    go1 x
 
-let a : Maybe<int> = Just 1 >>= unit
-let b : Maybe<int> = unit =<< Just 2
+let inline ``y2?`` f x =
+    let rec go a = k a //--this is wrong, monad version is go m = bind k m
+    and k a = f k go a
+    go x
+// ^^ see below and compare
+type Id<'a> = Id of 'a
+let inline runId (Id a) = a
+let inline bind f (Id a) : Id< ^b> = f a
+let inline loopm f x =
+    let rec go m = bind k m
+    and k a = f k go a
+    k x
 
-let c : Maybe<int> = Just id <*> Just 3
-let d : Maybe<int> = Just 4 <**> Just id
+let inline f k x =
+    if x >= 100 then
+        string x
+    else
+        printfn "k: %i" x
+        k (x + 1)
+let inline g j x =
+    printfn "j: %i" x
+    if x % 2 = 0 then
+        j (x + 3)
+    else j (x + 1)
 
-let e : Maybe<int> = Just "-5" *> Just 5
-let f : Maybe<int> = Just 6 <* Just "-6"
+let inline h f g x =
+    if x >= 100 then x
+    elif x % 2 = 0 then
+        printfn "h-f: %i" x
+        f (x + 1)
+    else
+        printfn "h-g: %i" x
+        g (x + 3)
 
-let g : Maybe<int> = Just 7 |%> id
-let h : Maybe<int> = id <%| Just 8
+let a = y2 f g 1
+let b = ``y2?`` h 1
 
-let i : Maybe<int> = Just "-9" %> 9
-let j : Maybe<int> = 10 <% Just "-10"
+let inline force (value : Lazy<_>) = value.Force()
+
+let inline fix f = let rec x = lazy (f x) in x
+
+let inline recM f = let rec x = f (lazy (Option.get x)) in lazy x
+
+// Examples
+let fac = fix (fun f x -> if x = 0 then 1 else x * force f (x - 1))
+let sum = fix (fun f x -> if x >= 1_000_000_000 then x else force f (x + 1))
+let nums = fix (fun v -> seq { yield 0; yield! Seq.map ((+) 1) (force v) }) 
+//let some = recM (fun a -> let x = force a in Some x)
 
 
-let r = ref 0
-type T = T of int with
-    member s.Get = let (T a) = s in a
-    interface System.IDisposable with
-        member _.Dispose() = incr r
+let rsum = force sum 1
+//let s : int option = force some
+let a = force fac 10 // 10! = 3628800
+let b = Seq.take 10 (force nums) |> Seq.toList // seq [0; 1; 2; 3; ...]
 
-let work = async {
-    let a = maybe {
-        let r0 = !r
-        use! d1 = Just <| T 1
-        let! ex = try Just "exn" with _ -> Nothing
-        do! try Just () finally ()
-        let r1 = !r
-        use! d2 = Just <| T 2
-        let r2 = !r
-        use! d3 = Just <| T 3
-        return ex, [r0; r1; r2; !r], [d1.Get; d2.Get; d3.Get] }
-    return a, !r }
-    
-test 1000000L work |> Async.Start
+
+
+
+#load "Contexts\Maybe.fs"
+#load "Operators.fs"
+open Rogz.Context.Extra.Operators
+open Rogz.Context.Data.Maybe
+module M = Maybe
+
+
+let j1 = Just 1
+let j2 = Just 2
+let jadd = Just ((+) 1)
+let n = M.empty<int>
+let even n = n % 2 = 0
+
+let j1_map_string = j1 |%> string
+let n_map_string = n |%> string
+
+let j1_replaceby_3 = j1 %> 3
+
+let j2_from_j1 = j1 *> j2
+let j1_over_n = n <|> j1
+let j1_plus1_ap = jadd <*> j1
+
+let j1_filtered_to_nothing = j1 ?> even
+let j2_unchanged_by_filter = j2 ?> even
+
+let j1_bind_string = j1 >>= (string >> M.unit)
 
 
 
 
 
-////100. * (43555.0 - 41895.0) / ((43555.0 + 41895.0) / 2.)
 
-////// outref<_> can be used as output but only in limited circumstances.
-////// inref<_> is equivalent to 'in' keyword in C#, in that it passes 
-////// the value by reference (in f# this requires passing a MUTABLE value by address (let mutable x = ... in &x)
-////// this CAN improve performance but only in certain circumstances.
-////// example:
-//////  in Writer.recM, replacing the 'append' with:
-//////      let inline private appendn (a: inref< ^w>) b = (^w : (static member Append: ^w -> ^w -> ^w) (a, b))
-////// and looping 3 billion times (with append operation simply doing addition), time only improved 3.8%
-////// which was NOTHING => 43555 ms VS 41895 ms
-////let inline ( /> ) (x: inref<_>) f = f x
-////let inline ( </ ) f (x: inref<_>) = f x
 
-////let mutable x = 1
-////let f x = x, 'a'
-////let aref = &x /> f
-////let bref = f </ &x
+
+
+
+
+
+
+
+
+
+
+
+
+
+#load "Contexts\Cont.fs"
+open Rogz.Context.Data.Cont
+
+let a : Cont<int, string> = Cont.unit "1"
+
+
+
+[<Interface>]
+type IConj<'a> =
+    abstract member Conj: a: ^a -> IConj< ^a>
+    abstract member ToList: unit -> ^a list
+    abstract member ToSeq: unit -> ^a seq
+    inherit System.Collections.Generic.IEnumerable<'a>
+
+
+[<Struct>]
+type LL<'a> = NilLL | NodeLL of struct ('a * (unit -> LL<'a>)) with
+    interface IConj<'a> with
+         override s.Conj x =
+             let rec go = function
+             | NilLL -> NodeLL (x, fun () -> NilLL)
+             | NodeLL _ as n -> NodeLL (x, fun () -> n)
+             go s :> _ IConj
+
+         override s.ToList() =
+             let r = ResizeArray<_>()
+             let rec go = function
+             | NilLL -> ()
+             | NodeLL (a, f) -> go (f (r.Add(a)))
+             go s
+             Seq.toList r
+
+         override s.ToSeq() =
+             let rec go m = seq {
+                 match m with
+                 | NilLL -> ()
+                 | NodeLL (a, f) -> yield a
+                                    yield! go (f ()) }
+             go s
+
+         override s.GetEnumerator() = (s :> _ IConj).ToSeq().GetEnumerator()
+         override s.GetEnumerator() = (s :> _ IConj).GetEnumerator() :> System.Collections.IEnumerator
+
+
+[<Struct>]
+type Vector<'a> private (?x: ^a, ?v: Vector< ^a>) =
+    member private s.Map =
+        match x, v with
+        | Some x, Some v -> v.Map 
+    member private s.X = x
+    member private s.V = v
+    member private s.I = match v with Some v -> v.I + 1 | None -> 0
+    //static member inline Empty() : ^T Vector = Unchecked.defaultof<Vector< ^T>> //Vector(?x = None, ?v = None)    
+    //new () = Vector(?x = None, ?v = None)
+    new (x: ^a) = Vector(?x = Some x, ?v = None)
+    interface IConj<'a> with
+
+        override s.Conj x = Vector(?x = Some x, ?v = Some s) :> _ IConj
+
+        override s.ToList() =
+            let rec go acc (vec: _ Vector) =
+                match vec.V, vec.X with
+                | Some v, Some x -> go (x::acc) v
+                | None, Some x -> x::acc
+                | _ -> acc
+            go [] s
+
+        override s.ToSeq() =
+            //let rec go (vec: _ Vector) = seq {
+            //    match vec.V, vec.X with
+            //    | Some v, Some x -> yield x; yield! go v
+            //    | None, Some x -> yield x
+            //    | _ -> () }
+            //go s
+            let s = s :> _ IConj in seq { yield! s.ToList() }
+
+        override s.GetEnumerator() = ((s :> _ IConj).ToList() :> _ seq).GetEnumerator()
+        override s.GetEnumerator() = (s :> _ IConj).GetEnumerator() :> System.Collections.IEnumerator
+
+
+
+let emptyv<'T> : Vector< ^T> = Unchecked.defaultof<Vector< ^T>>
+
+
+
+
+type LIST<'T> = MT | LST of struct ('T * LIST<'T>) with
+    interface IConj<'T> with
+        
+        override s.Conj x = (match s with MT -> LST (x, s) | LST _ as t -> LST (x, t)) :> _ IConj
+        
+        override s.ToList() =
+            let r = ResizeArray<_>()
+            let rec go = function
+            | MT -> ()
+            | LST (h, t) -> r.Add(h); go t
+            go s
+            Seq.toList r
+
+        override s.ToSeq() =
+            let rec go lst = seq {
+                match lst with
+                | MT -> ()
+                | LST (h, t) -> yield h; yield! go t }
+            go s
+
+        override s.GetEnumerator() = (s :> _ IConj).ToSeq().GetEnumerator()
+        override s.GetEnumerator() = (s :> _ IConj).GetEnumerator() :> System.Collections.IEnumerator
+
+
+// doesnt work cause go (f ()) calls all funcs within f therefore stack overflow
+//[<Struct>]
+//type Vect<'a> = NilV | NodeV of struct ('a * (unit -> Vect<'a>))
+//with interface IConj<'a> with
+//         override s.Conj x =
+//             let rec go = function
+//             | NilV -> NodeV (x, fun () -> NilV)
+//             | NodeV (a, f) -> NodeV (a, fun () -> go (f ()))
+//             go s :> _ IConj
+//         override s.ToList() =
+//             let r = ResizeArray<_>()
+//             let rec go = function
+//             | NilV -> ()
+//             | NodeV (a, f) -> go (f (r.Add(a)))
+//             go s
+//             Seq.toList r
+//         override s.ToSeq() =
+//             let rec go m = seq {
+//                 match m with
+//                 | NilV -> ()
+//                 | NodeV (a, f) -> yield a
+//                                   yield! go (f ()) }
+//             go s
+
+
+
+let inline into xs (c: IConj<_>) =
+    let mutable c = c
+    for x in xs do c <- c.Conj x
+    c
+
+let xs = seq { 1L..100_000L }
+
+
+#time "on"
+printfn "Vector:  %A" ((into xs emptyv).ToSeq() |> Seq.toList)
+#time "off"
+
+#time "on"
+printfn "LL:  %A" ((into xs NilLL).ToSeq() |> Seq.toList)
+#time "off"
+
+#time "on"
+printfn "LIST:  %A" ((into xs MT).ToSeq() |> Seq.toList)
+#time "off"
+
+
+
+//#time "on"
+//printfn "Vect:  %A" ((into xs (NilV)).ToList())
+//#time "off"

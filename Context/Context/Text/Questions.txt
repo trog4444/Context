@@ -1,0 +1,1 @@
+﻿Use System.Func everywhere for better interop?

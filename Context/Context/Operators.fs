@@ -1,4 +1,4 @@
-﻿namespace PTR.Context.Operators
+﻿namespace Rogz.Context.Extra.Operators
 
 
 [<AutoOpen>]
@@ -11,9 +11,19 @@ module ContextOperators =
     let inline ( =<< ) (f: ^a -> ^``Monad<b>``) (m: ^``Monad<a>``)
         : ^``Monad<b>`` = m >>= f
 
+    let inline ( >=> ) (f: ^a -> ^``Monad<b>``) (g: ^b -> ^``Monad<c>``) a = f a >>= g
+
+    let inline ( <=< ) (g: ^b -> ^``Monad<c>``) (f: ^a -> ^``Monad<b>``) = f >=> g
+
+    let inline ( ?> ) m p =
+        (^``MonadPlus<a>``: (member Where: System.Func< ^a, bool> -> ^``MonadPlus<a>``)
+            (m, System.Func<_,_>p))
+
+    let inline ( <? ) (p: ^a -> bool) (m: ^``MonadPlus<a>``) : ^``MonadPlus<a>`` = m ?> p
+
 
     let inline ( <*> ) ff fv =
-        (^``Applicative<a -> b>``: (member Select2: ^``Applicative<a>`` * System.Func<(^a -> ^b), ^a, ^b> -> ^``Applicative<b>``)
+        (^``Applicative<a -> b>``: (member Join: ^``Applicative<a>`` * System.Func<(^a -> ^b), ^a, ^b> -> ^``Applicative<b>``)
             (ff, fv, System.Func<_,_,_>(fun f a -> f a)))
     
     let inline ( <**> ) (fv: ^``Applicative<a>``) (ff: ^``Applicative<a -> b>``)
@@ -22,7 +32,7 @@ module ContextOperators =
 
     let inline ( *> ) fa fb =
         (^``Applicative<a>``:
-            (member Select2: ^``Applicative<b>`` * System.Func< ^a, ^b, ^b> -> ^``Applicative<b>``)
+            (member Join: ^``Applicative<b>`` * System.Func< ^a, ^b, ^b> -> ^``Applicative<b>``)
                 (fa, fb, System.Func<_,_,_>(fun _ b -> b)))
         
     let inline ( <* ) fb (fa: ^``Applicative<a>``) : ^``Applicative<b>`` = fa *> fb
@@ -49,12 +59,16 @@ module ContextOperators =
 
 
 
-    let inline ( =>> ) w j =
+    let inline ( =>> ) w f =
         (^``Comonad<a>``:
             (member ContinueWith: System.Func< ^``Comonad<a>``, ^b> -> ^``Comonad<b>``)
-                (w, System.Func<_,_>j))
+                (w, System.Func<_,_>f))
       
-    let inline ( <<= ) (j: ^``Comonad<a>`` -> ^b) w : ^``Comonad<b>`` = w =>> j
+    let inline ( <<= ) (f: ^``Comonad<a>`` -> ^b) w : ^``Comonad<b>`` = w =>> f
+
+    let inline ( =>= ) (f: ^``Comonad<a>`` -> ^b) (g: ^``Comonad<b>`` -> ^c) w = g (w =>> f)
+
+    let inline ( =<= ) (g: ^``Comonad<b>`` -> ^c) (f: ^``Comonad<a>`` -> ^b) = f =>= g
 
 
 

@@ -1,97 +1,64 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Authors>ptr</Authors>
-    <Company>ptr</Company>
-    <Description>Types that add 'context' to generic underlying types, e.g. functors, monads, monoids, etc., as well as some primitive and compositional operations.</Description>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <PackageReleaseNotes></PackageReleaseNotes>
-    <FileVersion>1.0.2.0</FileVersion>
-    <Version>1.0.2</Version>
-    <RunPostBuildEvent>0</RunPostBuildEvent>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Authors>rogz</Authors>
+        <Company>rogz</Company>
+        <Description>Types that add 'context' to generic underlying types and operations to use and compose them.</Description>
+        <AssemblyVersion>1.0.2.1</AssemblyVersion>
+        <PackageReleaseNotes></PackageReleaseNotes>
+        <FileVersion>1.0.2.1</FileVersion>
+        <Version>1.0.2</Version>
+        <RunPostBuildEvent>0</RunPostBuildEvent>
+    </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Release\Context.XML</DocumentationFile>
-    <WarningLevel>1</WarningLevel>
-    <DefineConstants />
-    <WarningsAsErrors>3239;</WarningsAsErrors>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <OtherFlags></OtherFlags>
-    <NoWarn></NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.1\Context.XML</DocumentationFile>
     <WarningLevel>5</WarningLevel>
-    <OtherFlags></OtherFlags>
-    <WarningsAsErrors>3239;</WarningsAsErrors>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>;0052</NoWarn>
+    <Tailcalls>true</Tailcalls>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Revisions.txt" />
-    <None Include="ToDo.txt" />
-    <None Include="Kinds.txt" />
-    <None Include="Linq Ex.txt" />
+    <None Include="Text\Typeclasses.txt" />
+    <None Include="Text\Linq.txt" />
+    <None Include="Text\Notes.txt" />
+    <None Include="Text\Questions.txt" />
+    <None Include="Text\Revisions.txt" />
+    <None Include="Text\To Do.txt" />
+    <Compile Include="Operators.fs" />
+    <Compile Include="Types\Attr.fsi" />
+    <Compile Include="Types\Attr.fs" />
+    <Compile Include="Types\Cont.fsi" />
+    <Compile Include="Types\Cont.fs" />
+    <Compile Include="Types\Either.fsi" />
+    <Compile Include="Types\Either.fs" />
+    <Compile Include="Types\Maybe.fsi" />
+    <Compile Include="Types\Maybe.fs" />
+    <Compile Include="Types\Reader.fsi" />
+    <Compile Include="Types\Reader.fs" />
+    <Compile Include="Types\State.fsi" />
+    <Compile Include="Types\State.fs" />
+    <Compile Include="Types\Writer.fsi" />
+    <Compile Include="Types\Writer.fs" />
+    <None Include="Incomplete\Identity.fsx" />
+    <None Include="Incomplete\Thunk.fsi" />
+    <None Include="Incomplete\RWS.fsi" />
+    <None Include="Incomplete\Fn.fsx" />
+    <Compile Include="Contexts\Attr.fsi" />
+    <Compile Include="Contexts\Attr.fs" />
     <Compile Include="Contexts\Cont.fsi" />
     <Compile Include="Contexts\Cont.fs" />
     <Compile Include="Contexts\Either.fsi" />
     <Compile Include="Contexts\Either.fs" />
-    <Compile Include="Contexts\Lens.fsi" />
-    <Compile Include="Contexts\Lens.fs" />
     <Compile Include="Contexts\Maybe.fsi" />
     <Compile Include="Contexts\Maybe.fs" />
     <Compile Include="Contexts\Reader.fsi" />
     <Compile Include="Contexts\Reader.fs" />
-    <Compile Include="Contexts\RWS.fsi" />
-    <Compile Include="Contexts\RWS.fs" />
     <Compile Include="Contexts\State.fsi" />
     <Compile Include="Contexts\State.fs" />
     <Compile Include="Contexts\Writer.fsi" />
     <Compile Include="Contexts\Writer.fs" />
-    <Compile Include="Operators.fs" />
-    <None Include="Incomplete\BinaryTree.fs" />
-    <None Include="Incomplete\Coroutine.fs" />
-    <None Include="Incomplete\DList.fs" />
-    <None Include="Incomplete\Equivalence.fs" />
-    <None Include="Incomplete\Generic.fs" />
-    <None Include="Incomplete\Identity.fs" />
-    <None Include="Incomplete\Iso.fs" />
-    <None Include="Incomplete\Maybe_.fsi" />
-    <None Include="Incomplete\Maybe_.fs" />
-    <None Include="Incomplete\NonEmpty.fs" />
-    <None Include="Incomplete\Reducer.fs" />
-    <None Include="Incomplete\Phantom.fs" />
-    <None Include="Incomplete\RoseTree.fs" />
-    <None Include="Incomplete\SearchTree.fs" />
-    <None Include="Incomplete\Store.fs" />
-    <None Include="Incomplete\Stream.fs" />
-    <None Include="Incomplete\Stream_.fs" />
-    <None Include="Incomplete\Stream2.fsi" />
-    <None Include="Incomplete\Stream2.fs" />
-    <None Include="Incomplete\Suspend.fs" />
-    <None Include="Incomplete\Transducer.fs" />
-    <None Include="Incomplete\Writer_.fs" />
-    <None Include="Builders\Cont.fsi" />
-    <None Include="Builders\Cont.fs" />
-    <None Include="Builders\Either.fsi" />
-    <None Include="Builders\Either.fs" />
-    <None Include="Builders\Lens.fsi" />
-    <None Include="Builders\Lens.fs" />
-    <None Include="Builders\Maybe_.fsi" />
-    <None Include="Builders\Maybe.fs" />
-    <None Include="Builders\Reader.fsi" />
-    <None Include="Builders\Reader.fs" />
-    <None Include="Builders\RWS.fsi" />
-    <None Include="Builders\RWS.fs" />
-    <None Include="Builders\State.fsi" />
-    <None Include="Builders\State.fs" />
-    <None Include="Builders\Writer.fsi" />
-    <None Include="Builders\Writer.fs" />
     <None Include="Test.fsx" />
   </ItemGroup>
 
