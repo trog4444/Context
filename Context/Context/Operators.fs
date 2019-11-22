@@ -23,7 +23,7 @@ module ContextOperators =
 
 
     let inline ( <*> ) ff fv =
-        (^``Applicative<a -> b>``: (member Join: ^``Applicative<a>`` * System.Func<(^a -> ^b), ^a, ^b> -> ^``Applicative<b>``)
+        (^``Applicative<a -> b>``: (member Zip: ^``Applicative<a>`` * System.Func<(^a -> ^b), ^a, ^b> -> ^``Applicative<b>``)
             (ff, fv, System.Func<_,_,_>(fun f a -> f a)))
     
     let inline ( <**> ) (fv: ^``Applicative<a>``) (ff: ^``Applicative<a -> b>``)
@@ -32,7 +32,7 @@ module ContextOperators =
 
     let inline ( *> ) fa fb =
         (^``Applicative<a>``:
-            (member Join: ^``Applicative<b>`` * System.Func< ^a, ^b, ^b> -> ^``Applicative<b>``)
+            (member Zip: ^``Applicative<b>`` * System.Func< ^a, ^b, ^b> -> ^``Applicative<b>``)
                 (fa, fb, System.Func<_,_,_>(fun _ b -> b)))
         
     let inline ( <* ) fb (fa: ^``Applicative<a>``) : ^``Applicative<b>`` = fa *> fb

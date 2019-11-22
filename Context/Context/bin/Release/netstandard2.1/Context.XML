@@ -1093,6 +1093,15 @@
 <member name="M:Rogz.Context.Data.Writer.Writer.bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Writer.Writer{``1,``2}},Rogz.Context.Data.Writer.Writer{``1,``0})">
  <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
 </member>
+<member name="M:Rogz.Context.Data.Writer.Writer.bimap2``6(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``3,Microsoft.FSharp.Core.FSharpFunc{``4,``5}},Rogz.Context.Data.Writer.Writer{``0,``3},Rogz.Context.Data.Writer.Writer{``1,``4})">
+ <summary>Lift two binary functions onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Data.Writer.Writer.biap``4(Rogz.Context.Data.Writer.Writer{``0,``1},Rogz.Context.Data.Writer.Writer{Microsoft.FSharp.Core.FSharpFunc{``0,``2},Microsoft.FSharp.Core.FSharpFunc{``1,``3}})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Data.Writer.Writer.biunit``2(``0,``1)">
+ <summary>Lift two values into a context.</summary>
+</member>
 <member name="M:Rogz.Context.Data.Writer.Writer.andthen``3(Rogz.Context.Data.Writer.Writer{``0,``1},Rogz.Context.Data.Writer.Writer{``0,``2})">
  <summary>Sequence two contexts, discarding the results of the first.</summary>
 </member>

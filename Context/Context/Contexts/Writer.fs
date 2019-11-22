@@ -72,6 +72,19 @@ module Writer =
         { fb with Writer.Log = append' fa.Log fb.Log }
 
 
+// Biapplicative
+
+    let inline biunit a b : Writer< ^a, ^b> = { Writer.Log = a; Value = b }
+
+    let inline biap (fv: Writer< ^a, ^c>) (ff: Writer< ^a -> ^b, ^c -> ^d>) =
+        { Writer.Log = ff.Log fv.Log
+        ; Value = ff.Value fv.Value }
+
+    let inline bimap2 f g (fab: Writer< ^a, ^d>) (fcd: Writer< ^b, ^e>) : Writer< ^c, ^f> =
+        { Writer.Log = f fab.Log fcd.Log
+        ; Value = g fab.Value fcd.Value }
+
+
 // Monad
 
     let inline bind f (m: Writer< ^w, ^a>) : Writer< ^w, ^b> =

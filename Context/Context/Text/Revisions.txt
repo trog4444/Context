@@ -1,4 +1,10 @@
-﻿2019-11-18
+﻿*** Commit
+2019-11-21
+    -- added Biapplicative to Writer (note: NOT adding bitraverse/bisequence)
+    -- updated ReadMe
+
+*** Commit
+2019-11-18
     -- added Bifoldable MEMBERS to [Either, Writer]
     -- renamed .Bimap and .Dimap to .BiSelect and .DiSelect
     -- added .Select and .BiSelect to Writer

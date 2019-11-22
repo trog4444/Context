@@ -62,6 +62,18 @@ module Writer =
         when ^w: (static member Append: ^w -> ^w -> ^w)
 
 
+// Biapplicative
+
+    /// <summary>Lift two values into a context.</summary>
+    val inline biunit: a: ^a -> b: ^b -> Writer< ^a, ^b>
+
+    /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+    val inline biap: fv: Writer< ^a, ^c> -> ff: Writer< ^a -> ^b, ^c -> ^d> -> Writer< ^b, ^d>
+
+    /// <summary>Lift two binary functions onto contexts.</summary>
+    val inline bimap2: f: (^a -> ^b -> ^c) -> g: (^d -> ^e -> ^f) -> fab: Writer< ^a, ^d> -> fcd: Writer< ^b, ^e> -> Writer< ^c, ^f>
+
+
 // Monad
 
     /// <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
