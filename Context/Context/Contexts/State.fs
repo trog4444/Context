@@ -5,20 +5,21 @@ module State =
 
 // Interop
 
-    [<CompiledName("Make")>]
-    let inline make (f: System.Func< ^s, SVPair< ^s, ^a>>) =
+    let inline fromFunc (f: System.Func< ^s, SVPair< ^s, ^a>>) =
         State (fun s -> f.Invoke(s))
 
 
 // Minimal
 
-    [<CompiledName("Get")>]
-    let get<'s> : State< ^s, ^s> =
-        State (fun s -> { SVPair.State = s; Value = s })
+    let get<'s> : State< ^s, ^s> = State (fun s -> { SVPair.State = s; Value = s })
 
-    [<CompiledName("Put")>]
-    let inline put (state: ^s) =
-        State (fun _ -> { State = state; Value = () })
+    let put (state: 's) = State (fun _ -> { State = state; Value = () })
+
+    let inline modify modification : State< ^s, unit> =
+        State (fun s -> { SVPair.State = modification s; Value = () })
+
+    let inline gets (proj: ^s -> ^a) =
+        State (fun s -> { SVPair.State = s; Value = proj s })
 
 
 // Primitives
@@ -30,12 +31,6 @@ module State =
     let inline execState initial (State (f: ^s -> SVPair< ^s, ^a>)) : ^s =
         (f initial).State
 
-    let inline modify modification : State< ^s, unit> =
-        State (fun s -> { SVPair.State = modification s; Value = () })
-
-    let inline gets (proj: ^s -> ^a) =
-        State (fun s -> { SVPair.State = s; Value = proj s })
-
     let inline mapState mapping (State f) : State< ^s, ^b> =
         State (fun s -> mapping ((f s): SVPair< ^s, ^a>))
 
@@ -45,7 +40,7 @@ module State =
     let inline cache (State f) : State< ^s, ^a> when ^s: equality =
         let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
         State (fun s -> match d.TryGetValue(s) with
-                        | true, r -> r
+                        | true, r  -> r
                         | false, _ -> let r = f s in d.[s] <- r; r)
 
 
@@ -58,7 +53,7 @@ module State =
 
 // Applicative
 
-    let inline unit value : State< ^s, ^a> =
+    let unit (value: 'a) : State<'s, ^a> =
         State (fun s -> { SVPair.State = s; Value = value })
 
     let inline ap (State fv) (State ff) : State< ^s, ^b> =
@@ -73,6 +68,19 @@ module State =
 
     let inline andthen (State fb) (State (fa: ^s -> SVPair< ^s, ^a>)) : State< ^s, ^b> =
         State (fun s -> fb (fa s).State)
+
+    let inline sequence (source: seq<State< ^s, ^a>>) : State< ^s, seq< ^a>> =
+        State (fun s ->
+            let mutable s = s
+            let xs = ResizeArray<_>()
+            for (State f) in source do
+                let sv = f s
+                s <- sv.State
+                xs.Add(sv.Value)
+            { SVPair.State = s; Value = System.Linq.Enumerable.AsEnumerable(xs) })
+
+    let inline traverse (f: ^a -> State< ^s, ^b>) (source: seq< ^a>) : State< ^s, seq< ^b>> =
+        sequence (System.Linq.Enumerable.Select(source, fun a -> f a))
 
 
 // Monad
@@ -113,19 +121,3 @@ module State =
 
 
     let state = Workflow.StateBuilder()
-
-
-// Traversable
-
-    let inline sequence (source: seq<State< ^s, ^a>>) : State< ^s, seq< ^a>> =
-        State (fun s ->
-            let mutable s = s
-            let xs = ResizeArray<_>()
-            for (State f) in source do
-                let sv = f s
-                s <- sv.State
-                xs.Add(sv.Value)
-            { SVPair.State = s; Value = System.Linq.Enumerable.AsEnumerable(xs) })
-
-    let inline traverse (f: ^a -> State< ^s, ^b>) (source: seq< ^a>) : State< ^s, seq< ^b>> =
-        sequence (System.Linq.Enumerable.Select(source, fun a -> f a))

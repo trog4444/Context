@@ -7,8 +7,7 @@ module Cont =
 // Interop
 
     /// <summary>Create a Continuation from the given function.</summary>
-    [<CompiledName("Make")>]
-    val inline make: cont: System.Func<System.Func< ^a, ^r>, ^r> -> Cont< ^r, ^a>
+    val inline fromFunc: cont: System.Func<System.Func< ^a, ^r>, ^r> -> Cont< ^r, ^a>
 
 
 // Minimal
@@ -22,7 +21,7 @@ module Cont =
     val inline shift: f: ((^a -> ^r) -> Cont< ^r, ^r>) -> Cont< ^r, ^a>
 
     /// <summary>'reset cont' delimits the continuation of any 'shift' inside 'cont'.</summary>
-    val inline reset: cont: Cont< ^r, ^r> -> Cont< ^r0, ^r>
+    val reset: cont: Cont<'r, ^r> -> Cont<'r0, ^r>
 
 
 // Primitives
@@ -49,13 +48,6 @@ module Cont =
     val inline cache: Cont< ^r, ^a> -> Cont< ^r, ^a> when ^a: equality
 
 
-//// Isomorphisms
-    
-//    /// <summary>Apply an action (i.e. continuation) to each element of a sequence.</summary>
-//    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-//    val inline ofSeq: source: ^a seq -> Cont<unit, ^a>
-
-
 // Functor
 
     /// <summary>Lift a function onto a context.</summary>
@@ -65,7 +57,7 @@ module Cont =
 // Applicative
 
     /// <summary>Lift a value into a context.</summary>
-    val inline unit: value: ^a -> Cont< ^r, ^a>
+    val unit: value: 'a -> Cont<'r, ^a>
 
     /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
     val inline ap: fv: Cont< ^r, ^a> -> ff: Cont< ^r, (^a -> ^b)> -> Cont< ^r, ^b>
@@ -76,6 +68,14 @@ module Cont =
     /// <summary>Sequence two contexts, discarding the results of the first.</summary>
     val inline andthen: second: Cont< ^r, ^b> -> first: Cont< ^r, ^a> -> Cont< ^r, ^b>
 
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline sequence: source: seq<Cont< ^r, ^a>> -> Cont< ^r, seq< ^a>>
+
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline traverse: f: (^a -> Cont< ^r, ^b>) -> source: seq< ^a> -> Cont< ^r, seq< ^b>>
+
 
 // Monad
 
@@ -83,7 +83,7 @@ module Cont =
     val inline bind: f: (^a -> Cont< ^r, ^b>) -> ma: Cont< ^r, ^a> -> Cont< ^r, ^b>
 
     /// <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
-    val inline flatten: mm: Cont< ^r, Cont< ^r, ^a>> -> Cont< ^r, ^a>
+    val flatten: mm: Cont<'r, Cont< ^r, 'a>> -> Cont< ^r, ^a>
 
     /// <summary>Recursively generate a monadic context using up to two continuation functions to produce different effects.</summary>
     val inline fixM:
@@ -113,53 +113,13 @@ module Cont =
     val cont: Workflow.ContBuilder
 
 
-// Comonad
+//// Comonad
 
-    /// <summary>Retrieve a value from a co-context.</summary>
-    val inline extract: w: Cont< ^a, ^a> -> ^a
+//    /// <summary>Retrieve a value from a co-context.</summary>
+//    val inline extract: w: Cont< ^a, ^a> -> ^a
 
-    /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
-    val inline extend: f: (Cont< ^r, ^a> -> ^b) -> w: Cont< ^r, ^a> -> Cont< ^r, ^b>
+//    /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
+//    val inline extend: f: (Cont< ^r, ^a> -> ^b) -> w: Cont< ^r, ^a> -> Cont< ^r, ^b>
 
-    /// <summary>Adds a layer of co-context onto an existing co-context.</summary>
-    val inline duplicate: w: Cont< ^r, ^a> -> Cont< ^r, Cont< ^r, ^a>>
-
-
-//// Foldable
-
-//    /// <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
-//    val inline fold: folder: (^s -> ^a -> ^s) -> seed: ^s -> ta: Cont<unit, ^a> -> ^s
-
-//    /// <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
-//    val inline foldBack: folder: (^a -> ^s -> ^s) -> seed: ^s -> ta: Cont<unit, ^a> -> ^s
-
-//    /// <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator is a thunk that is only called as needed by the folding function.</summary>
-//    val inline foldl: folder: ((unit -> ^s) -> ^a -> ^s) -> seed: (unit -> ^s) -> ta: Cont<unit, ^a> -> ^s
-    
-//    /// <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation. The accumulator is a thunk that is only called as needed by the folding function.</summary>
-//    val inline foldr: folder: (^a -> (unit -> ^s) -> ^s) -> seed: (unit -> ^s) -> ta: Cont<unit, ^a> -> ^s
-
-//    /// <summary>Combines the functionality of map and fold, returning the pair of the final context-value and state.</summary>
-//    val inline mapFold: mapping: (^s -> ^a -> struct (^b * ^s)) -> seed: ^s -> ta: Cont<unit, ^a> -> struct (Cont<unit, ^b> * ^s)
-
-//    /// <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary>
-//    val inline mapFoldBack: mapping: (^a -> ^s -> struct (^b * ^s)) -> seed: ^s -> ta: Cont<unit, ^a> -> struct (Cont<unit, ^b> * ^s)
-
-//    /// <summary>The concatenation of all the elements of a container of sequences.</summary>
-//    /// <exception cref="System.ArgumentNullException">Thrown when the sequence is null.</exception>
-//    val fail here !!!: ta: Cont<unit, ^a seq> -> ^a seq
-
-//    /// <summary>Map a function over all the elements of a container and concatenate the resulting sequences.</summary>
-//    /// <exception cref="System.ArgumentNullException">Thrown when the sequence is null.</exception>
-//    val fail here !!!Map: f: (^a -> ^b seq) -> ta: Cont<unit, ^a> -> ^b seq
-
-
-// Traversable
-
-    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: seq<Cont< ^r, ^a>> -> Cont< ^r, seq< ^a>>
-
-    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Cont< ^r, ^b>) -> source: seq< ^a> -> Cont< ^r, seq< ^b>>
+//    /// <summary>Adds a layer of co-context onto an existing co-context.</summary>
+//    val duplicate: w: Cont<'r, 'a> -> Cont< ^r, Cont< ^r, ^a>>

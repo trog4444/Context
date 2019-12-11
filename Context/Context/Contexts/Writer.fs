@@ -11,25 +11,25 @@ module Writer =
 
 // Minimal
 
-    let inline tell (record: ^w) =
+    let tell (record: 'w) =
         { Writer.Log = record
         ; Value = () }
 
-    let inline listen (writer: Writer< ^w, ^a>) =
+    let listen (writer: Writer<'w, 'a>) =
         { Writer.Log = writer.Log
         ; Value = struct (writer.Log, writer.Value) }   
+
+    let inline listens (f: ^w -> ^b) (writer: Writer< ^w, ^a>) =
+        { Writer.Log = writer.Log
+        ; Value = struct (f writer.Log, writer.Value) }
+
+    let read (writer: Writer<'w, 'a>) = writer.Log
 
 
 // Primitives
 
     let inline runWriter f (writer: Writer< ^w, ^a>) : ^b =
         f writer.Log writer.Value
-
-    let inline read (writer: Writer< ^w, ^a>) = writer.Log
-
-    let inline listens (f: ^w -> ^b) (writer: Writer< ^w, ^a>) =
-        { Writer.Log = writer.Log
-        ; Value = struct (writer.Value, f writer.Log) }
 
 
 // Functor
@@ -49,10 +49,6 @@ module Writer =
         { Writer.Log = f bf.Log
         ; Value = bf.Value }
 
-    let inline mapSecond (g: ^b -> ^d) (bf: Writer< ^a, ^b>) =
-        { Writer.Log = bf.Log
-        ; Value = g bf.Value }
-
 
 // Applicative
 
@@ -71,18 +67,33 @@ module Writer =
     let inline andthen (fb: Writer< ^w, ^b>) (fa: Writer< ^w, ^a>) =
         { fb with Writer.Log = append' fa.Log fb.Log }
 
+    let inline sequence (source: Writer< ^w, ^a> seq) : Writer< ^w, ^a seq> =
+        let mutable l = mt ()
+        let d = ResizeArray<_>()
+        for x in source do
+            l <- append' l x.Log
+            d.Add(x.Value)
+        { Writer.Log = l
+        ; Value = System.Linq.Enumerable.AsEnumerable(d) }
+
+    let inline traverse f (source: ^a seq) : Writer< ^w, ^b seq> =
+        let mutable l = mt ()
+        let d = ResizeArray<_>()
+        for x in source do
+            let w = f x
+            l <- append' l w.Log
+            d.Add(w.Value)
+        { Writer.Log = l
+        ; Value = System.Linq.Enumerable.AsEnumerable(d) }
+
 
 // Biapplicative
 
-    let inline biunit a b : Writer< ^a, ^b> = { Writer.Log = a; Value = b }
+    let biunit a b : Writer<'a, 'b> = { Writer.Log = a; Value = b }
 
-    let inline biap (fv: Writer< ^a, ^c>) (ff: Writer< ^a -> ^b, ^c -> ^d>) =
-        { Writer.Log = ff.Log fv.Log
-        ; Value = ff.Value fv.Value }
-
-    let inline bimap2 f g (fab: Writer< ^a, ^d>) (fcd: Writer< ^b, ^e>) : Writer< ^c, ^f> =
-        { Writer.Log = f fab.Log fcd.Log
-        ; Value = g fab.Value fcd.Value }
+    let inline bimap2 f g (fad: Writer< ^a, ^d>) (fbe: Writer< ^b, ^e>) : Writer< ^c, ^f> =
+        { Writer.Log = f fad.Log fbe.Log
+        ; Value = g fad.Value fbe.Value }
 
 
 // Monad
@@ -119,13 +130,13 @@ module Writer =
 
 // Comonad
 
-    let inline extract (w: Writer< ^w, ^a>) = w.Value
+    let extract (w: Writer<'w, 'a>) = w.Value
 
     let inline extend f (w: Writer< ^w, ^a>) : Writer< ^w, ^b> =
         { Writer.Log = w.Log
         ; Value = f w }
 
-    let inline duplicate (w: Writer< ^w, ^a>) =
+    let duplicate (w: Writer<'w, 'a>) =
         { Writer.Log = w.Log
         ; Value = w }
 
@@ -185,27 +196,4 @@ module Writer =
     let inline bimapFoldBack (mapping1: ^a -> ^s -> struct (^b * ^s)) (mapping2: ^c -> ^s -> struct (^d * ^s)) (seed: ^s) (t: Writer< ^a, ^c>) : struct (Writer< ^b, ^d> * ^s) =
         let struct (b, s) = mapping1 t.Log seed
         let struct (d, s) = mapping2 t.Value s
-        struct ({ Writer.Log = b
-                ; Value = d }, s)
-
-
-// Traversable
-
-    let inline sequence (source: Writer< ^w, ^a> seq) : Writer< ^w, ^a seq> =
-        let mutable l = mt ()
-        let d = ResizeArray<_>()
-        for x in source do
-            l <- append' l x.Log
-            d.Add(x.Value)
-        { Writer.Log = l
-        ; Value = System.Linq.Enumerable.AsEnumerable(d) }
-
-    let inline traverse f (source: ^a seq) : Writer< ^w, ^b seq> =
-        let mutable l = mt ()
-        let d = ResizeArray<_>()
-        for x in source do
-            let w = f x
-            l <- append' l w.Log
-            d.Add(w.Value)
-        { Writer.Log = l
-        ; Value = System.Linq.Enumerable.AsEnumerable(d) }
+        struct ({ Writer.Log = b; Value = d }, s)

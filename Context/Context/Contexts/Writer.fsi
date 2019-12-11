@@ -7,22 +7,22 @@ module Writer =
 // Minimal
 
     /// <summary>Insert a 'record' into the accumulation.</summary>
-    val inline tell: record: ^w -> Writer< ^w, unit>
+    val tell: record: 'w -> Writer< ^w, unit>
 
     /// <summary>Attaches the accumulated value to the output.</summary>
-    val inline listen: writer: Writer< ^w, ^a> -> Writer< ^w, struct(^w * ^a)>
+    val listen: writer: Writer<'w, 'a> -> Writer< ^w, struct(^w * ^a)>
 
     /// <summary>Applies a function to the accumulator then attaches the result to the output.</summary>
-    val inline listens: f: (^w -> ^b) -> writer: Writer< ^w, ^a> -> Writer< ^w, struct(^a * ^b)>
+    val inline listens: f: (^w -> ^b) -> writer: Writer< ^w, ^a> -> Writer< ^w, struct(^b * ^a)>
+
+    /// <summary>Return the accumulated value.</summary>
+    val read: writer: Writer<'w, 'a> -> ^w
 
 
 // Primitives
 
     /// <summary>Apply a function to both the accumulation and the output.</summary>
     val inline runWriter: f: (^w -> ^a -> ^b) -> writer: Writer< ^w, ^a> -> ^b
-
-    /// <summary>Return the accumulated value.</summary>
-    val inline read: writer: Writer< ^w, ^a> -> ^w
 
 
 // Functor
@@ -38,9 +38,6 @@ module Writer =
 
     /// <summary>Map over the first value, leaving the second value as-is.</summary>
     val inline mapFirst: f: (^a -> ^c) -> bf: Writer< ^a, ^b> -> Writer< ^c, ^b>
-
-    /// <summary>Map over the second value, leaving the first value as-is.</summary>
-    val inline mapSecond: g: (^b -> ^d) -> bf: Writer< ^a, ^b> -> Writer< ^a, ^d>
 
 
 // Applicative
@@ -61,17 +58,26 @@ module Writer =
     val inline andthen: fb: Writer< ^w, ^b> -> fa: Writer< ^w, ^a> -> Writer< ^w, ^b>
         when ^w: (static member Append: ^w -> ^w -> ^w)
 
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline sequence: source: Writer< ^w, ^a> seq -> Writer< ^w, ^a seq>
+        when ^w: (static member Append: ^w -> ^w -> ^w)
+        and  ^w: (static member Empty: unit -> ^w)
+    
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline traverse: f: (^a -> Writer< ^w, ^b>) -> source: ^a seq -> Writer< ^w, ^b seq>
+        when ^w: (static member Append: ^w -> ^w -> ^w)
+        and  ^w: (static member Empty: unit -> ^w)
+
 
 // Biapplicative
 
     /// <summary>Lift two values into a context.</summary>
-    val inline biunit: a: ^a -> b: ^b -> Writer< ^a, ^b>
-
-    /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
-    val inline biap: fv: Writer< ^a, ^c> -> ff: Writer< ^a -> ^b, ^c -> ^d> -> Writer< ^b, ^d>
+    val biunit: a: 'a -> b: 'b -> Writer< ^a, ^b>
 
     /// <summary>Lift two binary functions onto contexts.</summary>
-    val inline bimap2: f: (^a -> ^b -> ^c) -> g: (^d -> ^e -> ^f) -> fab: Writer< ^a, ^d> -> fcd: Writer< ^b, ^e> -> Writer< ^c, ^f>
+    val inline bimap2: f: (^a -> ^b -> ^c) -> g: (^d -> ^e -> ^f) -> fad: Writer< ^a, ^d> -> fbe: Writer< ^b, ^e> -> Writer< ^c, ^f>
 
 
 // Monad
@@ -120,13 +126,13 @@ module Writer =
 // Comonad
 
     /// <summary>Retrieve a value from a co-context.</summary>
-    val inline extract: w: Writer< ^w, ^a> -> ^a
+    val extract: w: Writer<'w, 'a> -> ^a
 
     /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
     val inline extend: f: (Writer< ^w, ^a> -> ^b) -> w: Writer< ^w, ^a> -> Writer< ^w, ^b>
 
     /// <summary>Adds a layer of co-context onto an existing co-context.</summary>
-    val inline duplicate: w: Writer< ^w, ^a> -> Writer< ^w, Writer< ^w, ^a>>
+    val duplicate: w: Writer<'w, 'a> -> Writer< ^w, Writer< ^w, ^a>>
 
 
 // Semigroup
@@ -177,18 +183,3 @@ module Writer =
 
     /// <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary>
     val inline bimapFoldBack: mapping1: (^a -> ^s -> struct (^b * ^s)) -> mapping2: (^c -> ^s -> struct (^d * ^s)) -> seed: ^s -> t: Writer< ^a, ^c> -> struct (Writer< ^b, ^d> * ^s)
-
-
-// Traversable
-
-    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: Writer< ^w, ^a> seq -> Writer< ^w, ^a seq>
-        when ^w: (static member Append: ^w -> ^w -> ^w)
-        and  ^w: (static member Empty: unit -> ^w)
-
-    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Writer< ^w, ^b>) -> source: ^a seq -> Writer< ^w, ^b seq>
-        when ^w: (static member Append: ^w -> ^w -> ^w)
-        and  ^w: (static member Empty: unit -> ^w)

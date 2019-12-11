@@ -10,10 +10,10 @@ module Either =
     val inline caseof: onLeft: (^l -> ^a) -> onRight: (^r -> ^a) -> either: Either< ^l, ^r> -> ^a
 
     /// <summary>Returns true if the value is a 'Left'; false otherwise.</summary>    
-    val inline isLeft: either: Either< ^l, ^r> -> bool
+    val isLeft: either: Either<'l, 'r> -> bool
 
     /// <summary>Returns true if the value is a 'Right'; false otherwise.</summary>
-    val inline isRight: either: Either< ^l, ^r> -> bool
+    val isRight: either: Either<'l, 'r> -> bool
 
     /// <summary>Returns all values held within 'Right'-values, and removes all others.</summary>
     /// <exception cref="ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -28,26 +28,25 @@ module Either =
     val partition: source: Either<'l, 'r> seq -> struct (^l seq * ^r seq)
 
     /// <summary>If the value is 'Left', swap it into a 'Right'. Likewise for a 'Right'-value.</summary>
-    val inline swap: either: Either< ^a, ^b> -> Either< ^b, ^a>
+    val swap: either: Either<'a, 'b> -> Either< ^b, ^a>
 
 
 // Isomorphisms
 
     /// <summary>Convert a Right-value into a singleton sequence with that value, otherwise return an empty sequence.</summary>
-    [<CompiledName("ToSeq")>]
-    val inline toSeq: either: Either< ^e, ^a> -> ^a seq
+    val toSeq: either: Either<'e, 'a> -> ^a seq
 
     /// <summary>Convert an Either into a Choice(Of2).</summary>
-    val inline toChoice: either: Either< ^e, ^a> -> Choice< ^a, ^e>
+    val toChoice: either: Either<'e, 'a> -> Choice< ^a, ^e>
 
     /// <summary>Convert a Choice into an Either.</summary>
-    val inline ofChoice: choice: Choice< ^a, ^e> -> Either< ^e, ^a>
+    val ofChoice: choice: Choice<'a, 'e> -> Either< ^e, ^a>
 
     /// <summary>Convert an Either into a Result.</summary>
-    val inline toResult: either: Either< ^e, ^a> -> Result< ^a, ^e>
+    val toResult: either: Either<'e, 'a> -> Result< ^a, ^e>
 
     /// <summary>Convert a Result into an Either.</summary>
-    val inline ofResult: result: Result< ^a, ^e> -> Either< ^e, ^a>
+    val ofResult: result: Result<'a, 'e> -> Either< ^e, ^a>
 
 
 // Recur
@@ -70,14 +69,11 @@ module Either =
     /// <summary>Map over the first value, leaving the second value as-is.</summary>
     val inline mapFirst: f: (^a -> ^c) -> bf: Either< ^a, ^b> -> Either< ^c, ^b>
 
-    /// <summary>Map over the second value, leaving the first value as-is.</summary>
-    val inline mapSecond: g: (^b -> ^d) -> bf: Either< ^a, ^b> -> Either< ^a, ^d>
-
 
 // Applicative
 
     /// <summary>Lift a value into a context.</summary>
-    val inline unit: value: ^a -> Either< ^e, ^a>
+    val unit: value: 'a -> Either<'e, ^a>
 
     /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
     val inline ap: fv: Either< ^e, ^a> -> ff: Either< ^e, (^a -> ^b)> -> Either< ^e, ^b>
@@ -86,13 +82,21 @@ module Either =
     val inline map2: f: (^a -> ^b -> ^c) -> fa: Either< ^e, ^a> -> fb: Either< ^e, ^b> -> Either< ^e, ^c>
 
     /// <summary>Sequence two contexts, discarding the results of the first.</summary>
-    val inline andthen: fb: Either< ^e, ^b> -> fa: Either< ^e, ^a> -> Either< ^e, ^b>
+    val andthen: fb: Either<'e, 'b> -> fa: Either< ^e, 'a> -> Either< ^e, ^b>
+
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline sequence: source: Either< ^e, ^a> seq -> Either< ^e, ^a seq>
+
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline traverse: f: (^a -> Either< ^e, ^b>) -> source: ^a seq -> Either< ^e, ^b seq>
 
 
 // Alternative
 
     /// <summary>A monoidal, associative binary operation representing choice/failure.</summary>
-    val inline orElse: second: Either< ^e, ^a> -> first: Either< ^e, ^a> -> Either< ^e, ^a>
+    val orElse: second: Either<'e, 'a> -> first: Either< ^e, ^a> -> Either< ^e, ^a>
 
     /// <summary>A monoidal, associative binary operation representing choice/failure.</summary>
     val inline orElseWith: second: (unit -> Either< ^e, ^a>) -> first: Either< ^e, ^a> -> Either< ^e, ^a>
@@ -104,7 +108,7 @@ module Either =
     val inline bind: f: (^a -> Either< ^e, ^b>) -> ma: Either< ^e, ^a> -> Either< ^e, ^b>
     
     /// <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
-    val inline flatten: mm: Either< ^e, Either< ^e, ^a>> -> Either< ^e, ^a>
+    val flatten: mm: Either<'e, Either< ^e, 'a>> -> Either< ^e, ^a>
     
     /// <summary>Recursively generate a monadic context using up to two continuation functions to produce different effects.</summary>
     val inline fixM:
@@ -181,14 +185,3 @@ module Either =
 
     /// <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary>
     val inline bimapFoldBack: mapping1: (^a -> ^s -> struct (^b * ^s)) -> mapping2: (^c -> ^s -> struct (^d * ^s)) -> seed: ^s -> t: Either< ^a, ^c> -> struct (Either< ^b, ^d> * ^s)
-
-
-// Traversable
-
-    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: Either< ^e, ^a> seq -> Either< ^e, ^a seq>
-
-    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Either< ^e, ^b>) -> source: ^a seq -> Either< ^e, ^b seq>

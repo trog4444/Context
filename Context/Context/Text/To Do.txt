@@ -1,5 +1,25 @@
-﻿add RWS, ?Stream
+﻿remove unneeded funcs like biap, various stuff in RWS, Reader, and State
+    ? andthen
+    ? ap
+    toFunc
 
+Determine where to put Operators. Same solution? Separate?
+
+Decide whether or not to include Identity
+
+Determine if Cont actually satisfies the Comonad laws
+
+Decide if 'cache' should be included or not. Maybe have a 'mapH'-like method
+    for all HOF's. Ex for Reader: mapH :: ((e -> a) -> e' -> b)) -> Reader e a -> Reader e' b
+    -- cache could be implemented in terms of this: cache reader == mapH memoize reader
+    -- Cont's _withCont_ actually does this to some extent
+
+TRY removing unecessary 'inline' (non-HOF's and stuff w/o constraints)
+
+Maybe rename 'orElse' to 'choice' or 'decide' {'pick' and 'choose' are both taken...}
+
+isoState function ? pre&post compose a stateful computation.?Should it be included
+    -- can it be done using existing functions ??
 
 Consider LINQ methods for Writer type :: they do NOT transfer (due to member constraints)
     !! more importantly, they cant be done in normal namespace, but ARE still required
@@ -7,5 +27,21 @@ Consider LINQ methods for Writer type :: they do NOT transfer (due to member con
 
 consider where to put struct tuples or not (see getCC)
 
-
 rename cache methods to reduce name collisions (eg cacheReader)
+
+decide to have Minimal/Primitive or just Primitive (as separate places/comments to put functions under)
+
+?README: add disclaimer:
+	This is a pet project, intended mostly for (self)educational
+	purposes. While this library has been tested and optimized 		to a degree that it is useful in production, there are 		other, more powerful and/or performant libraries with 	similar functionality available. The code here has been
+	tested and obeys the laws of the typeclasses implemented,
+	but no 'test suite' is provided.
+
+??-- make Using, TryWith, TryFinally abstract --??
+type RWSBuilder2() =
+    member inline _.Return(x) : RWS< ^e, ^s, ^w, ^a> = unit x
+    member inline _.ReturnFrom(m) : RWS< ^e, ^s, ^w, ^a> = m
+    member inline _.Bind(m, f: ^a -> RWS< ^e, ^s, ^w, ^b>) = bind f m
+    member inline _.Zero() : RWS< ^e, ^s, ^w, unit> = unit ()
+    abstract member Using: disp: 'd * f: ('d -> RWS< 'e, 's, 'w, 'a>) -> RWS<'e, 's, 'w, 'a> when 'd :> System.IDisposable
+    default _.Using(disp: 'd, f: 'd -> RWS< 'e, 's, 'w, 'a>) : RWS< 'e, 's, 'w, 'a> when 'd :> System.IDisposable = using disp f

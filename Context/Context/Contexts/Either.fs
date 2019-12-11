@@ -8,10 +8,10 @@ module Either =
     let inline caseof onLeft onRight (either: Either< ^l, ^r>) : ^a =
         match either with Right r -> onRight r | Left l -> onLeft l
 
-    let inline isLeft (either: Either< ^l, ^r>) =
+    let isLeft (either: Either<'l, 'r>) =
         match either with Left _ -> true | Right _ -> false
 
-    let inline isRight (either: Either< ^l, ^r>) =
+    let isRight (either: Either<'l, 'r>) =
         match either with Left _ -> false | Right _ -> true
 
     let rights (source: Either<'l, 'r> seq) =
@@ -29,32 +29,31 @@ module Either =
     let partition (source: Either<'l, 'r> seq) =
         let source = Seq.cache source in struct (lefts source, rights source)
 
-    let inline swap (either: Either< ^a, ^b>) =
+    let swap (either: Either<'a, 'b>) =
         match either with Left a -> Right a | Right b -> Left b
 
 
 // Isomorphisms
 
-    [<CompiledName("ToSeq")>]
-    let inline toSeq (either: Either< ^e, ^a>) =
+    let toSeq (either: Either<'e, 'a>) =
         match either with Left _ -> Seq.empty | Right a -> Seq.singleton a
 
-    let inline toChoice either : Choice< ^a, ^e> =
+    let toChoice either : Choice<'a, 'e> =
         match either with
         | Right a -> Choice1Of2 a
         | Left e -> Choice2Of2 e
 
-    let inline ofChoice choice : Either< ^e, ^a> =
+    let ofChoice choice : Either<'e, 'a> =
         match choice with
         | Choice1Of2 a -> Right a
         | Choice2Of2 e -> Left e
 
-    let inline toResult either : Result< ^a, ^e> =
+    let toResult either : Result<'a, 'e> =
         match either with
         | Right a -> Ok a
         | Left e -> Error e
 
-    let inline ofResult result : Either< ^e, ^a> =
+    let ofResult result : Either<'e, 'a> =
         match result with
         | Ok a -> Right a
         | Error e -> Left e
@@ -84,13 +83,10 @@ module Either =
     let inline mapFirst (f: ^a -> ^c) (bf: Either< ^a, ^b>) =
         match bf with Right b -> Right b | Left a -> Left (f a)
 
-    let inline mapSecond (g: ^b -> ^d) (bf: Either< ^a, ^b>) =
-        match bf with Right b -> Right (g b) | Left a -> Left a
-
 
 // Applicative
 
-    let inline unit value : Either< ^e, ^a> = Right value
+    let unit (value: 'a) : Either<'e, ^a> = Right value
 
     let inline ap fv (ff: Either< ^e, (^a -> ^b)>) =
         match ff, fv with
@@ -104,13 +100,28 @@ module Either =
         | Left e, _ -> Left e
         | _, Left e -> Left e
 
-    let inline andthen fb (fa: Either< ^e, ^a>) : Either< ^e, ^b> =
+    let andthen fb (fa: Either<'e, 'a>) : Either< ^e, 'b> =
         match fa with Left e -> Left e | Right _ -> fb
+
+    let inline sequence (source: Either< ^e, ^a> seq) =
+        let xs = ResizeArray<_>()
+        let mutable flag = true
+        use e = source.GetEnumerator()
+        let mutable er = Unchecked.defaultof< ^e>
+        while flag && e.MoveNext() do
+            match e.Current with
+            | Right a -> xs.Add a
+            | Left e -> flag <- false; er <- e
+        if flag then Right (System.Linq.Enumerable.AsEnumerable(xs))
+        else Left er
+
+    let inline traverse f (source: ^a seq) : Either< ^e, ^b seq> =
+        sequence (System.Linq.Enumerable.Select(source, System.Func<_,_>f))
 
 
 // Alternative
 
-    let inline orElse second first : Either< ^e, ^a> =
+    let orElse second first : Either<'e, 'a> =
         match first with Right _ -> first | Left _ -> second
 
     let inline orElseWith second first : Either< ^e, ^a> =
@@ -122,7 +133,7 @@ module Either =
     let inline bind f (ma: Either< ^e, ^a>) : Either< ^e, ^b> =
         match ma with Right a -> f a | Left e -> Left e
 
-    let inline flatten mm : Either< ^e, ^a> =
+    let flatten mm : Either<'e, 'a> =
         match mm with Right m -> m | Left e -> Left e    
 
     let inline fixM loop (em: Either< ^a, Either< ^e, ^a>>) : Either< ^e, ^b> =
@@ -214,21 +225,3 @@ module Either =
         match t with
         | Right b -> let struct (r, s) = mapping2 b seed in Right r, s
         | Left a -> let struct (r, s) = mapping1 a seed in Left r, s
-
-
-// Traversable
-
-    let inline sequence (source: Either< ^e, ^a> seq) =
-        let xs = ResizeArray<_>()
-        let mutable flag = true
-        use e = source.GetEnumerator()
-        let mutable er = Unchecked.defaultof< ^e>
-        while flag && e.MoveNext() do
-            match e.Current with
-            | Right a -> xs.Add a
-            | Left e -> flag <- false; er <- e
-        if flag then Right (System.Linq.Enumerable.AsEnumerable(xs))
-        else Left er
-
-    let inline traverse f (source: ^a seq) : Either< ^e, ^b seq> =
-        sequence (System.Linq.Enumerable.Select(source, System.Func<_,_>f))

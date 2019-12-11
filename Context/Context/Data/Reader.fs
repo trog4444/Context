@@ -31,9 +31,9 @@ type Reader<'Env, 'T> = Reader of ('Env -> 'T) with
                          let (Reader rr) = f.Invoke(a)
                          g.Invoke(a, rr e))
 
-// Comonad
-    member inline s.ContinueWith(f: System.Func<Reader< ^Env, ^T>, ^U>) : Reader< ^Env, ^U> =
-        let s = s in Reader (fun _ -> f.Invoke(s))
+//// Comonad
+//    member inline s.ContinueWith(f: System.Func<Reader< ^Env, ^T>, ^U>) : Reader< ^Env, ^U> =
+//        let s = s in Reader (fun _ -> f.Invoke(s))
 
 // Semigroup
     static member inline Append((Reader r1), Reader r2) : Reader< ^e, ^a> =

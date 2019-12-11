@@ -46,9 +46,9 @@ type Reader<'Env, 'T> = Reader of ('Env -> 'T) with
     /// <exception cref="ArgumentNullException">Thrown when the function attempting to be called is null.</exception>
     member inline SelectMany: f: System.Func< ^T, Reader< ^Env, ^U>> * g: System.Func< ^T, ^U, ^V> -> Reader< ^Env, ^V>
 
-// Comonad
-    /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
-    member inline ContinueWith: f: System.Func<Reader< ^Env, ^T>, ^U> -> Reader< ^Env, ^U>
+//// Comonad
+//    /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
+//    member inline ContinueWith: f: System.Func<Reader< ^Env, ^T>, ^U> -> Reader< ^Env, ^U>
 
 // Semigroup
     /// <summary>An associative binary operation on contexts.</summary>

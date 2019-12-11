@@ -1,11 +1,46 @@
-﻿// #load "FolderName\FileName.fs"
-#load "Types\Maybe.fs"
-#load "Types\Either.fs"
+﻿#load "Data\Either.fs"
+#load "Contexts\Either.fs"
+// #load "FolderName\FileName.fs"
+#load @"Data\Thunk.fs"
+#load @"Incomplete\Thunk.fs"
+open Rogz.Context.Data.Thunk
+open Rogz.Context.Data.Thunk.Thunk
+let r = ref 0
+let x = (fun () -> incr r; !r) |> Delay
+let a = force x
+let b = delayed id x |> force
+
+
+#load "Data\Maybe.fs"
 #load "Contexts\Maybe.fs"
 #load "Operators.fs"
 open Rogz.Context.Extra.Operators
 open Rogz.Context.Data.Maybe
 module M = Maybe
+
+#load "Data\RWS.fs"
+#load "Contexts\RWS.fs"
+open Rogz.Context.Data.RWS
+module R = Rogz.Context.Data.RWS.RWS
+
+type T = T of int with
+    static member Empty() = T 0
+    static member Append((T a), T b) = T <| a + b
+
+let inline f j k a =
+    if a >= 100_000_000 then R.unit a
+    elif a % 2 = 0 then j (a + 1)
+    else k <| RWS (fun e s -> { RWSResult.State = s + 1; Log = T s; Value = a + e })
+let a = 1
+let rj = R.runRWS 1 1 <| R.fixM f (Rogz.Context.Data.Either.Left a)
+let rk = R.runRWS 1 1 <| R.fixM f (Rogz.Context.Data.Either.Right (RWS (fun _ _ -> { RWSResult.State = 10; Log = T -999; Value = a })))
+
+
+
+
+
+
+
 
 
 let j1 = Just 1

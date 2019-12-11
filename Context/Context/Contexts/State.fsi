@@ -7,19 +7,22 @@ module State =
 // Interop
 
     /// <summary>Create a State from the given function.</summary>
-    [<CompiledName("Make")>]
-    val inline make: f: System.Func< ^s, SVPair< ^s, ^a>> -> State< ^s, ^a>
+    val inline fromFunc: f: System.Func< ^s, SVPair< ^s, ^a>> -> State< ^s, ^a>
 
 
 // Minimal
 
     /// <summary>Return the current state as a value.</summary>
-    [<CompiledName("Get")>]
     val get<'s> : State< ^s, ^s>
 
     /// <summary>Ignore the current state and put a new state into a computation.</summary>
-    [<CompiledName("Put")>]
-    val inline put: state: ^s -> State< ^s, unit>
+    val put: state: 's -> State< ^s, unit>
+
+    /// <summary>Maps an old state to a new state, discarding the old state.</summary>
+    val inline modify: modification: (^s -> ^s) -> State< ^s, unit>
+
+    /// <summary>Gets specific component of the state, using a projection function supplied.</summary>
+    val inline gets: proj: (^s -> ^a) -> State< ^s, ^a>
 
 
 // Primitives
@@ -32,12 +35,6 @@ module State =
 
     /// <summary>Evaluate a state computation with the given initial state and return the final state, discarding the final value.</summary>
     val inline execState: initial: ^s -> state: State< ^s, ^a> -> ^s
-
-    /// <summary>Maps an old state to a new state, discarding the old state.</summary>
-    val inline modify: modification: (^s -> ^s) -> State< ^s, unit>
-
-    /// <summary>Gets specific component of the state, using a projection function supplied.</summary>
-    val inline gets: proj: (^s -> ^a) -> State< ^s, ^a>
 
     /// <summary>Map both the return value and final state of a computation using the given function.</summary>
     val inline mapState: mapping: (SVPair< ^s, ^a> -> SVPair< ^s, ^b>) -> state: State< ^s, ^a> -> State< ^s, ^b>
@@ -58,7 +55,7 @@ module State =
 // Applicative
 
     /// <summary>Lift a value into a context.</summary>
-    val inline unit: value: ^a -> State< ^s, ^a>
+    val unit: value: 'a -> State<'s, ^a>
 
     /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
     val inline ap: fv: State< ^s, ^a> -> ff: State< ^s, (^a -> ^b)> -> State< ^s, ^b>
@@ -68,6 +65,14 @@ module State =
 
     /// <summary>Sequence two contexts, discarding the results of the first.</summary>
     val inline andthen: second: State< ^s, ^b> -> first: State< ^s, ^a> -> State< ^s, ^b>
+
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline sequence: source: seq<State< ^s, ^a>> -> State< ^s, seq< ^a>>
+
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline traverse: f: (^a -> State< ^s, ^b>) -> source: seq< ^a> -> State< ^s, seq< ^b>>
 
 
 // Monad
@@ -104,14 +109,3 @@ module State =
 
     /// <summary>Computation expression instance for the given context.</summary>
     val state: Workflow.StateBuilder
-
-
-// Traversable
-
-    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: seq<State< ^s, ^a>> -> State< ^s, seq< ^a>>
-
-    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> State< ^s, ^b>) -> source: seq< ^a> -> State< ^s, seq< ^b>>

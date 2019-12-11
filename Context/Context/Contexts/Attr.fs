@@ -5,11 +5,11 @@ module Attr =
 
 // Primitives
 
-    let inline unAttr (attr: Attr< ^t, ^a>) = attr.Value
+    let unAttr (attr: Attr<'t, 'a>) = attr.Value
 
-    let inline wAttr<'attr, 'a> : ^a -> Attr< ^attr, ^a> = Attr
+    let wAttr<'attr, 'a> : ^a -> Attr< ^attr, ^a> = Attr
 
-    let inline setAttr<'tOld, 'tNew, 'a> : Attr< ^tOld, ^a> -> Attr< ^tNew, ^a> =
+    let setAttr<'tOld, 'tNew, 'a> : Attr< ^tOld, ^a> -> Attr< ^tNew, ^a> =
         fun (Attr a) -> Attr a
 
 
@@ -20,7 +20,7 @@ module Attr =
 
 // Applicative
 
-    let inline unit value : Attr< ^t, ^a> = Attr value
+    let unit (value: 'a) : Attr< 't, ^a> = Attr value
 
     let inline ap (fv: Attr< ^t, ^a>) (ff: Attr< ^t, (^a -> ^b)>) : Attr< ^t, ^b> =
         Attr (ff.Value fv.Value)
@@ -30,12 +30,18 @@ module Attr =
 
     let inline andthen (fb: Attr< ^t, ^b>) (_: Attr< ^t, ^a>) = fb
 
+    let inline sequence (source: Attr< ^t, ^a> seq) : Attr< ^t, ^a seq> =
+        Attr (System.Linq.Enumerable.Select(source, fun (Attr x) -> x))
+
+    let inline traverse (f: ^a -> Attr< ^t, ^b>) (source: ^a seq) : Attr< ^t, ^b seq> =
+        Attr (System.Linq.Enumerable.Select(source, fun a -> let (Attr x) = f a in x))
+
 
 // Monad
 
-    let inline bind f (m: Attr< ^t, ^a>) : Attr< ^t, ^b> = f m.Value
+    let inline bind f (ma: Attr< ^t, ^a>) : Attr< ^t, ^b> = f ma.Value
 
-    let inline flatten (mm: Attr< ^t, Attr< ^t, ^a>>) = mm.Value
+    let flatten (mm: Attr<'t, Attr< ^t, 'a>>) = mm.Value
 
     let inline fixM (loop: (^a -> Attr< ^t, ^b>) -> (Attr< ^t, ^a> -> Attr< ^t, ^b>) -> ^a -> Attr< ^t, ^b>) (em: Rogz.Context.Data.Either.Either< ^a, Attr< ^t, ^a>>) : Attr< ^t, ^b> =
         let rec go (Attr a) = k a
@@ -67,12 +73,12 @@ module Attr =
 
 // Comonad
 
-    let inline extract (w: Attr< ^t, ^a>) : ^a = w.Value
+    let extract (w: Attr<'t, 'a>) : ^a = w.Value
 
-    let inline extend (f: Attr< ^t, ^a> -> ^b) (w: Attr< ^t, ^a>) : Attr< ^t, ^b> =
+    let inline extend (f: Attr< ^t, ^a> -> ^b) w : Attr< ^t, ^b> =
         Attr (f w)
 
-    let inline duplicate w : Attr< ^t, Attr< ^t, ^a>> = Attr w
+    let duplicate (w: Attr<'t, 'a>) : Attr< ^t, Attr< ^t, ^a>> = Attr w
 
 
 // Semigroup
@@ -100,12 +106,3 @@ module Attr =
 
     let inline mapFoldBack mapping (seed: ^s) (ta: Attr< ^t, ^a>) : struct (Attr< ^t, ^b> * ^s) =
         let struct (r, s) = mapping ta.Value seed in Attr r, s
-
-
-// Traversable
-
-    let inline sequence (source: Attr< ^t, ^a> seq) : Attr< ^t, ^a seq> =
-        Attr (System.Linq.Enumerable.Select(source, System.Func<_,_>unAttr))
-
-    let inline traverse (f: ^a -> Attr< ^t, ^b>) (source: ^a seq) : Attr< ^t, ^b seq> =
-        Attr (System.Linq.Enumerable.Select(source, fun a -> unAttr (f a)))

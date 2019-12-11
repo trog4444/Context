@@ -41,6 +41,6 @@ type Cont<'R, 'T> = Cont of (('T -> 'R) -> 'R) with
     /// <exception cref="ArgumentNullException">Thrown when the function attempting to be called is null.</exception>
     member inline SelectMany: f: System.Func< ^T, Cont< ^R, ^U>> * g: System.Func< ^T, ^U, ^V> -> Cont< ^R, ^V>
 
-// Comonad
-    /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
-    member inline ContinueWith: f: System.Func<Cont< ^R, ^T>, ^U> -> Cont< ^R, ^U>
+//// Comonad
+//    /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
+//    member inline ContinueWith: f: System.Func<Cont< ^R, ^T>, ^U> -> Cont< ^R, ^U>

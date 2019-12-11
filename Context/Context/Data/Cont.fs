@@ -30,6 +30,6 @@ type Cont<'R, 'T> = Cont of (('T -> 'R) -> 'R) with
         let (Cont c) = s
         Cont (fun k -> c (fun a -> let (Cont cc) = f.Invoke(a) in cc (fun b -> k (g.Invoke(a, b)))))
 
-// Comonad
-    member inline s.ContinueWith(f: System.Func<Cont< ^R, ^T>, ^U>) : Cont< ^R, ^U> =
-        let s = s in Cont (fun k -> k (f.Invoke(s)))
+//// Comonad
+//    member inline s.ContinueWith(f: System.Func<Cont< ^R, ^T>, ^U>) : Cont< ^R, ^U> =
+//        let s = s in Cont (fun k -> k (f.Invoke(s)))

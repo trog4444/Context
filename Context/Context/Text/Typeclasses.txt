@@ -35,12 +35,7 @@ class Functor bf => Bifunctor bf where
 
 class Functor pf => Profunctor pf where
     * dimap :: (c -> a) -> (b -> d) -> pf a b -> pf c d
-    | * mapl :: (c -> a) -> pf a b -> pf c b
-      & mapr :: (b -> c) -> pf a b -> pf a c ]
-
-    dimap f g p = mapl f (mapr g p) = mapr g (mapl f p)
-    mapl f p = dimap f id p
-    mapr g p = dimap id g p
+    | * mapl :: (c -> a) -> pf a b -> pf c b ]
 
 
 class Functor f => Applicative f where

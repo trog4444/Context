@@ -7,13 +7,13 @@ module Attr =
 // Primitives
 
     /// <summary>Return the underlying value.</summary>
-    val inline unAttr: Attr< ^t, ^a> -> ^a
+    val unAttr: Attr<'t, 'a> -> ^a
 
     /// <summary>Apply an attribute to a value.</summary>
-    val inline wAttr<'attr, 'a> : ^a -> Attr< ^attr, ^a>
+    val wAttr<'attr, 'a> : ^a -> Attr< ^attr, ^a>
 
     /// <summary>Set the attribute to a new type.</summary>
-    val inline setAttr<'tOld, 'tNew, 'a> : Attr< ^tOld, ^a> -> Attr< ^tNew, ^a>
+    val setAttr<'tOld, 'tNew, 'a> : Attr< ^tOld, ^a> -> Attr< ^tNew, ^a>
 
 
 // Functor
@@ -25,7 +25,7 @@ module Attr =
 // Applicative
 
     /// <summary>Lift a value into a context.</summary>
-    val inline unit: value: ^a -> Attr< ^t, ^a>
+    val unit: value: 'a -> Attr<'t, ^a>
 
     /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
     val inline ap: fv: Attr< ^t, ^a> -> ff: Attr< ^t, (^a -> ^b)> -> Attr< ^t, ^b>
@@ -36,14 +36,22 @@ module Attr =
     /// <summary>Sequence two contexts, discarding the results of the first.</summary>
     val inline andthen: fb: Attr< ^t, ^b> -> fa: Attr< ^t, ^a> -> Attr< ^t, ^b>
 
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline sequence: source: Attr< ^t, ^a> seq -> Attr< ^t, ^a seq>
+
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline traverse: f: (^a -> Attr< ^t, ^b>) -> source: ^a seq -> Attr< ^t, ^b seq>
+
 
 // Monad
 
     /// <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
-    val inline bind: f: (^a -> Attr< ^t, ^b>) -> m: Attr< ^t, ^a> -> Attr< ^t, ^b>
+    val inline bind: f: (^a -> Attr< ^t, ^b>) -> ma: Attr< ^t, ^a> -> Attr< ^t, ^b>
 
     /// <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
-    val inline flatten: mm: Attr< ^t, Attr< ^t, ^a>> -> Attr< ^t, ^a>
+    val flatten: mm: Attr<'t, Attr< ^t, 'a>> -> Attr< ^t, ^a>
 
     /// <summary>Recursively generate a monadic context using up to two continuation functions to produce different effects.</summary>
     val inline fixM:
@@ -76,13 +84,13 @@ module Attr =
 // Comonad
 
     /// <summary>Retrieve a value from a co-context.</summary>
-    val inline extract: w: Attr< ^t, ^a> -> ^a
+    val extract: w: Attr<'t, 'a> -> ^a
 
     /// <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
     val inline extend: f: (Attr< ^t, ^a> -> ^b) -> wa: Attr< ^t, ^a> -> Attr< ^t, ^b>
 
     /// <summary>Adds a layer of co-context onto an existing co-context.</summary>
-    val inline duplicate: w: Attr< ^t, ^a> -> Attr< ^t, Attr< ^t, ^a>>
+    val duplicate: w: Attr<'t, 'a> -> Attr< ^t, Attr< ^t, ^a>>
 
 
 // Semigroup
@@ -111,14 +119,3 @@ module Attr =
 
     /// <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary>
     val inline mapFoldBack: mapping: (^a -> ^s -> struct (^b * ^s)) -> seed: ^s -> ta: Attr< ^t, ^a> -> struct (Attr< ^t, ^b> * ^s)
-
-
-// Traversable
-
-    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: Attr< ^t, ^a> seq -> Attr< ^t, ^a seq>
-
-    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Attr< ^t, ^b>) -> source: ^a seq -> Attr< ^t, ^b seq>

@@ -3,15 +3,25 @@
 
 module Reader =
 
+
+    //let inline ( == ) (a: ^a) (b: ^a) : bool when ^a :> System.IEquatable< ^a> = a.Equals(b)
+
+    //let inline ( /= ) a b = not (a == b)
+
+    //[<Struct>]
+    //type M<'a> = Noth | Just of 'a
+    //let a = Just 1
+    //let b = Just 2
+    //let c = a == b
+
+
 // Interop
 
-    [<CompiledName("Make")>]
-    let inline make (f: System.Func< ^e, ^a>) = Reader f.Invoke
+    let inline fromFunc (f: System.Func< ^e, ^a>) = Reader f.Invoke
 
 
 // Minimal
 
-    [<CompiledName("Ask")>]
     let ask<'e> : Reader< ^e, ^e> = Reader id
 
     let inline local (localize: ^e -> ^e) (Reader r) : Reader< ^e, ^a> =
@@ -24,30 +34,11 @@ module Reader =
 
     let inline flip (f: ^a -> ^e-> ^r) = Reader (fun e a -> f a e)
 
-    let inline curry (f: ^a * ^b -> ^c) = Reader (fun a b -> f (a, b))
-
-    let inline curry1 (f: struct (^a * ^b) -> ^c) = Reader (fun a b -> f (struct (a, b)))
-
-    let inline uncurry (f: ^a -> ^b -> ^c) : Reader< ^a * ^b, ^c> =
-        Reader (fun (a, b) -> f a b)
-
-    let inline uncurry1 (f: ^a -> ^b -> ^c) : Reader< struct (^a * ^b), ^c> =
-        Reader (fun (struct (a, b)) -> f a b)
-
     let inline cache (Reader r) : Reader< ^e, ^a> when ^e: equality =
         let d = System.Collections.Generic.Dictionary<_,_>(HashIdentity.Structural)
         Reader (fun e -> match d.TryGetValue(e) with
                          | true, res -> res
-                         | false, _ -> let res = r e in d.[e] <- res; res)
-
-    let inline register (event: ^e -> unit) (Reader r) : Reader< ^e, unit> =
-        Reader (fun e -> r e; event e)
-
-
-// Isomorphisms
-
-    [<CompiledName("ToFunc")>]
-    let inline toFunc (Reader r) : System.Func< ^e, ^a> = System.Func<_,_>r
+                         | false, _  -> let res = r e in d.[e] <- res; res)
 
 
 // Functor
@@ -64,13 +55,10 @@ module Reader =
     let inline mapl (f: ^c -> ^a) (Reader r) : Reader< ^c, ^b> =
         Reader (fun c -> r (f c))
 
-    let inline mapr (g: ^b -> ^d) (Reader r) : Reader< ^a, ^d> =
-        Reader (fun a -> g (r a))
-
 
 // Applicative
 
-    let inline unit value : Reader< ^e, ^a> = Reader (fun _ -> value)
+    let unit (value: 'a) : Reader<'e, ^a> = Reader (fun _ -> value)
 
     let inline ap (Reader rv) (Reader rf) : Reader< ^e, ^b> =
         Reader (fun e -> rf e ((rv e): ^a))
@@ -80,6 +68,15 @@ module Reader =
 
     let inline andthen (Reader rb) (Reader ra) : Reader< ^e, ^b> =
         Reader (fun e -> ignore ((ra e): ^a); rb e)
+
+    let inline sequence (source: seq<Reader< ^e, ^a>>) : Reader< ^e, seq< ^a>> =
+        Reader (fun e ->
+            System.Linq.Enumerable.Select(source, fun (Reader r) -> r e))
+
+    let inline traverse (f: ^a -> Reader< ^e, ^b>) (source: seq< ^a>) : Reader< ^e, seq< ^b>> =
+        Reader (fun e ->
+            System.Linq.Enumerable.Select(source,
+                                          fun x -> let (Reader r) = f x in r e))
 
 
 // Monad
@@ -120,28 +117,13 @@ module Reader =
 // Semigroup
 
     let inline append (Reader f) (Reader s) : Reader< ^e, ^a> =
-        Reader (fun e ->
-            (^a: (static member Append: ^a -> ^a -> ^a) (f e, s e)))
-
-
-// Traversable
-
-    let inline sequence (source: seq<Reader< ^e, ^a>>) : Reader< ^e, seq< ^a>> =
-        Reader (fun e ->
-            System.Linq.Enumerable.Select(source, fun (Reader r) -> r e))
-
-    let inline traverse (f: ^a -> Reader< ^e, ^b>) (source: seq< ^a>) : Reader< ^e, seq< ^b>> =
-        Reader (fun e ->
-            System.Linq.Enumerable.Select(source,
-                                          fun x -> let (Reader r) = f x in r e))
+        Reader (fun e -> (^a: (static member Append: ^a -> ^a -> ^a) (f e, s e)))
 
 
 // Cat
 
-    [<CompiledName("Identity")>]
     let identity<'a> : Reader< ^a, ^a> = Reader id
 
-    [<CompiledName("Compose")>]
     let inline compose (Reader rbc) (Reader rab) : Reader< ^a, ^c> =
         Reader (fun a -> rbc ((rab a): ^b))
 
@@ -182,9 +164,3 @@ module Reader =
     let inline fanin (Reader cb) (Reader ab) : Reader<Either< ^a, ^c>, ^b> =
         Reader (function Left a  -> ab a
                        | Right c -> cb c)
-
-
-// Arrow.Apply
-
-    let app<'a, 'b> : Reader<Reader< ^a, ^b> * ^a, ^b> =
-        Reader (fun ((Reader r), a) -> r a)

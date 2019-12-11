@@ -13,3 +13,31 @@ join y in ys on 1 equals 1
 join z in zs on 1 equals 1
 select x + y + z
 ```
+
+Typeclasses used:
+
+- Functor
+- Bifunctor
+- Profunctor
+- Applicative
+- Alternative
+- Biapplicative
+- Monad
+- MonadPlus
+- Semigroup
+- Monoid
+- Foldable
+- Bifoldable
+- Category
+- Arrow
+- ArrowChoice
+
+*Notes on typeclasses:
+- Show is implemented by default via .ToString() method.
+- Eq and Ord (i.e. Equality and Comparison) are implemented (for most types) by default **when called from F# code**.
+- For multiparameter typeclasses, the parameter order do **not** necessarily match the Haskell equivalents. For example, the 'RWS' type implements both Bifunctor and Profunctor, but over different parameters for each instance.
+- Traversable is not implemented, but a sequence-specific pair of 'sequence' and 'traverse' are provided for each Applicative type.
+- MonadPlus uses the Alternative functions (nix (instead of the Haskell 'empty') and 'orElse' which obey the LeftCatch law, rather than LeftDistribution.
+- Types that can support **some** useful functions of a typeclass but not all are given implementations for what they can support (e.g. Either supports the Alternative 'orElse' function but not nix/empty).
+*
+

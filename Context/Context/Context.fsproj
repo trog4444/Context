@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
         <Authors>rogz</Authors>
         <Company>rogz</Company>
         <Description>Types that add 'context' to generic underlying types and operations to use and compose them.</Description>
-        <AssemblyVersion>1.0.2.1</AssemblyVersion>
-        <PackageReleaseNotes></PackageReleaseNotes>
-        <FileVersion>1.0.2.1</FileVersion>
-        <Version>1.0.2</Version>
+        <AssemblyVersion>1.0.3.0</AssemblyVersion>
+        <PackageReleaseNotes>This project is mostly for (self)-educational purposes only and is not intended for production use. That said, the code has been both tested and optimized to a good degree and 'should' be safe to use (I use it in personal products FWIW). Most of this code is simply ported from other open source files and can be used and shared freely.</PackageReleaseNotes>
+        <FileVersion>1.0.3.0</FileVersion>
+        <Version>1.0.3</Version>
         <RunPostBuildEvent>0</RunPostBuildEvent>
     </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\netstandard2.1\Context.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\netcoreapp3.1\Context.XML</DocumentationFile>
     <WarningLevel>5</WarningLevel>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
@@ -26,25 +26,23 @@
     <None Include="Text\Questions.txt" />
     <None Include="Text\Revisions.txt" />
     <None Include="Text\To Do.txt" />
-    <Compile Include="Operators.fs" />
-    <Compile Include="Types\Attr.fsi" />
-    <Compile Include="Types\Attr.fs" />
-    <Compile Include="Types\Cont.fsi" />
-    <Compile Include="Types\Cont.fs" />
-    <Compile Include="Types\Either.fsi" />
-    <Compile Include="Types\Either.fs" />
-    <Compile Include="Types\Maybe.fsi" />
-    <Compile Include="Types\Maybe.fs" />
-    <Compile Include="Types\Reader.fsi" />
-    <Compile Include="Types\Reader.fs" />
-    <Compile Include="Types\State.fsi" />
-    <Compile Include="Types\State.fs" />
-    <Compile Include="Types\Writer.fsi" />
-    <Compile Include="Types\Writer.fs" />
-    <None Include="Incomplete\Identity.fsx" />
-    <None Include="Incomplete\Thunk.fsi" />
-    <None Include="Incomplete\RWS.fsi" />
-    <None Include="Incomplete\Fn.fsx" />
+    <None Include="Operators.fs" />
+    <Compile Include="Data\Attr.fsi" />
+    <Compile Include="Data\Attr.fs" />
+    <Compile Include="Data\Cont.fsi" />
+    <Compile Include="Data\Cont.fs" />
+    <Compile Include="Data\Either.fsi" />
+    <Compile Include="Data\Either.fs" />
+    <Compile Include="Data\Maybe.fsi" />
+    <Compile Include="Data\Maybe.fs" />
+    <Compile Include="Data\Reader.fsi" />
+    <Compile Include="Data\Reader.fs" />
+    <Compile Include="Data\RWS.fsi" />
+    <Compile Include="Data\RWS.fs" />
+    <Compile Include="Data\State.fsi" />
+    <Compile Include="Data\State.fs" />
+    <Compile Include="Data\Writer.fsi" />
+    <Compile Include="Data\Writer.fs" />
     <Compile Include="Contexts\Attr.fsi" />
     <Compile Include="Contexts\Attr.fs" />
     <Compile Include="Contexts\Cont.fsi" />
@@ -55,6 +53,8 @@
     <Compile Include="Contexts\Maybe.fs" />
     <Compile Include="Contexts\Reader.fsi" />
     <Compile Include="Contexts\Reader.fs" />
+    <Compile Include="Contexts\RWS.fsi" />
+    <Compile Include="Contexts\RWS.fs" />
     <Compile Include="Contexts\State.fsi" />
     <Compile Include="Contexts\State.fs" />
     <Compile Include="Contexts\Writer.fsi" />

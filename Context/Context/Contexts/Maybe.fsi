@@ -10,10 +10,10 @@ module Maybe =
     val inline caseof: onNothing: (unit -> ^b) -> onJust: (^a -> ^b) -> Maybe< ^a> -> ^b
 
     /// <summary>Returns true if the value is a 'Just'; false otherwise.</summary>
-    val inline isJust: maybe: Maybe< ^a> -> bool
+    val isJust: maybe: Maybe<'a> -> bool
 
     /// <summary>Returns true if the value is a 'Nothing'; false otherwise.</summary>
-    val inline isNothing: maybe: Maybe< ^a> -> bool
+    val isNothing: maybe: Maybe<'a> -> bool
 
     /// <summary>Returns all values held within 'Just'-values, and removes all others.</summary>
     /// <exception cref="ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -27,32 +27,28 @@ module Maybe =
 // Isomorphisms
 
     /// <summary>Returns a singleton sequence if the given Maybe is a Just-value, containing that value, otherwise returns an empty sequence.</summary>
-    [<CompiledName("ToSeq")>]
-    val inline toSeq: maybe: Maybe< ^a> -> ^a seq
+    val toSeq: maybe: Maybe<'a> -> ^a seq
 
     /// <summary>Returns Nothing if the given object is null, otherwise returns the object wrapped in a 'Just'.</summary>
-    [<CompiledName("OfObj")>]
     val inline ofObj: obj: ^a -> Maybe< ^a> when ^a : null
 
     /// <summary>Convert a Nullable to a Maybe.</summary>
-    [<CompiledName("OfNullable")>]
-    val inline ofNullable: nil: System.Nullable< ^a> -> Maybe< ^a>
+    val ofNullable: nullable: System.Nullable<'a> -> Maybe< ^a>
 
     /// <summary>Convert a Maybe to a Nullable.</summary>
-    [<CompiledName("ToNullable")>]
-    val inline toNullable: maybe: Maybe< ^a> -> System.Nullable< ^a>
+    val toNullable: maybe: Maybe<'a> -> System.Nullable< ^a>
 
     /// <summary>Convert an Option into a Maybe.</summary>
-    val inline ofOption: option: Option< ^a>-> Maybe< ^a>
+    val ofOption: option: Option<'a>-> Maybe< ^a>
 
     /// <summary>Convert a Maybe into an Option.</summary>
-    val inline toOption: maybe: Maybe< ^a> -> Option< ^a>
+    val toOption: maybe: Maybe<'a> -> Option< ^a>
 
     /// <summary>Convert a ValueOption into a Maybe.</summary>
-    val inline ofVOption: voption: ValueOption< ^a> -> Maybe< ^a>
+    val ofVOption: voption: ValueOption<'a> -> Maybe< ^a>
 
     /// <summary>Convert a Maybe into a ValueOption.</summary>
-    val inline toVOption: maybe: Maybe< ^a> -> ValueOption< ^a>
+    val toVOption: maybe: Maybe<'a> -> ValueOption< ^a>
 
 
 // Recur
@@ -70,7 +66,7 @@ module Maybe =
 // Applicative
 
     /// <summary>Lift a value into a context.</summary>
-    val inline unit: value: ^a -> Maybe< ^a>
+    val unit: value: 'a -> Maybe< ^a>
 
     /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
     val inline ap: fv: Maybe< ^a> -> ff: Maybe<(^a -> ^b)> -> Maybe< ^b>
@@ -79,22 +75,27 @@ module Maybe =
     val inline map2: f: (^a -> ^b -> ^c) -> fa: Maybe< ^a> -> fb: Maybe< ^b> -> Maybe< ^c>
 
     /// <summary>Sequence two contexts, discarding the results of the first.</summary>
-    val inline andthen: second: Maybe< ^b> -> first: Maybe< ^a> -> Maybe< ^b>    
+    val andthen: second: Maybe<'b> -> first: Maybe<'a> -> Maybe< ^b>    
+
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline sequence: source: Maybe< ^a> seq -> Maybe< ^a seq>
+
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline traverse: f: (^a -> Maybe< ^b>) -> source: ^a seq -> Maybe< ^b seq>
 
 
 // Alternative
 
     /// <summary>The identity element of the 'orElse' operation.</summary>
-    val nix<'a> : Maybe< ^a>
+    val nil<'a> : Maybe< ^a>
 
     /// <summary>A monoidal, associative binary operation representing choice/failure.</summary>
-    val inline orElse: second: Maybe< ^a> -> first: Maybe< ^a> -> Maybe< ^a>
+    val orElse: second: Maybe<'a> -> first: Maybe< ^a> -> Maybe< ^a>
 
     /// <summary>A monoidal, associative binary operation representing choice/failure.</summary>
-    val inline orElseWith: second: (unit -> Maybe< ^a>) -> first: Maybe< ^a> -> Maybe< ^a>
-
-    /// <summary>Conditional execution of contextual expressions.</summary>
-    val inline when_: condition: bool -> f: (unit -> Maybe< ^a>) -> Maybe< ^a>    
+    val inline orElseWith: second: (unit -> Maybe< ^a>) -> first: Maybe< ^a> -> Maybe< ^a>   
 
     /// <summary>Generalizes the sequence-based 'concat' function.</summary>
     /// <exception cref="ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -107,7 +108,7 @@ module Maybe =
     val inline bind: f: (^a -> Maybe< ^b>) -> ma: Maybe< ^a> -> Maybe< ^b>
 
     /// <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
-    val inline flatten: mm: Maybe<Maybe< ^a>> -> Maybe< ^a>
+    val flatten: mm: Maybe<Maybe<'a>> -> Maybe< ^a>
 
     /// <summary>Recursively generate a monadic context using up to two continuation functions to produce different effects.</summary>
     val inline fixM:
@@ -140,16 +141,13 @@ module Maybe =
 // MonadPlus
 
     /// <summary>If the condition is true, do 'nothing', otherwise 'choose/fail' in the context of the monad.</summary>
-    val inline guard: condition: bool -> Maybe<unit>
+    val guard: condition: bool -> Maybe<unit>
 
     /// <summary>Acts similar to a SQL 'inner join', combining elements of each given monad when the elements satisfy a predicate.</summary>
-    val inline join: p: (^a -> ^b -> bool) -> f: (^a -> ^b -> ^c) -> ma: Maybe< ^a> -> mb: Maybe< ^b> -> Maybe< ^c>
-
-
-// MonadPlus.General
+    val inline join: pred: (^a -> ^b -> bool) -> f: (^a -> ^b -> ^c) -> ma: Maybe< ^a> -> mb: Maybe< ^b> -> Maybe< ^c>
 
     /// <summary>Generalizes the sequence-based 'filter' function.</summary>
-    val inline filter: p: (^a -> bool) -> ma: Maybe< ^a> -> Maybe< ^a>
+    val inline filter: pred: (^a -> bool) -> ma: Maybe< ^a> -> Maybe< ^a>
 
 
 // Semigroup
@@ -193,14 +191,3 @@ module Maybe =
 
     /// <summary>Combines the functionality of map and foldBack, returning the pair of the final context-value and state.</summary>
     val inline mapFoldBack: mapping: (^a -> ^s -> struct(^b * ^s)) -> seed: ^s -> ta: Maybe< ^a> -> struct (Maybe< ^b> * ^s)
-
-
-// Traversable
-
-    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: Maybe< ^a> seq -> Maybe< ^a seq>
-
-    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Maybe< ^b>) -> source: ^a seq -> Maybe< ^b seq>

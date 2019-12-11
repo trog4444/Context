@@ -1,4 +1,49 @@
 ﻿*** Commit
+2019-12-11
+    -- removing several unneeded inlines (dll size :: 531kB -> 517kB)
+    -- renamed 'make' to 'fromFunc'
+    -- removed 'mapSecond' from Bifunctor (since it == map)
+    -- removed several functions from Reader (curry, register, etc)
+    -- removed several 'incomplete' types -- they will not be included at this time
+    -- for now, set Operators to not compile
+    -- removed Comonad instance of Cont (*and Reader) including the .ContinueWith method
+    -- updated version to 1.0.3
+
+2019-12-10
+    -- got rid of mapr from Profunctor, since it = map
+    -- got rid of ArrowApply (app)
+    -- made 'unit' NOT-inline [Cont, State] and may need to do same for other types
+        -- because it makes using unit in NON-inline functions not work
+
+2019-12-08
+    -- removed 'Eff e' from Pipe
+2019-12-04
+    -- added 'Pipe' => none compiled|will move to Sequences lib along with Stream
+
+2019-12-02
+    -- renamed 'nix' to 'nil'
+
+2019-11-29
+    -- removed [Profunctor, Cat, Arrow(s)] from RWS (type params dont align like Haskell
+        , and can use 'withRWS' and Bifunctor for same effect.
+    -- removed 'when_' from Alternative (Maybe) because it is ~= if then else
+    -- began adding Thunk type
+
+2019-11-25
+    -- added [Cat, Arrow] to RWS
+        * Cat is missing identity (it can only exist as a function due to static constraints)
+
+2019-11-23
+    -- removed 'Traversable' instance; put sequence and traverse into Applicative
+    -- added more to RWS
+
+2019-11-22
+    -- began adding RWS
+    -- updated README to explain what typeclasses are implemented and some notes
+        [parameter orders do not match Haskell, MonadPlus uses Alternative instance for laws]
+    -- Removed CompiledName attribute from all functions
+
+*** Commit
 2019-11-21
     -- added Biapplicative to Writer (note: NOT adding bitraverse/bisequence)
     -- updated ReadMe
@@ -88,7 +133,7 @@
     -- stylistic adjustments (xml doc, spacing, etc, no actual functional changes)
     -- removed scan and scanBack
     -- added concat and concatMap to Maybe
-    -- removed CompiledName attribute from most items, as they are not extension methods and not "good" for interop
+    -- removed Remove Compiled Name attribute from most items, as they are not extension methods and not "good" for interop
         -- may change
 
 2019-10-26

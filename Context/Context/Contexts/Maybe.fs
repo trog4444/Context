@@ -8,10 +8,10 @@ module Maybe =
     let inline caseof onNothing (onJust: ^a -> ^b) maybe =
         match maybe with Just a  -> onJust a | Nothing -> onNothing ()
 
-    let inline isJust (maybe: Maybe< ^a>) =
+    let isJust (maybe: Maybe<'a>) =
         match maybe with Just _ -> true | Nothing -> false
 
-    let inline isNothing (maybe: Maybe< ^a>) =
+    let isNothing (maybe: Maybe<'a>) =
         match maybe with Just _ -> false | Nothing -> true
 
     let justs (source: Maybe<'a> seq) : ^a seq =
@@ -29,42 +29,38 @@ module Maybe =
 
 // Isomorphisms
 
-    [<CompiledName("ToSeq")>]
-    let inline toSeq maybe : ^a seq =
+    let toSeq maybe : 'a seq =
         match maybe with
         | Just a -> Seq.singleton a
         | Nothing -> Seq.empty
 
-    [<CompiledName("OfObj")>]
     let inline ofObj obj : Maybe< ^a> when ^a : null =
         if isNull obj then Nothing else Just obj
 
-    [<CompiledName("OfNullable")>]
-    let inline ofNullable (nil: System.Nullable< ^a>) =
-        if nil.HasValue then Just nil.Value else Nothing
+    let ofNullable (nullable: System.Nullable<'a>) =
+        if nullable.HasValue then Just nullable.Value else Nothing
 
-    [<CompiledName("ToNullable")>]
-    let inline toNullable (maybe: Maybe< ^a>) =
+    let toNullable (maybe: Maybe<'a>) =
         match maybe with
         | Just a -> System.Nullable<_>(a)
         | Nothing -> System.Nullable<_>()
 
-    let inline ofOption option : Maybe< ^a> =
+    let ofOption option : Maybe<'a> =
         match option with
         | Some a -> Just a
         | None -> Nothing
 
-    let inline toOption maybe : Option< ^a> =
+    let toOption maybe : Option<'a> =
         match maybe with
         | Just a -> Some a
         | Nothing -> None
 
-    let inline ofVOption voption : Maybe< ^a> =
+    let ofVOption voption : Maybe<'a> =
         match voption with
         | ValueSome a -> Just a
         | ValueNone -> Nothing
 
-    let inline toVOption maybe : ValueOption< ^a> =
+    let toVOption maybe : ValueOption<'a> =
         match maybe with
         | Just a -> ValueSome a
         | Nothing -> ValueNone
@@ -90,7 +86,7 @@ module Maybe =
 
 // Applicative
 
-    let inline unit (value: ^a) = Just value
+    let unit (value: 'a) = Just value
 
     let inline ap fv (ff: Maybe<(^a -> ^b)>) =
         match ff, fv with
@@ -102,21 +98,39 @@ module Maybe =
         | Just a, Just b -> Just (f a b)
         | Nothing, _ | _, Nothing -> Nothing
 
-    let inline andthen fb (fa: Maybe< ^a>) : Maybe< ^b> =
+    let andthen fb (fa: Maybe<'a>) : Maybe<'b> =
         match fa with Just _ -> fb | Nothing -> Nothing    
+
+    let inline sequence (source: Maybe< ^a> seq) =
+        let xs = ResizeArray<_>()
+        let mutable flag = true
+        use e = source.GetEnumerator()
+        while flag && e.MoveNext() do
+            match e.Current with
+            | Just a -> xs.Add a
+            | Nothing -> flag <- false
+        if flag then Just (System.Linq.Enumerable.AsEnumerable(xs)) else Nothing
+
+    let inline traverse f (source: ^a seq) : Maybe< ^b seq> =
+        let xs = ResizeArray<_>()
+        let mutable flag = true
+        use e = source.GetEnumerator()
+        while flag && e.MoveNext() do
+            match f e.Current with
+            | Just b -> xs.Add b
+            | Nothing -> flag <- false
+        if flag then Just (System.Linq.Enumerable.AsEnumerable(xs)) else Nothing
 
 
 // Alternative
 
-    let nix<'a> : Maybe< ^a> = Nothing
+    let nil<'a> : Maybe< ^a> = Nothing
 
-    let inline orElse second first : Maybe< ^a> =
+    let orElse second first : Maybe<'a> =
         match first with Just _ -> first | Nothing -> second
 
     let inline orElseWith second first : Maybe< ^a> =
         match first with Just _ -> first | Nothing -> second ()
-
-    let inline when_ condition f : Maybe< ^a> = if condition then f () else nix
 
     let inline concat (source: Maybe< ^a> seq) =
         System.Linq.Enumerable.FirstOrDefault(source, fun a -> isJust a)
@@ -127,7 +141,7 @@ module Maybe =
     let inline bind f (ma: Maybe< ^a>) : Maybe< ^b> =
         match ma with Just a -> f a | Nothing -> Nothing
 
-    let inline flatten mm : Maybe< ^a> =
+    let flatten mm : Maybe<'a> =
         match mm with Just m -> m | Nothing -> Nothing
 
     let inline fixM loop (em: Rogz.Context.Data.Either.Either< ^a, Maybe< ^a>>) : Maybe< ^b> =
@@ -158,15 +172,12 @@ module Maybe =
 
 // MonadPlus
 
-    let inline guard condition = if condition then Just () else Nothing
+    let guard condition = if condition then Just () else Nothing
 
     let inline join p (f: ^a -> ^b -> ^c) ma mb =
         match ma, mb with
         | Just a, Just b -> if p a b then Just (f a b) else Nothing
         | Nothing, _ | _, Nothing -> Nothing
-
-
-// MonadPlus.General
 
     let inline filter p ma : Maybe< ^a> =
         match ma with
@@ -223,26 +234,3 @@ module Maybe =
         match ta with
         | Nothing -> Nothing, seed
         | Just a -> let struct (r, s) = mapping a seed in Just r, s
-
-
-// Traversable
-
-    let inline sequence (source: Maybe< ^a> seq) =
-        let xs = ResizeArray<_>()
-        let mutable flag = true
-        use e = source.GetEnumerator()
-        while flag && e.MoveNext() do
-            match e.Current with
-            | Just a -> xs.Add a
-            | Nothing -> flag <- false
-        if flag then Just (System.Linq.Enumerable.AsEnumerable(xs)) else Nothing
-
-    let inline traverse f (source: ^a seq) : Maybe< ^b seq> =
-        let xs = ResizeArray<_>()
-        let mutable flag = true
-        use e = source.GetEnumerator()
-        while flag && e.MoveNext() do
-            match f e.Current with
-            | Just b -> xs.Add b
-            | Nothing -> flag <- false
-        if flag then Just (System.Linq.Enumerable.AsEnumerable(xs)) else Nothing

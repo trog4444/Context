@@ -7,14 +7,12 @@ module Reader =
 // Interop
 
     /// <summary>Create a Reader from the given function.</summary>
-    [<CompiledName("Make")>]
-    val inline make: f: System.Func< ^e, ^a> -> Reader< ^e, ^a>
+    val inline fromFunc: f: System.Func< ^e, ^a> -> Reader< ^e, ^a>
 
 
 // Minimal
 
     /// <summary>Retreive the current environment.</summary>
-    [<CompiledName("Ask")>]
     val ask<'e> : Reader< ^e, ^e>
 
     /// <summary>Executes a computation in a modified environment.</summary>
@@ -29,30 +27,8 @@ module Reader =
     /// <summary>Flip a function then wrap it inside of a Reader.</summary>
     val inline flip: f: (^a -> ^e-> ^r) -> Reader< ^e, ^a -> ^r>
 
-    /// <summary>Convert a function on a 2-tuple to a 2-arity, curried function.</summary>
-    val inline curry: f: (^a * ^b -> ^c) -> Reader< ^a, ^b -> ^c>
-
-    /// <summary>Convert a function on a struct 2-tuple to a 2-arity, curried function.</summary>
-    val inline curry1: f: (struct (^a * ^b) -> ^c) -> Reader< ^a, ^b -> ^c>
-
-    /// <summary>Convert a 2-arity, curried function into a function on a 2-tuple.</summary>
-    val inline uncurry: f: (^a -> ^b -> ^c) -> Reader< ^a * ^b, ^c>
-
-    /// <summary>Convert a 2-arity, curried function into a function on a struct 2-tuple.</summary>
-    val inline uncurry1: f: (^a -> ^b -> ^c) -> Reader< struct (^a * ^b), ^c>
-
     /// <summary>Caches the result(s) of a computation.</summary>
     val inline cache: reader: Reader< ^e, ^a> -> Reader< ^e, ^a> when ^e: equality
-
-    /// <summary>Register an 'event' with an 'action' (i.e. a Reader that returns unit).</summary>
-    val inline register: event: (^e -> unit) -> reader: Reader< ^e, unit> -> Reader< ^e, unit>
-
-
-// Isomorphisms
-
-    /// <summary>Convert a Reader-value to a .NET Func.</summary>
-    [<CompiledName("ToFunc")>]
-    val inline toFunc: reader: Reader< ^e, ^a> -> System.Func< ^e, ^a>
 
 
 // Functor
@@ -63,22 +39,17 @@ module Reader =
 
 // Profunctor
 
-    /// <summary>Map over both arguments at the same time,
-    /// the first (i.e. 'left') contravariantly
-    /// and the second (i.e. 'right') covariantly.</summary>
-    val inline dimap : f: (^c -> ^a) -> g: (^b -> ^d) -> pf: Reader< ^a, ^b> -> Reader< ^c, ^d>
+    /// <summary>Map over both arguments at the same time, the first (i.e. 'left') contravariantly and the second (i.e. 'right') covariantly.</summary>
+    val inline dimap: f: (^c -> ^a) -> g: (^b -> ^d) -> pf: Reader< ^a, ^b> -> Reader< ^c, ^d>
 
     /// <summary>Map the first (i.e. 'left') argument contravariantly.</summary>
-    val inline mapl : f: (^c -> ^a) -> pf: Reader< ^a, ^b> -> Reader< ^c, ^b>
-    
-    /// <summary>Map the second (i.e. 'right') argument covariantly.</summary>
-    val inline mapr : g: (^b -> ^d) -> pf: Reader< ^a, ^b> -> Reader< ^a, ^d>
+    val inline mapl: f: (^c -> ^a) -> pf: Reader< ^a, ^b> -> Reader< ^c, ^b>
 
 
 // Applicative
 
     /// <summary>Lift a value into a context.</summary>
-    val inline unit: value: ^a -> Reader< ^e, ^a>
+    val unit: value: 'a -> Reader<'e, ^a>
 
     /// <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
     val inline ap: fv: Reader< ^e, ^a> -> ff: Reader< ^e, (^a -> ^b)> -> Reader< ^e, ^b>
@@ -88,6 +59,14 @@ module Reader =
 
     /// <summary>Sequence two contexts, discarding the results of the first.</summary>
     val inline andthen: second: Reader< ^e, ^b> -> first: Reader< ^e, ^a> -> Reader< ^e, ^b>
+
+    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline sequence: source: seq<Reader< ^e, ^a>> -> Reader< ^e, seq< ^a>>
+    
+    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
+    val inline traverse: f: (^a -> Reader< ^e, ^b>) -> source: seq< ^a> -> Reader< ^e, seq< ^b>>
 
 
 // Monad
@@ -133,25 +112,12 @@ module Reader =
         when ^a : (static member Append: ^a -> ^a -> ^a)
 
 
-// Traversable
-
-    /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: seq<Reader< ^e, ^a>> -> Reader< ^e, seq< ^a>>
-
-    /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
-    /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Reader< ^e, ^b>) -> source: seq< ^a> -> Reader< ^e, seq< ^b>>
-
-
 // Cat
 
     /// <summary>Identity element of a category.</summary>
-    [<CompiledName("Identity")>]
     val identity<'a> : Reader< ^a, ^a>
 
     /// <summary>Compose two members of a category together.</summary>
-    [<CompiledName("Compose")>]
     val inline compose: o2: Reader< ^b, ^c> -> o1: Reader< ^a, ^b> -> Reader< ^a, ^c>
 
 
@@ -188,9 +154,3 @@ module Reader =
 
     /// <summary>Split the input between the two argument arrows and merge their outputs.</summary>
     val inline fanin: a2: Reader< ^c, ^b> -> a1: Reader< ^a, ^b> -> Reader<Either< ^a, ^c>, ^b>
-
-
-// Arrow.Apply
-
-    /// <summary>Arrow that allows application of arrow inputs to other inputs.</summary>
-    val app<'a, 'b> : Reader<Reader< ^a, ^b> * ^a, ^b>
