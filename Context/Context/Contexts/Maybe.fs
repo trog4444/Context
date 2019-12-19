@@ -142,7 +142,7 @@ module Maybe =
         match ma with Just a -> f a | Nothing -> Nothing
 
     let flatten mm : Maybe<'a> =
-        match mm with Just m -> m | Nothing -> Nothing
+        match mm with Just m -> m | Nothing -> Nothing    
 
     let inline fixM loop (em: Rogz.Context.Data.Either.Either< ^a, Maybe< ^a>>) : Maybe< ^b> =
         let rec go = function Just a -> k a | Nothing -> Nothing

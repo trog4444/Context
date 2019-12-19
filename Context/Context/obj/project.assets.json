@@ -111,7 +111,7 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.0.3",
+    "version": "1.1.0",
     "restore": {
       "projectUniqueName": "C:\\Users\\Tyler\\Documents\\GitHub\\Context\\Context\\Context\\Context.fsproj",
       "projectName": "Context",

@@ -1,4 +1,9 @@
-﻿*** Commit
+﻿2019-12-18
+    -- Removed Operators file
+    -- Updated version to 1.1.0.0
+    -- Created Release file to put in git
+
+*** Commit
 2019-12-11
     -- removing several unneeded inlines (dll size :: 531kB -> 517kB)
     -- renamed 'make' to 'fromFunc'

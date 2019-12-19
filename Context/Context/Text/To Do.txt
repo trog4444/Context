@@ -3,6 +3,8 @@
     ? ap
     toFunc
 
+? Remove cache & ALL other non-minimal/primitive functions from top level (_including_ isomorphisms)
+
 Determine where to put Operators. Same solution? Separate?
 
 Decide whether or not to include Identity
