@@ -215,9 +215,6 @@
 <member name="M:Rogz.Context.Data.Cont.Cont.map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Rogz.Context.Data.Cont.Cont{``2,``0})">
  <summary>Lift a function onto a context.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Cont.Cont.cache``2(Rogz.Context.Data.Cont.Cont{``0,``1})">
- <summary>Caches the result(s) of a Continuation computation.</summary>
-</member>
 <member name="M:Rogz.Context.Data.Cont.Cont.quitCC``2(``0)">
  <summary>End the current continuation chain with a specific value.</summary>
 </member>
@@ -410,9 +407,6 @@
 <member name="M:Rogz.Context.Data.Either.Either.map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Rogz.Context.Data.Either.Either{``2,``0})">
  <summary>Lift a function onto a context.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Either.Either.recur``2(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Either.Either{``0,``1}},``0)">
- <summary>Perform a context-based loop using the given seed until some 'exit' condition is reached, and return the final result.</summary>
-</member>
 <member name="M:Rogz.Context.Data.Either.Either.ofResult``2(Microsoft.FSharp.Core.FSharpResult{``0,``1})">
  <summary>Convert a Result into an Either.</summary>
 </member>
@@ -491,9 +485,6 @@
 </member>
 <member name="M:Rogz.Context.Data.Maybe.Maybe`1.OrElse(Rogz.Context.Data.Maybe.Maybe{`0})">
  <summary>A monoidal, associative binary operation representing choice/failure.</summary>
-</member>
-<member name="M:Rogz.Context.Data.Maybe.Maybe`1.Nix``1">
- <summary>The identity element of the 'orElse' operation.</summary>
 </member>
 <member name="M:Rogz.Context.Data.Maybe.Maybe`1.Match(System.Action,System.Action{`0})">
  <summary>Acts as a pattern-match on a union-type, calling the appropriate action based on the case.</summary>
@@ -599,9 +590,6 @@
 <member name="M:Rogz.Context.Data.Maybe.Maybe.orElse``1(Rogz.Context.Data.Maybe.Maybe{``0},Rogz.Context.Data.Maybe.Maybe{``0})">
  <summary>A monoidal, associative binary operation representing choice/failure.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Maybe.Maybe.nil``1">
- <summary>The identity element of the 'orElse' operation.</summary>
-</member>
 <member name="M:Rogz.Context.Data.Maybe.Maybe.traverse``2(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Maybe.Maybe{``1}},System.Collections.Generic.IEnumerable{``0})">
  <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
@@ -624,9 +612,6 @@
 </member>
 <member name="M:Rogz.Context.Data.Maybe.Maybe.map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Rogz.Context.Data.Maybe.Maybe{``0})">
  <summary>Lift a function onto a context.</summary>
-</member>
-<member name="M:Rogz.Context.Data.Maybe.Maybe.recur``1(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Maybe.Maybe{``0}},``0)">
- <summary>Perform a context-based loop using the given seed until some 'exit' condition is reached, and return the final result.</summary>
 </member>
 <member name="M:Rogz.Context.Data.Maybe.Maybe.toVOption``1(Rogz.Context.Data.Maybe.Maybe{``0})">
  <summary>Convert a Maybe into a ValueOption.</summary>
@@ -798,12 +783,6 @@
 <member name="M:Rogz.Context.Data.Reader.Reader.map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Rogz.Context.Data.Reader.Reader{``2,``0})">
  <summary>Lift a function onto a context.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Reader.Reader.cache``2(Rogz.Context.Data.Reader.Reader{``0,``1})">
- <summary>Caches the result(s) of a computation.</summary>
-</member>
-<member name="M:Rogz.Context.Data.Reader.Reader.flip``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
- <summary>Flip a function then wrap it inside of a Reader.</summary>
-</member>
 <member name="M:Rogz.Context.Data.Reader.Reader.runReader``2(``0,Rogz.Context.Data.Reader.Reader{``0,``1})">
  <summary>Execute the given function with the supplied environment.</summary>
 </member>
@@ -891,9 +870,6 @@
 <member name="M:Rogz.Context.Data.RWS.RWS.map``5(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Rogz.Context.Data.RWS.RWS{``2,``3,``4,``0})">
  <summary>Lift a function onto a context.</summary>
 </member>
-<member name="M:Rogz.Context.Data.RWS.RWS.cache``4(Rogz.Context.Data.RWS.RWS{``0,``1,``2,``3})">
- <summary>Caches the result(s) of an RWS computation.</summary>
-</member>
 <member name="M:Rogz.Context.Data.RWS.RWS.withRWS``5(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,System.ValueTuple{``2,``1}}},Rogz.Context.Data.RWS.RWS{``2,``1,``3,``4})">
  <summary>Executes a computation on an environment and state modified by 'f'.</summary>
 </member>
@@ -979,9 +955,6 @@
 <member name="M:Rogz.Context.Data.State.State`2.Invoke(`0)">
  <summary>Execute the given stateful computation.</summary>
 </member>
-<member name="M:Rogz.Context.Data.State.State`2.ContinueWith``1(System.Func{Rogz.Context.Data.State.State{`0,`1},``0})">
- <summary>Sequentially compose two co-contexts, passing any value produced by the first as an argument to the second.</summary>
-</member>
 <member name="T:Rogz.Context.Data.State.State`2">
  <summary>Represents a 'stateful'-computation, threading each new state as an argument in a resultant state-value pair.</summary>
 </member>
@@ -1028,9 +1001,6 @@
 </member>
 <member name="M:Rogz.Context.Data.State.State.map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Rogz.Context.Data.State.State{``2,``0})">
  <summary>Lift a function onto a context.</summary>
-</member>
-<member name="M:Rogz.Context.Data.State.State.cache``2(Rogz.Context.Data.State.State{``0,``1})">
- <summary>Caches the result(s) of a stateful computation.</summary>
 </member>
 <member name="M:Rogz.Context.Data.State.State.withState``2(Microsoft.FSharp.Core.FSharpFunc{``0,``0},Rogz.Context.Data.State.State{``0,``1})">
  <summary>Executes a stateful computation on a state modified by 'f'.</summary>
