@@ -36,6 +36,6 @@ Typeclasses used:
 - Show is implemented by default via .ToString() method.
 - Eq and Ord (i.e. Equality and Comparison) are implemented (for most types) by default **when called from F# code**.
 - Traversable is not implemented, but a sequence-specific pair of 'sequence' and 'traverse' are provided for each Applicative type.
-- MonadPlus uses the Alternative functions (nil (instead of the Haskell 'empty') and 'orElse'. These may obey either the LeftCatch law and/or the LeftDistribution laws. This may be unified at some future point.
+- MonadPlus uses the Alternative functions 'empty' and 'orElse'. These may obey either the LeftCatch law and/or the LeftDistribution laws. This may be unified at some future point.
 - Types that can support **some** useful functions of a typeclass but not all are given implementations for what they can support (e.g. Either supports the Alternative 'orElse' function but not nil/empty).
 

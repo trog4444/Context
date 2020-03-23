@@ -1,0 +1,4 @@
+﻿Use System.Func everywhere for better interop?
+
+Keep 'util' functions (which can be derived from other funcs), eg:
+    [andthen, replace, ap/map2, flatten, sequence/traverse] etc

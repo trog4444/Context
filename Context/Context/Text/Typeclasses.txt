@@ -1,0 +1,133 @@
+﻿class Recur f a b with
+    {-# LANGUAGE FlexibleInstances #-}
+    {-# LANGUAGE MultiParamTypeClasses #-} where
+    recur :: (a -> f b) -> a -> b
+
+    IF defined as
+    class Recur f a b c | f b -> c with
+        {-# LANGUAGE MultiParamTypeClasses #-} where
+        recur :: (a -> f b) -> a -> c
+        THEN can do
+            instance Recur (Reader a) a (Either a b) b where
+              recur f e = k e where
+                k a = case f a e of
+                        Left a  -> k a
+                        Right b -> b
+
+
+class Functor f where
+    map :: (a -> b) -> f a -> f b
+
+
+class Contrafunctor f where
+    mapContra :: (b -> a) -> f a -> f b
+
+
+class Functor bf => Bifunctor bf where
+    * bimap :: (a -> c) -> (b -> d) -> bf a b -> bf c d
+    | * mapFirst :: (a -> c) -> bf a b -> bf c b
+      & mapSecond :: (b -> c) -> bf a b -> bf a c
+
+    bimap f g bf = mapFirst f (mapSecond g bf) = mapSecond g (mapFirst f bf)
+    mapFirst f bf = bimap f id bf
+    mapSecond g bf = bimap id g bf
+
+
+class Functor pf => Profunctor pf where
+    * dimap :: (c -> a) -> (b -> d) -> pf a b -> pf c d
+    | * mapl :: (c -> a) -> pf a b -> pf c b ]
+
+
+class Functor f => Applicative f where
+    unit :: a -> f a
+    * ap :: f a -> f (a -> b) -> f b
+    |  map2 :: (a -> b -> c) -> f a -> f b -> f a
+    
+    andthen :: f b -> f a -> f b
+    when _ @ :: bool -> (() -> f ()) -> f ()
+    
+    ap fv ff = map2 (<|) ff fv
+    map2 f fa fb = map f fa |> ap fb
+    andthen fb fa = map2 (fun _ b -> b) fa fb
+    when _ @ b f = if b then f () else unit ()
+
+
+class Applicative f => Alternative f where
+    orElse :: f a -> f a -> f a
+    zero :: f a
+
+    orElse a zero = a
+    orElse zero a = b
+    orElse b a = a iff neither a nor b are zero
+
+
+class Applicative m => Monad m where
+    unit :: 
+    * bind :: (a -> m b) -> m a -> m b
+    | flatten :: m (m a) -> m a ]
+    
+    fixM :: ((a -> m b) -> (m a -> m b) -> a -> m b) -> a -> m b
+
+    Workflow
+
+    flatten mm = bind id mm
+    bind f m = flatten (map f m)
+    fixM f x = k x where
+        go m = bind k m
+        k a = f k go a
+
+
+class Monad m => MonadPlus m where
+    ...
+
+
+class MonadPlus m => MonadPlusGeneral where
+    ...
+
+
+class Functor w => Comonad w where
+    extract :: w a -> a
+    * extend :: (w a -> b) -> w a -> w b
+    | duplicate :: w a -> w (w a) ]
+
+    fail here !!! :: ((w a -> b) -> w a -> b) -> w a -> b
+
+    extend f w = map f (duplicate w)
+    duplicate ww = extend id ww
+    fail here !!! f w = extract (extend go w) where go w = f go w
+
+
+class Semigroup a where
+    append :: a -> a -> a
+
+    append a (append b c) = append (append a b) c
+
+
+class Semigroup a => Monoid a where
+    empty :: a
+
+    mtimes :: ...
+    mconcat :: ...
+
+    append empty a = a
+    append a empty = empty
+
+
+class Foldable f where
+    ...
+
+
+class Foldable bf => Bifoldable bf where
+    ...
+
+
+class Applicative t => Traversable t where
+    ...
+
+
+class Category c where
+    ...
+
+
+class Category a => Arrow a where
+    ...
