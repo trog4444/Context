@@ -69,11 +69,11 @@ module Reader =
     //let inline andthen (Reader rb) (Reader ra) : Reader< ^e, ^b> =
     //    Reader (fun e -> ignore ((ra e): ^a); rb e)
 
-    let inline sequence (source: seq<Reader< ^e, ^a>>) : Reader< ^e, seq< ^a>> =
+    let inline sequence (source: #seq<Reader< ^e, ^a>>) : Reader< ^e, seq< ^a>> =
         Reader (fun e ->
             System.Linq.Enumerable.Select(source, fun (Reader r) -> r e))
 
-    let inline traverse (f: ^a -> Reader< ^e, ^b>) (source: seq< ^a>) : Reader< ^e, seq< ^b>> =
+    let inline traverse (f: ^a -> Reader< ^e, ^b>) (source: #seq< ^a>) : Reader< ^e, seq< ^b>> =
         Reader (fun e ->
             System.Linq.Enumerable.Select(source,
                                           fun x -> let (Reader r) = f x in r e))
@@ -113,7 +113,7 @@ module Reader =
             //abstract member Using: disp: 'd * f: ('d -> Reader<'e, 'a>) -> Reader<'e, 'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: Reader<'e, 'a> * h: (exn -> Reader<'e, 'a>) -> Reader<'e, 'a>
             //abstract member TryFinally: m: Reader<'e, 'a> * f: (unit -> unit) -> Reader<'e, 'a>
-            member _.Using(disp: 'd, f) : Reader<'e, 'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : Reader<'e, 'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : Reader<'e, 'a> = try m with e -> h e
             //default _.TryFinally(m, f) : Reader<'e, 'a> = try m finally f ()
 

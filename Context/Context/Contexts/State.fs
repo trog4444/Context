@@ -121,7 +121,7 @@ module State =
             //abstract member Using: disp: 'd * f: ('d -> State<'s, 'a>) -> State<'s, 'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: State<'s, 'a> * h: (exn -> State<'s, 'a>) -> State<'s, 'a>
             //abstract member TryFinally: m: State<'s, 'a> * f: (unit -> unit) -> State<'s, 'a>
-            member _.Using(disp: 'd, f) : State<'s, 'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : State<'s, 'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : State<'s, 'a> = try m with e -> h e
             //default _.TryFinally(m, f) : State<'s, 'a> = try m finally f ()
 

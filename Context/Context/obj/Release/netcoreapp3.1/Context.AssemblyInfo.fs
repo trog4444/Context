@@ -10,9 +10,9 @@ open System.Reflection
 [<assembly: System.Reflection.AssemblyCompanyAttribute("rogz")>]
 [<assembly: System.Reflection.AssemblyConfigurationAttribute("Release")>]
 [<assembly: System.Reflection.AssemblyDescriptionAttribute("Types that add \'context\' to generic underlying types and operations to use and compose them.")>]
-[<assembly: System.Reflection.AssemblyFileVersionAttribute("1.1.3.0")>]
-[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.1.3")>]
+[<assembly: System.Reflection.AssemblyFileVersionAttribute("1.2.0.0")>]
+[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.2.0")>]
 [<assembly: System.Reflection.AssemblyProductAttribute("Context")>]
 [<assembly: System.Reflection.AssemblyTitleAttribute("Context")>]
-[<assembly: System.Reflection.AssemblyVersionAttribute("1.1.3.0")>]
+[<assembly: System.Reflection.AssemblyVersionAttribute("1.2.0.0")>]
 do()

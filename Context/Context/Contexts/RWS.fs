@@ -226,7 +226,7 @@ module RWS =
             //abstract member Using: disp: 'd * f: ('d -> RWS<'e, 's, 'w, 'a>) -> RWS<'e, 's, 'w, 'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: RWS<'e, 's, 'w, 'a> * h: (exn -> RWS<'e, 's, 'w, 'a>) -> RWS<'e, 's, 'w, 'a>
             //abstract member TryFinally: m: RWS<'e, 's, 'w, 'a> * f: (unit -> unit) -> RWS<'e, 's, 'w, 'a>
-            member _.Using(disp: 'd, f) : RWS<'e, 's, 'w, 'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : RWS<'e, 's, 'w, 'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : RWS<'e, 's, 'w, 'a> = try m with e -> h e
             //default _.TryFinally(m, f) : RWS<'e, 's, 'w, 'a> = try m finally f ()
 

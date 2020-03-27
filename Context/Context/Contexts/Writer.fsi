@@ -114,7 +114,7 @@ module Writer =
             //member inline Using: disp: ^d * f: (^d -> Writer< ^w, ^a>) -> Writer< ^w, ^a> when ^d :> System.IDisposable
             //member inline TryWith: m: Writer< ^w, ^a> * handler: (exn -> Writer< ^w, ^a>) -> Writer< ^w, ^a>
             //member inline TryFinally: m: Writer< ^w, ^a> * finalizer: (unit -> unit) -> Writer< ^w, ^a>
-            member Using: disp: 'd * f: ('d -> Writer<'w, 'a>) -> Writer<'w, 'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> Writer<'w, 'a>) -> Writer<'w, 'a> when 'd :> System.IDisposable
             //abstract TryWith: m: Writer<'w, 'a> * h: (exn -> Writer<'w, 'a>) -> Writer<'w, 'a>
             //abstract TryFinally: m: Writer<'w, 'a> * f: (unit -> unit) -> Writer<'w, 'a>
 

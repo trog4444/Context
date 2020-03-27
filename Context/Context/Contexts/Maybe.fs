@@ -34,7 +34,7 @@ module Maybe =
     //    | Just a -> Seq.singleton a
     //    | Nothing -> Seq.empty
 
-    let inline ofObj obj : Maybe< ^a> when ^a : null =
+    let ofObj (obj: 'a) : Maybe<'a> when 'a : null =
         if isNull obj then Nothing else Just obj
 
     let ofNullable (nullable: System.Nullable<'a>) =
@@ -101,28 +101,35 @@ module Maybe =
     //let andthen fb (fa: Maybe<'a>) : Maybe<'b> =
     //    match fa with Just _ -> fb | Nothing -> Nothing    
 
-    let inline sequence (source: Maybe< ^a> seq) =
-        let xs = ResizeArray<_>()
-        let mutable flag = true
+    let sequence (source: #seq<Maybe<'a>>) =
         use e = source.GetEnumerator()
-        while flag && e.MoveNext() do
-            match e.Current with
-            | Just a  -> xs.Add a
-            | Nothing -> flag <- false
-        if flag then Just (System.Linq.Enumerable.AsEnumerable(xs)) else Nothing
+        let xs = ResizeArray<_>()
+        let rec go () =
+            if e.MoveNext() then
+                match e.Current with
+                | Nothing -> xs.Clear(); Nothing
+                | Just a  -> go (xs.Add(a))
+            else xs.Clear()
+                 Just (System.Linq.Enumerable.AsEnumerable(xs))
+        go ()
 
-    let inline traverse f (source: ^a seq) : Maybe< ^b seq> =
-        let xs = ResizeArray<_>()
-        let mutable flag = true
+
+    let inline traverse f (source: #seq< ^a>) : Maybe< ^b seq> =
         use e = source.GetEnumerator()
-        while flag && e.MoveNext() do
-            match f e.Current with
-            | Just b  -> xs.Add b
-            | Nothing -> flag <- false
-        if flag then Just (System.Linq.Enumerable.AsEnumerable(xs)) else Nothing
+        let xs = ResizeArray<_>()
+        let rec go () =
+            if e.MoveNext() then
+                match f e.Current with
+                | Nothing -> xs.Clear(); Nothing
+                | Just a  -> go (xs.Add(a))
+            else xs.Clear()
+                 Just (System.Linq.Enumerable.AsEnumerable(xs))
+        go ()
 
 
 // Alternative
+
+    let empty<'a> : Maybe< ^a> = Nothing
 
     let orElse second first : Maybe<'a> =
         match first with Just _ -> first | Nothing -> second
@@ -130,7 +137,7 @@ module Maybe =
     let inline orElseWith second first : Maybe< ^a> =
         match first with Just _ -> first | Nothing -> second ()
 
-    let inline concat (source: Maybe< ^a> seq) =
+    let concat (source: #seq<Maybe<'a>>) =
         System.Linq.Enumerable.FirstOrDefault(source, fun a -> isJust a)
 
 
@@ -166,7 +173,7 @@ module Maybe =
             //abstract member Using: disp: 'd * f: ('d -> Maybe<'a>) -> Maybe<'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: Maybe<'a> * h: (exn -> Maybe<'a>) -> Maybe<'a>
             //abstract member TryFinally: m: Maybe<'a> * f: (unit -> unit) -> Maybe<'a>
-            member _.Using(disp: 'd, f) : Maybe<'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : Maybe<'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : Maybe<'a> = try m with e -> h e
             //default _.TryFinally(m, f) : Maybe<'a> = try m finally f ()
             //member inline _.Run f = f
@@ -185,10 +192,10 @@ module Maybe =
         | Just a, Just b -> if p a b then Just (f a b) else Nothing
         | Nothing, _ | _, Nothing -> Nothing
 
-    let inline filter p ma : Maybe< ^a> =
-        match ma with
-        | Just a -> if p a then ma else Nothing
-        | Nothing -> Nothing
+    let inline filter p m : Maybe< ^a> =
+        match m with
+        | Just a  -> if p a then m else Nothing
+        | Nothing -> m
 
 
 // Semigroup
@@ -201,8 +208,6 @@ module Maybe =
 
 
 // Monoid
-
-    let empty<'a> : Maybe< ^a> = Nothing
 
     let inline mconcat (source: Maybe< ^a> seq) =
         Seq.fold append empty source

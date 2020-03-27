@@ -100,20 +100,29 @@ module Either =
     //let andthen fb (fa: Either<'e, 'a>) : Either< ^e, 'b> =
     //    match fa with Left e -> Left e | Right _ -> fb
 
-    let inline sequence (source: Either< ^e, ^a> seq) =
+    let sequence (source: #seq<Either<'e, 'a>>) =
         let xs = ResizeArray<_>()
         let mutable flag = true
         use e = source.GetEnumerator()
-        let mutable er = Unchecked.defaultof< ^e>
+        let mutable er = Unchecked.defaultof<_>
         while flag && e.MoveNext() do
             match e.Current with
             | Right a -> xs.Add a
-            | Left e -> flag <- false; er <- e
+            | Left e  -> flag <- false; er <- e
         if flag then Right (System.Linq.Enumerable.AsEnumerable(xs))
         else Left er
 
-    let inline traverse f (source: ^a seq) : Either< ^e, ^b seq> =
-        sequence (System.Linq.Enumerable.Select(source, System.Func<_,_>f))
+    let inline traverse f (source: #seq< ^a>) : Either< ^e, ^b seq> =
+        let xs = ResizeArray<_>()
+        let mutable flag = true
+        use e = source.GetEnumerator()
+        let mutable er = Unchecked.defaultof<_>
+        while flag && e.MoveNext() do
+            match f e.Current with
+            | Right a -> xs.Add a
+            | Left e  -> flag <- false; er <- e
+        if flag then Right (System.Linq.Enumerable.AsEnumerable(xs))
+        else Left er
 
 
 // Alternative
@@ -155,7 +164,7 @@ module Either =
             //abstract member Using: disp: 'd * f: ('d -> Either<'e, 'a>) -> Either<'e, 'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: Either<'e, 'a> * h: (exn -> Either<'e, 'a>) -> Either<'e, 'a>
             //abstract member TryFinally: m: Either<'e, 'a> * f: (unit -> unit) -> Either<'e, 'a>
-            member _.Using(disp: 'd, f) : Either<'e, 'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : Either<'e, 'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : Either<'e, 'a> = try m with e -> h e
             //default _.TryFinally(m, f) : Either<'e, 'a> = try m finally f ()
 

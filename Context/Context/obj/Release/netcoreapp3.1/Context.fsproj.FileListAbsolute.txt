@@ -16,3 +16,11 @@ C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp3.
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp3.1\Context.AssemblyInfo.fs
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp3.1\Context.dll
 C:\Users\Tyler\Documents\GitHub\Context\Context\Context\obj\Release\netcoreapp3.1\Context.pdb
+C:\Users\TylerRogers\source\repos\Context\Context\Context\bin\Release\netcoreapp3.1\Context.XML
+C:\Users\TylerRogers\source\repos\Context\Context\Context\bin\Release\netcoreapp3.1\Context.deps.json
+C:\Users\TylerRogers\source\repos\Context\Context\Context\bin\Release\netcoreapp3.1\Context.dll
+C:\Users\TylerRogers\source\repos\Context\Context\Context\bin\Release\netcoreapp3.1\Context.pdb
+C:\Users\TylerRogers\source\repos\Context\Context\Context\obj\Release\netcoreapp3.1\Context.AssemblyInfoInputs.cache
+C:\Users\TylerRogers\source\repos\Context\Context\Context\obj\Release\netcoreapp3.1\Context.AssemblyInfo.fs
+C:\Users\TylerRogers\source\repos\Context\Context\Context\obj\Release\netcoreapp3.1\Context.dll
+C:\Users\TylerRogers\source\repos\Context\Context\Context\obj\Release\netcoreapp3.1\Context.pdb

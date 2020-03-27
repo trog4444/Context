@@ -62,11 +62,11 @@ module Reader =
 
     /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: seq<Reader< ^e, ^a>> -> Reader< ^e, seq< ^a>>
+    val inline sequence: source: #seq<Reader< ^e, ^a>> -> Reader< ^e, seq< ^a>>
     
     /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Reader< ^e, ^b>) -> source: seq< ^a> -> Reader< ^e, seq< ^b>>
+    val inline traverse: f: (^a -> Reader< ^e, ^b>) -> source: #seq< ^a> -> Reader< ^e, seq< ^b>>
 
 
 // Monad
@@ -99,7 +99,7 @@ module Reader =
             //member inline Using: disp: ^d * f: (^d -> Reader< ^e, ^a>) -> Reader< ^e, ^a> when ^d :> System.IDisposable
             //member inline TryWith: m: Reader< ^e, ^a> * handler: (exn -> Reader< ^e, ^a>) -> Reader< ^e, ^a>
             //member inline TryFinally: m: Reader< ^e, ^a> * finalizer: (unit -> unit) -> Reader< ^e, ^a>
-            member Using: disp: 'd * f: ('d -> Reader<'e, 'a>) -> Reader<'e, 'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> Reader<'e, 'a>) -> Reader<'e, 'a> when 'd :> System.IDisposable
             //abstract TryWith: m: Reader<'e, 'a> * h: (exn -> Reader<'e, 'a>) -> Reader<'e, 'a>
             //abstract TryFinally: m: Reader<'e, 'a> * f: (unit -> unit) -> Reader<'e, 'a>
 
