@@ -62,11 +62,11 @@ module Tagged =
 
     /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: Tagged< ^t, ^a> seq -> Tagged< ^t, ^a seq>
+    val sequence: source: #seq<Tagged<'t, 'a>> -> Tagged< ^t, ^a seq>
 
     /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Tagged< ^t, ^b>) -> source: ^a seq -> Tagged< ^t, ^b seq>
+    val inline traverse: f: (^a -> Tagged< ^t, ^b>) -> source: #seq< ^a> -> Tagged< ^t, ^b seq>
 
 
 // Monad
@@ -91,19 +91,19 @@ module Tagged =
     module Workflow =
 
         /// <summary>Computation expression for the given monadic context.</summary>
-        type AttrBuilder =
-            new: unit -> AttrBuilder
+        type TaggedBuilder =
+            new: unit -> TaggedBuilder
             member Return: x: 'a -> Tagged<'t, ^a>
             member ReturnFrom: m: Tagged<'t, 'a> -> Tagged< ^t, ^a>
             member inline Bind: m: Tagged< ^t, ^a> * f: (^a -> Tagged< ^t, ^b>) -> Tagged< ^t, ^b>
             member Zero: unit -> Tagged<'t, unit>
-            member Using: disp: 'd * f: ('d -> Tagged<'t, 'a>) -> Tagged<'t, 'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> Tagged<'t, 'a>) -> Tagged<'t, 'a> when 'd :> System.IDisposable
             //abstract TryWith: m: Tagged<'t, 'a> * h: (exn -> Tagged<'t, 'a>) -> Tagged<'t, 'a>
             //abstract TryFinally: m: Tagged<'t, 'a> * f: (unit -> unit) -> Tagged<'t, 'a>
 
 
     /// <summary>Computation expression instance for the given context.</summary>
-    val tag: Workflow.AttrBuilder
+    val tagged: Workflow.TaggedBuilder
 
 
 // Comonad

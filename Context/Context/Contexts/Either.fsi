@@ -83,11 +83,11 @@ module Either =
 
     /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: Either< ^e, ^a> seq -> Either< ^e, ^a seq>
+    val sequence: source: #seq<Either<'e, 'a>> -> Either< ^e, ^a seq>
 
     /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Either< ^e, ^b>) -> source: ^a seq -> Either< ^e, ^b seq>
+    val inline traverse: f: (^a -> Either< ^e, ^b>) -> source: #seq< ^a> -> Either< ^e, ^b seq>
 
 
 // Alternative
@@ -130,7 +130,7 @@ module Either =
             //member inline Using: disp: ^d * f: (^d -> Either< ^e, ^a>) -> Either< ^e, ^a> when ^d :> System.IDisposable
             //member inline TryWith: m: Either< ^e, ^a> * handler: (exn -> Either< ^e, ^a>) -> Either< ^e, ^a>
             //member inline TryFinally: m: Either< ^e, ^a> * finalizer: (unit -> unit) -> Either< ^e, ^a>
-            member Using: disp: 'd * f: ('d -> Either<'e, 'a>) -> Either<'e, 'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> Either<'e, 'a>) -> Either<'e, 'a> when 'd :> System.IDisposable
             //abstract TryWith: m: Either<'e, 'a> * h: (exn -> Either<'e, 'a>) -> Either<'e, 'a>
             //abstract TryFinally: m: Either<'e, 'a> * f: (unit -> unit) -> Either<'e, 'a>
 

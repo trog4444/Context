@@ -112,7 +112,7 @@ module Cont =
             //abstract member Using: disp: 'd * f: ('d -> Cont<'r, 'a>) -> Cont<'r, 'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: Cont<'r, 'a> * h: (exn -> Cont<'r, 'a>) -> Cont<'r, 'a>
             //abstract member TryFinally: m: Cont<'r, 'a> * f: (unit -> unit) -> Cont<'r, 'a>
-            member _.Using(disp: 'd, f) : Cont<'r, 'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : Cont<'r, 'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : Cont<'r, 'a> = try m with e -> h e
             //default _.TryFinally(m, f) : Cont<'r, 'a> = try m finally f ()
 

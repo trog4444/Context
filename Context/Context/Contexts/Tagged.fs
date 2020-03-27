@@ -47,10 +47,10 @@ module Tagged =
 
     //let inline andthen (fb: Tagged< ^t, ^b>) (_: Tagged< ^t, ^a>) = fb
 
-    let inline sequence (source: Tagged< ^t, ^a> seq) : Tagged< ^t, ^a seq> =
+    let sequence (source: #seq<Tagged<'t, 'a>>) : Tagged< ^t, ^a seq> =
         Tagged (System.Linq.Enumerable.Select(source, fun (Tagged x) -> x))
 
-    let inline traverse (f: ^a -> Tagged< ^t, ^b>) (source: ^a seq) : Tagged< ^t, ^b seq> =
+    let inline traverse (f: ^a -> Tagged< ^t, ^b>) (source: #seq< ^a>) : Tagged< ^t, ^b seq> =
         Tagged (System.Linq.Enumerable.Select(source, fun a -> let (Tagged x) = f a in x))
 
 
@@ -75,7 +75,7 @@ module Tagged =
     [<RequireQualifiedAccess>]
     module Workflow =
 
-        type AttrBuilder() =
+        type TaggedBuilder() =
             member _.Return(x) : Tagged<'t, 'a> = unit x
             member _.ReturnFrom(m) : Tagged<'t, 'a> = m
             member inline _.Bind(m: Tagged< ^t, ^a>, f) : Tagged< ^t, ^b> = bind f m
@@ -83,12 +83,12 @@ module Tagged =
             //abstract member Using: disp: 'd * f: ('d -> Tagged<'t, 'a>) -> Tagged<'t, 'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: Tagged<'t, 'a> * h: (exn -> Tagged<'t, 'a>) -> Tagged<'t, 'a>
             //abstract member TryFinally: m: Tagged<'t, 'a> * f: (unit -> unit) -> Tagged<'t, 'a>
-            member _.Using(disp: 'd, f) : Tagged<'t, 'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : Tagged<'t, 'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : Tagged<'t, 'a> = try m with e -> h e
             //default _.TryFinally(m, f) : Tagged<'t, 'a> = try m finally f ()
 
 
-    let tag = Workflow.AttrBuilder()
+    let tagged = Workflow.TaggedBuilder()
 
 
 // Comonad

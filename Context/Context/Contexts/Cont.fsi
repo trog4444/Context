@@ -107,7 +107,7 @@ module Cont =
             //member inline Using: disp: ^d * f: (^d -> Cont< ^r, ^a>) -> Cont< ^r, ^a> when ^d :> System.IDisposable
             //member inline TryWith: m: Cont< ^r, ^a> * handler: (exn -> Cont< ^r, ^a>) -> Cont< ^r, ^a>
             //member inline TryFinally: m: Cont< ^r, ^a> * finalizer: (unit -> unit) -> Cont< ^r, ^a>
-            member Using: disp: 'd * f: ('d -> Cont<'r, 'a>) -> Cont<'r, 'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> Cont<'r, 'a>) -> Cont<'r, 'a> when 'd :> System.IDisposable
             //abstract TryWith: m: Cont<'r, 'a> * h: (exn -> Cont<'r, 'a>) -> Cont<'r, 'a>
             //abstract TryFinally: m: Cont<'r, 'a> * f: (unit -> unit) -> Cont<'r, 'a>
 

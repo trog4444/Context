@@ -218,11 +218,11 @@
 <member name="M:Rogz.Context.Data.Either.Either.orElse``2(Rogz.Context.Data.Either.Either{``0,``1},Rogz.Context.Data.Either.Either{``0,``1})">
  <summary>A monoidal, associative binary operation representing choice/failure.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Either.Either.traverse``3(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Either.Either{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
+<member name="M:Rogz.Context.Data.Either.Either.traverse``4(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Either.Either{``1,``2}},``3)">
  <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:Rogz.Context.Data.Either.Either.sequence``2(System.Collections.Generic.IEnumerable{Rogz.Context.Data.Either.Either{``0,``1}})">
+<member name="M:Rogz.Context.Data.Either.Either.sequence``3(``0)">
  <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
@@ -366,9 +366,6 @@
  <summary>Generalizes the 'concat' operation on sequences to monoids.</summary>
  <exception cref="ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:Rogz.Context.Data.Maybe.Maybe.empty``1">
- <summary>The identity element of the 'append' operation.</summary>
-</member>
 <member name="M:Rogz.Context.Data.Maybe.Maybe.append``1(Rogz.Context.Data.Maybe.Maybe{``0},Rogz.Context.Data.Maybe.Maybe{``0})">
  <summary>An associative binary operation on contexts.</summary>
 </member>
@@ -393,7 +390,7 @@
 <member name="M:Rogz.Context.Data.Maybe.Maybe.bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Maybe.Maybe{``1}},Rogz.Context.Data.Maybe.Maybe{``0})">
  <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Maybe.Maybe.concat``1(System.Collections.Generic.IEnumerable{Rogz.Context.Data.Maybe.Maybe{``0}})">
+<member name="M:Rogz.Context.Data.Maybe.Maybe.concat``2(``0)">
  <summary>Generalizes the sequence-based 'concat' function.</summary>
  <exception cref="ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
@@ -403,11 +400,14 @@
 <member name="M:Rogz.Context.Data.Maybe.Maybe.orElse``1(Rogz.Context.Data.Maybe.Maybe{``0},Rogz.Context.Data.Maybe.Maybe{``0})">
  <summary>A monoidal, associative binary operation representing choice/failure.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Maybe.Maybe.traverse``2(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Maybe.Maybe{``1}},System.Collections.Generic.IEnumerable{``0})">
+<member name="M:Rogz.Context.Data.Maybe.Maybe.empty``1">
+ <summary>The identity element of the 'append' operation.</summary>
+</member>
+<member name="M:Rogz.Context.Data.Maybe.Maybe.traverse``3(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Maybe.Maybe{``1}},``2)">
  <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:Rogz.Context.Data.Maybe.Maybe.sequence``1(System.Collections.Generic.IEnumerable{Rogz.Context.Data.Maybe.Maybe{``0}})">
+<member name="M:Rogz.Context.Data.Maybe.Maybe.sequence``2(``0)">
  <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
@@ -549,11 +549,11 @@
 <member name="M:Rogz.Context.Data.Reader.Reader.bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Reader.Reader{``1,``2}},Rogz.Context.Data.Reader.Reader{``1,``0})">
  <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Reader.Reader.traverse``3(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Reader.Reader{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
+<member name="M:Rogz.Context.Data.Reader.Reader.traverse``4(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Reader.Reader{``1,``2}},``3)">
  <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:Rogz.Context.Data.Reader.Reader.sequence``2(System.Collections.Generic.IEnumerable{Rogz.Context.Data.Reader.Reader{``0,``1}})">
+<member name="M:Rogz.Context.Data.Reader.Reader.sequence``3(``0)">
  <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
@@ -911,7 +911,7 @@
 <member name="M:Rogz.Context.Data.Tagged.Tagged.extract``2(Rogz.Context.Data.Tagged.Tagged{``0,``1})">
  <summary>Retrieve a value from a co-context.</summary>
 </member>
-<member name="P:Rogz.Context.Data.Tagged.Tagged.tag">
+<member name="P:Rogz.Context.Data.Tagged.Tagged.tagged">
  <summary>Computation expression instance for the given context.</summary>
 </member>
 <member name="M:Rogz.Context.Data.Tagged.Tagged.fixM``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Tagged.Tagged{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Rogz.Context.Data.Tagged.Tagged{``1,``0},Rogz.Context.Data.Tagged.Tagged{``1,``2}},Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Tagged.Tagged{``1,``2}}}},Microsoft.FSharp.Core.FSharpChoice{``0,Rogz.Context.Data.Tagged.Tagged{``1,``0}})">
@@ -923,11 +923,11 @@
 <member name="M:Rogz.Context.Data.Tagged.Tagged.bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Tagged.Tagged{``1,``2}},Rogz.Context.Data.Tagged.Tagged{``1,``0})">
  <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
 </member>
-<member name="M:Rogz.Context.Data.Tagged.Tagged.traverse``3(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Tagged.Tagged{``1,``2}},System.Collections.Generic.IEnumerable{``0})">
+<member name="M:Rogz.Context.Data.Tagged.Tagged.traverse``4(Microsoft.FSharp.Core.FSharpFunc{``0,Rogz.Context.Data.Tagged.Tagged{``1,``2}},``3)">
  <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
-<member name="M:Rogz.Context.Data.Tagged.Tagged.sequence``2(System.Collections.Generic.IEnumerable{Rogz.Context.Data.Tagged.Tagged{``0,``1}})">
+<member name="M:Rogz.Context.Data.Tagged.Tagged.sequence``3(``0)">
  <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
  <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
 </member>
@@ -973,7 +973,7 @@
 <member name="M:Rogz.Context.Data.Tagged.Tagged.untag``2(Rogz.Context.Data.Tagged.Tagged{``0,``1})">
  <summary>Return the underlying value.</summary>
 </member>
-<member name="T:Rogz.Context.Data.Tagged.Tagged.Workflow.AttrBuilder">
+<member name="T:Rogz.Context.Data.Tagged.Tagged.Workflow.TaggedBuilder">
  <summary>Computation expression for the given monadic context.</summary>
 </member>
 <member name="T:Rogz.Context.Data.Tagged.Tagged.Workflow">

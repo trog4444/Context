@@ -106,7 +106,7 @@ module State =
             //member inline Using: disp: ^d * f: (^d -> State< ^s, ^a>) -> State< ^s, ^a> when ^d :> System.IDisposable
             //member inline TryWith: m: State< ^s, ^a> * handler: (exn -> State< ^s, ^a>) -> State< ^s, ^a>
             //member inline TryFinally: m: State< ^s, ^a> * finalizer: (unit -> unit) -> State< ^s, ^a>
-            member Using: disp: 'd * f: ('d -> State<'s, 'a>) -> State<'s, 'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> State<'s, 'a>) -> State<'s, 'a> when 'd :> System.IDisposable
             //abstract TryWith: m: State<'s, 'a> * h: (exn -> State<'s, 'a>) -> State<'s, 'a>
             //abstract TryFinally: m: State<'s, 'a> * f: (unit -> unit) -> State<'s, 'a>
 

@@ -164,7 +164,7 @@ module RWS =
             //member inline Using: disp: ^d * f: (^d -> RWS< ^e, ^s, ^w, ^a>) -> RWS< ^e, ^s, ^w, ^a> when ^d :> System.IDisposable
             //member inline TryWith: m: RWS< ^e, ^s, ^w, ^a> * handler: (exn -> RWS< ^e, ^s, ^w, ^a>) -> RWS< ^e, ^s, ^w, ^a>
             //member inline TryFinally: m: RWS< ^e, ^s, ^w, ^a> * finalizer: (unit -> unit) -> RWS< ^e, ^s, ^w, ^a>
-            member Using: disp: 'd * f: ('d -> RWS<'e, 's, 'w, 'a>) -> RWS<'e, 's, 'w, 'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> RWS<'e, 's, 'w, 'a>) -> RWS<'e, 's, 'w, 'a> when 'd :> System.IDisposable
             //abstract TryWith: m: RWS<'e, 's, 'w, 'a> * h: (exn -> RWS<'e, 's, 'w, 'a>) -> RWS<'e, 's, 'w, 'a>
             //abstract TryFinally: m: RWS<'e, 's, 'w, 'a> * f: (unit -> unit) -> RWS<'e, 's, 'w, 'a>
 

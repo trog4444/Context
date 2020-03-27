@@ -124,7 +124,7 @@ module Writer =
             //abstract member Using: disp: 'd * f: ('d -> Writer<'w, 'a>) -> Writer<'w, 'a> when 'd :> System.IDisposable
             //abstract member TryWith: m: Writer<'w, 'a> * h: (exn -> Writer<'w, 'a>) -> Writer<'w, 'a>
             //abstract member TryFinally: m: Writer<'w, 'a> * f: (unit -> unit) -> Writer<'w, 'a>
-            member _.Using(disp: 'd, f) : Writer<'w, 'a> when 'd :> System.IDisposable = using disp f
+            //member _.Using(disp: 'd, f) : Writer<'w, 'a> when 'd :> System.IDisposable = using disp f
             //default _.TryWith(m, h) : Writer<'w, 'a> = try m with e -> h e
             //default _.TryFinally(m, f) : Writer<'w, 'a> = try m finally f ()
 

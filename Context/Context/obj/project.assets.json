@@ -107,23 +107,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Tyler\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\TylerRogers\\.nuget\\packages\\": {}
   },
   "project": {
-    "version": "1.1.3",
+    "version": "1.2.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Tyler\\Documents\\GitHub\\Context\\Context\\Context\\Context.fsproj",
+      "projectUniqueName": "C:\\Users\\TylerRogers\\source\\repos\\Context\\Context\\Context\\Context.fsproj",
       "projectName": "Context",
-      "projectPath": "C:\\Users\\Tyler\\Documents\\GitHub\\Context\\Context\\Context\\Context.fsproj",
-      "packagesPath": "C:\\Users\\Tyler\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Tyler\\Documents\\GitHub\\Context\\Context\\Context\\obj\\",
+      "projectPath": "C:\\Users\\TylerRogers\\source\\repos\\Context\\Context\\Context\\Context.fsproj",
+      "packagesPath": "C:\\Users\\TylerRogers\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\TylerRogers\\source\\repos\\Context\\Context\\Context\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Tyler\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\TylerRogers\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

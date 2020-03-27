@@ -30,7 +30,7 @@ module Maybe =
     //val toSeq: maybe: Maybe<'a> -> ^a seq
 
     /// <summary>Returns Nothing if the given object is null, otherwise returns the object wrapped in a 'Just'.</summary>
-    val inline ofObj: obj: ^a -> Maybe< ^a> when ^a : null
+    val ofObj: obj: 'a -> Maybe<'a> when 'a : null
 
     /// <summary>Convert a Nullable to a Maybe.</summary>
     val ofNullable: nullable: System.Nullable<'a> -> Maybe< ^a>
@@ -79,14 +79,17 @@ module Maybe =
 
     /// <summary>Evaluate each context in a sequence from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline sequence: source: Maybe< ^a> seq -> Maybe< ^a seq>
+    val sequence: source: #seq<Maybe<'a>> -> Maybe< ^a seq>
 
     /// <summary>Map each element of a sequence to a context, evaluate these contexts from left to right, and collect the results.</summary>
     /// <exception cref="System.ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline traverse: f: (^a -> Maybe< ^b>) -> source: ^a seq -> Maybe< ^b seq>
+    val inline traverse: f: (^a -> Maybe< ^b>) -> source: #seq< ^a> -> Maybe< ^b seq>
 
 
 // Alternative
+
+    /// <summary>The identity element of the 'append' operation.</summary>
+    val empty<'a> : Maybe< ^a>
 
     /// <summary>A monoidal, associative binary operation representing choice/failure.</summary>
     val orElse: second: Maybe<'a> -> first: Maybe< ^a> -> Maybe< ^a>
@@ -96,7 +99,7 @@ module Maybe =
 
     /// <summary>Generalizes the sequence-based 'concat' function.</summary>
     /// <exception cref="ArgumentNullException">Thrown when the input sequence is null.</exception>
-    val inline concat: source: Maybe< ^a> seq -> Maybe< ^a>
+    val concat: source: #seq<Maybe<'a>> -> Maybe< ^a>
 
 
 // Monad
@@ -129,7 +132,7 @@ module Maybe =
             //member inline Using: disp: ^d * f: (^d -> Maybe< ^a>) -> Maybe< ^a> when ^d :> System.IDisposable
             //member inline TryWith: m: Maybe< ^a> * handler: (exn -> Maybe< ^a>) -> Maybe< ^a>
             //member inline TryFinally: m: Maybe< ^a> * finalizer: (unit -> unit) -> Maybe< ^a>
-            member Using: disp: 'd * f: ('d -> Maybe<'a>) -> Maybe<'a> when 'd :> System.IDisposable
+            //member Using: disp: 'd * f: ('d -> Maybe<'a>) -> Maybe<'a> when 'd :> System.IDisposable
             //abstract TryWith: m: Maybe<'a> * h: (exn -> Maybe<'a>) -> Maybe<'a>
             //abstract TryFinally: m: Maybe<'a> * f: (unit -> unit) -> Maybe<'a>
             //member inline Run: f: ^a -> ^a
@@ -146,10 +149,10 @@ module Maybe =
     val guard: condition: bool -> Maybe<unit>
 
     /// <summary>Acts similar to a SQL 'inner join', combining elements of each given monad when the elements satisfy a predicate.</summary>
-    val inline join: pred: (^a -> ^b -> bool) -> f: (^a -> ^b -> ^c) -> ma: Maybe< ^a> -> mb: Maybe< ^b> -> Maybe< ^c>
+    val inline join: pred: (^a -> ^b -> bool) -> f: (^a -> ^b -> ^c) -> m: Maybe< ^a> -> mb: Maybe< ^b> -> Maybe< ^c>
 
     /// <summary>Generalizes the sequence-based 'filter' function.</summary>
-    val inline filter: pred: (^a -> bool) -> ma: Maybe< ^a> -> Maybe< ^a>
+    val inline filter: pred: (^a -> bool) -> m: Maybe< ^a> -> Maybe< ^a>
 
 
 // Semigroup
@@ -160,9 +163,6 @@ module Maybe =
 
 
 // Monoid
-
-    /// <summary>The identity element of the 'append' operation.</summary>
-    val empty<'a> : Maybe< ^a>
 
     /// <summary>Generalizes the 'concat' operation on sequences to monoids.</summary>
     /// <exception cref="ArgumentNullException">Thrown when the input sequence is null.</exception>
