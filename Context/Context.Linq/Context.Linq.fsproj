@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netcoreapp3.1\Context.Linq.XML</DocumentationFile>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="ContLinq.fsi" />
+    <Compile Include="ContLinq.fs" />
+    <Compile Include="EitherLinq.fsi" />
+    <Compile Include="EitherLinq.fs" />
+    <Compile Include="MaybeLinq.fsi" />
+    <Compile Include="MaybeLinq.fs" />
+    <Compile Include="ReaderLinq.fsi" />
+    <Compile Include="ReaderLinq.fs" />
+    <Compile Include="StateLinq.fsi" />
+    <Compile Include="StateLinq.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Context.Base\Context.Base.fsproj" />
+  </ItemGroup>
+
+</Project>

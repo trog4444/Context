@@ -1,0 +1,70 @@
+﻿!? move type definitions to Context.Data (and remove the namespaces of each 'type' -- leaving only the modules)
+-^ breaking change
+
+? add Profunctor instance of Tagged
+
+remove unneeded funcs like biap, various stuff in RWS, Reader, and State
+    ? andthen
+    ? ap
+    toFunc
+
+? Remove cache & ALL other non-minimal/primitive functions from top level (_including_ isomorphisms)
+
+Decide whether or not to include Identity
+
+TRY removing unecessary 'inline' (non-HOF's and stuff w/o constraints)
+
+Maybe rename 'orElse' to 'choice' or 'decide' {'pick' and 'choose' are both taken...}
+
+consider where to put struct tuples or not (see getCC)
+
+
+
+
+
+Instances to add:
+*MonadFail doesnt really add anything except giving a new name to ANOTHER
+*failure mode (empty = identity for Alternative, zero = identity for Monoid, fail x = semi-identity for (>>=))
+*where in most cases, empty = zero = fail _
+*, so maybe Just use MonadError instead?
+*, or have fail be in a separate project, like it is in Haskell?
+1) MonadFail -- https://downloads.haskell.org/~ghc/latest/docs/html/libraries/base-4.14.0.0/Control-Monad-Fail.html
+    {- |
+    When a value is bound in do-notation, the pattern on the left hand side of <- might not match. In this case, this class provides a function to recover.
+    A Monad without a MonadFail instance may only be used in conjunction with pattern that always match, such as newtypes, tuples, data types with only a single data constructor, and irrefutable patterns (~pat).
+    Instances of MonadFail should satisfy the following law: fail s should be a left zero for >>=,
+    -}
+    class Monad m => MonadFail m where
+        fail :: string -> m a
+    Law(s):
+        1) fail s >>= f  =  fail s
+    1) instance MonadFail Maybe where
+        fail _ = Nothing
+    2) instance MonadFail [] where
+        fail _ = []
+    3) (made up by me I guess)
+       instance MonadFail (Either string) where
+        fail str = Left str
+
+
+2) MonadError -- https://downloads.haskell.org/~ghc/latest/docs/html/libraries/mtl-2.2.2/Control-Monad-Except.html
+    class (Monad m) => MonadError e m | m -> e where
+    -- | Is used within a monadic computation to begin exception processing.
+    throwError :: e -> m a
+    {- |
+    A handler function to handle previous errors and return to normal execution.
+    A common idiom is:
+    do { action1; action2; action3 } `catchError` handler
+    where the @action@ functions can call 'throwError'.
+    Note that @handler@ and the do-block must have the same return type.
+    -}
+    catchError :: m a -> (e -> m a) -> m a
+
+    1) instance MonadError () Maybe where
+        throwError () = Nothing
+        catchError Nothing f = f ()
+        catchError x _       = x
+    2) instance MonadError e (Either e) where
+        throwError e = Left e
+        catchError (Left e) f = f e
+        catchError x        _ = x

@@ -1,0 +1,140 @@
+﻿----------------------------------------------------------------
+//let a : System.IObservable<int> = failwith ""
+//let b = a |> Observable.map id |> Observable.merge a
+
+
+----------------------------------------------------------------
+        ////////[<CustomOperation("zip",IsLikeZip=true)>] // requires Yield and For, and is basically ApplicativeDo: maybe { zip a in ma; zip b in mb; zip c in mc; yield f a b c }
+        ////////member inline _.Zip(a, b, f) = map2 f a b
+        ////////member _.Yield x = Just x
+        ////////member inline _.For(m, f) = bind f m
+            
+        //////type MaybeQBuilder() =
+        //////    member inline _.For(m, n, (f: ^a -> ^b -> ^c)) : Maybe< ^c> = map2 f m n
+        //////    member inline _.For(m, n, o, (f: ^a -> ^b -> ^c -> ^d)) : Maybe< ^d> = map3 f m n o
+        //////    member inline _.For(m, n, o, p, (f: ^a -> ^b -> ^c -> ^d -> ^e)) : Maybe< ^e> = map4 f m n o p
+        //////    member _.Yield m : Maybe<'a> = Just m
+        //////    member _.Return(x: 'a) = Just x
+        //////    member _.ReturnFrom m : Maybe<'a> = m
+        //////    member _.Zero() = Just ()
+        //////    [<CustomOperation("map2", IsLikeZip=true)>]
+        //////    member inline _.Map2(first, second, f) = map2 f first second
+        //////    [<CustomOperation("map3", IsLikeZip=true)>]
+        //////    member inline _.Map3(first, second, third, f) = map3 f first second third
+        //////    [<CustomOperation("map4", IsLikeZip=true)>]
+        //////    member inline _.Map4(first, second, third, fourth, f) = map4 f first second third fourth
+        //////    //[<CustomOperation("where", MaintainsVariableSpaceUsingBind=true)>]
+        //////    //member inline _.Where(m: Maybe< ^a>, [<ProjectionParameter>] p) =
+        //////    //    match m with
+        //////    //    | Nothing -> Nothing
+        //////    //    | Just a  -> if p a then m else Nothing
+        //////    //[<CustomOperation("select", MaintainsVariableSpace=true)>]
+        //////    //member inline _.Select(m: Maybe< ^a>, [<ProjectionParameter>] f) = map f m
+        //////    //[<CustomOperation("join",MaintainsVariableSpaceUsingBind=true,AllowIntoPattern=true)>]//,IsLikeZip=true)>]
+        //////    //member inline _.Join(xs: option<_>, ys:option<_>, (*[<ProjectionParameter>]*) p, f) =
+        //////    //    match xs, ys with
+        //////    //    | None, _ | _, None -> None
+        //////    //    | Some a, Some b    -> if p a b then So//me (f a b) else None
+        //////    //[<CustomOperation("zip",IsLikeZip=true)>] // requires Yield and For, and is basically ApplicativeDo: maybe { zip a in ma; zip b in mb; zip c in mc; yield f a b c }
+        //////    //member inline _.Zip(a, b, f) = Option.map2 f a b
+            
+            
+        ///////  -- supposedly for Joinad syntax, doesnt work
+        //member _.Merge(v1, v2) = 
+        //    match v1, v2 with
+        //    | Just a, Just b -> Just (a, b)
+        //    | _ -> Nothing
+        //  /// Return the first option that contains a value
+        //  member _.Choose(v1, v2) = 
+        //    match v1 with 
+        //    | Just(v1) -> Just(v1) 
+        //    | _ -> v2
+        //  /// Represents a failed computation
+        //  member _.Fail() = Nothing
+            
+        ////////// Creating & executing delayed computations
+        ////////member inline _.Delay(f) : ^b = f ()
+        ////////member inline _.Run(f) : ^a = f
+
+////////        type MaybeMonoid() =
+////////            member _.Yield x = Just x
+////////            member _.YieldFrom m : Maybe<_> = m
+////////            member inline _.Combine(x, y) = printfn "combining"; match x, y with Just a, Just b -> Just (a + b) | Nothing, _ -> y | _, Nothing -> x
+////////            member _.Zero() = Nothing
+////////            member inline _.Delay f = f ()
+
+////////let maybeMonoid = Workflow.MaybeMonoid()
+
+
+////////let x =
+////////    maybeMonoid {
+////////        yield! Nothing
+////////        yield "1"
+////////        yield "2"
+////////        yield! Nothing
+////////        yield! Just "3"
+////////    }
+
+
+----------------------------------------------------------------
+//////////////////////// This is for future work, possibly in Prelude
+////////////////////////https://gist.github.com/jbtule/8477768#file-nullcoalesce-fs
+//////////////////////type NullCoalesce =  
+        
+//////////////////////    // Note: a ?? b => a when a: not null, b otherwise
+//////////////////////    // It short circuits if a is not null, thus the use of the Lazy type below.
+
+//////////////////////    // works, but just adds a default arg though (orElseWith)
+//////////////////////    static member Coalesce(a: 'a option, b: 'a Lazy) = 
+//////////////////////        match a with Some a -> a | _ -> b.Value
+
+//////////////////////    // works, but for Option/Maybe it's `<|>` | `orElse`
+//////////////////////    static member Coalesce(a: 'a option, b: 'a option) =
+//////////////////////        match a with Some _ -> a | _ -> b
+
+//////////////////////    // works, but just Option.toNullable
+//////////////////////    static member Coalesce(a: 'a option, b: System.Nullable<'a>) =
+//////////////////////        match a with Some _ -> a | None -> if b.HasValue then Some (b.Value) else a
+
+//////////////////////    // works, but just adds a default arg though
+//////////////////////    static member Coalesce(a: 'a System.Nullable, b: 'a Lazy) = 
+//////////////////////        if a.HasValue then a.Value else b.Value
+
+//////////////////////    // works, but just changes a nullable to an option (ie `ofNullable`)
+//////////////////////    static member Coalesce(a: 'a System.Nullable, b: 'a option) = 
+//////////////////////        if a.HasValue then a else match b with Some b -> System.Nullable<'a>(b) | None -> System.Nullable<'a>()
+
+//////////////////////    // works, but just adds a default arg though. almost exactly the C# version though.
+//////////////////////    static member Coalesce(a: 'a, b: 'a Lazy) : 'a when 'a: null = 
+//////////////////////        if isNull a then b.Value else a
+
+//////////////////////    // works like the C#, but doesn't short circuit.
+//////////////////////    static member Coalesce(a: 'a, b: 'a) : 'a when 'a: null = 
+//////////////////////        if isNull a then b else a
+
+//////////////////////    // works, just a potential default value though
+//////////////////////    static member Coalesce(a: 'a, b: 'a option) : 'a when 'a: null = 
+//////////////////////        match a, b with
+//////////////////////        | null, Some b -> b
+//////////////////////        | a, _         -> a
+
+//////////////////////    // works, just a potential default value though
+//////////////////////    static member Coalesce(a: 'a, b: 'a voption) : 'a when 'a: null = 
+//////////////////////        match a, b with
+//////////////////////        | null, ValueSome b -> b
+//////////////////////        | a, _              -> a
+
+//////////////////////    // works, but just like Option.ofObj but for Nullables -- except this DOESN'T work for objects -- Nullable only can hold VALUE TYPES.
+//////////////////////    static member Coalesce(a: 'a, b: 'a System.Nullable) : System.Nullable<'a> when 'a: null = 
+//////////////////////        if isNull a then
+//////////////////////            if b.HasValue then b
+//////////////////////            else System.Nullable<'a>()
+//////////////////////        else System.Nullable<'a>(a)
+
+//////////////////////let inline internal nullCoalesceHelper< ^t, ^a, ^b, ^c when (^t or ^a) : (static member Coalesce : ^a * ^b -> ^c)> a b = 
+//////////////////////        // calling the statically inferred member
+//////////////////////        ((^t or ^a) : (static member Coalesce : ^a * ^b -> ^c) (a, b))
+
+//////////////////////let inline (|?) a b = nullCoalesceHelper<NullCoalesce, _, _, _> a b
+
+//////////////////////let x = [|1|] |? (obj() :?> int[])

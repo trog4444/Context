@@ -1,0 +1,435 @@
+﻿-- Numbering: major.minor[.maintenance[.build]]
+
+Review notes!
+
+*Note: While operators like (+) dont transfer from F# to C#, functions like Semigroup.append
+    which is BASED on the (+) on the underlying type DO work in C#!
+    ->! BUT this is done 'dynamically' - code will compile even when 'append' should fail (eg no (+) operator supported)
+    ->? maybe mark as no good or unsafe for interop?
+
+ToDo:
+    ! Replace all Monoid and Semigroup usages with (+) and Zero (see Maybe)
+    ? add map3 to all Applicatives? So far, I've added Select3 to Linq FWIW.
+    ! Add [andthen, sequence_, traverse_(for_?)] to types where it may be useful:
+        * 2020-06-29
+            ! State: added [andthen, sequence_, traverse_] & removed inline from andthen
+    * Add Semigroup ( + )/Append static member to Tagged
+    ! Remove/Add [<CompiledName("Unit")>] &| [<CompiledName("Empty")>] &? [<CompiledName("Guard")>] where applicable:
+        * [Cont (unit), Either (unit), Maybe (all), State (unit)]
+    ? Test if Cont.shift / reset need to be inlined or not. shift probably as it takes a function, but 
+        less sure on reset as it does (just a continuation...). It really depends on how often each is called in a typical use-case.
+    ! Remove CompiledNames for F# functions, add static operators as applicable to types with CompiledNames.
+        * Note: the operators use a flipped operator order than the "named F# functions", so this is important for interop.
+    ? Adjust naming for Monoids, Alternatives, and MonadPlus's? append, sum, concat, et al seem a bit 'off'
+    ? Add an exception and/or warning to any function that might break when called from non-F# (like Semigroup.append utilizing type constraints)
+    ! revise XML comments to look better (e.g. replace ' with `, or remove entirely)
+    !? add 'when_' Applicative. We'll see if this is useful. Considering F# allows inline if-statements in computation expressions, it may be pointless
+        maybe one attempt at an example: state { ... do! when_ ``need to update state`` (lazy (modify f)) ... }
+        for Eithers, it can act as a "guard" function, where the 'expr' can be a 'Left e'
+
+
+2020-10-12  %   >   commit
+    ! Updated README
+    ! Updated some arg names. Only impact is on interop code that uses arg names in calling.
+    ! Added text file to keep track of functions to consider
+        ! Removed code (mostly was commented out but some was live) that fits these categories
+            [Maybe: foldlM, foldrM]
+    * Rearranged order of functions in some Primitive locations and other minor changes.
+        [Cont, Either, Maybe, Reader, *SKIP RWI*, State, Tagged, Writer]
+    * Added fromLeft and fromRight to Either (from Haskell).
+    -- ! Added CompiledName(Append) to pre-existing ( + ) operator on Reader.
+    ! Added 'asks' to Reader (same as asks=reader from Haskell.ReaderT. Here, it's main purpose is for interop (it takes a System.Func instead of an FSharpFunc)).
+        same with 'stateful' (in Haskell: state) for State
+    ! In State => removed SVPair type in favor of simple struct tuple (with state in fst).
+    * Added mapWriter and write to Writer.
+    * Added XML comments to Context.Linq based on their equivalent functions in Context.Base
+
+
+2020-10-11
+    ! edited Cont.traverse to use a helper mutually-recursive function with the 'go' function
+        so that the '>>' composition function isn't called/inlined(?) as often
+    ? made Cont.shift not inline -- warrants testing
+    ?! There was a problem found with 'unit' being inlined or not in Cont. If not inlined, StackOverflows could occur in Debug mode.
+        Ideally we want as few inlined functions as possible, so we may just have to put warnings about corner cases.
+            Note: replacing 'unit x' with 'Cont (fun k -> k x)' did fix the issue, but it isn't intuitive.
+    ! made getCC more performant and also allowed it to be non-inlined
+        *Technique was to move the usage of 'callCC' from the definition of 'getCC'
+        and put it in directly. Performance was tested and it improved, and no longer needs to be inlined.
+        ? > could this technique be employed in other, similar cases?
+    !? changed Maybe back to use (+) instead of (<+>) for Monoid.
+        it was changed for a reason but idk it
+        It no longer works in C#. The CompiledName for it was callable from C# earlier today. I changed the CompiledName to 'Append' anyway. Note that 'append' does work in C#, but its arguments are flipped.
+      &> Same for Either
+    * Changed the algorithm for 'sum' in Maybe to use a 'foldr'. It is more efficient in some cases.. maybe? Like list concatenation. Idk about strings.
+    ! Removed CompiledNames from F# functions for consistency. I did leave Unit.
+    !? commented out a lot of crap in Maybe module, as well as added some more crap unrelated to Maybe.
+    ! changed 'orElseWith' to not be inline, because the functions will rarely be called, and if so, only once
+
+
+
+2020-07-16
+    ! changed (+) to (<+>) in Maybe because (+) wasn't working (anymore?). Compiled name changed to "Add".
+    -^ and to Either
+2020-07-09
+    * added <|> operator to Maybe and Either. Added Empty to Maybe.
+2020-07-06
+    * "consolidated" Linq methods (more overloads, eg Select = map and bimap, Zip = zip and map2) and removed some methods that don't directly target the given type (Traverse et al)
+    * changed pattern-matching so "base-cases" appear on top always
+    ! renamed mconcat (for Monoid) to 'sum'
+        * note that concat = foldr (<|>) empty
+        &           sum    = foldr (+)   zero, which is flipped, name-wise from what I have. my 'concat' should be 'asum' and my 'sum' should be mconcat with mappend and mempty
+    ! removed 'repeat' from Monoid
+    ! modified traverse and sequence for Cont
+    * Added more to Linq namespace and .fsi files for all implemented Linq types
+    ! Updated README to explain how SOME properties, which aren't present in F#, show up in C# and other .NET stuff and should be avoided (usually)
+2020-07-05
+    * undid Compiled name for Guard, as it's best use is with F# computation expression syntax. There is no .NET Query ewquivalent to do! guard ...
+    * added Tests folder to Base for future use
+    * began adding overloads for function types (State, Reader, Cont, etc) for better interop
+    * moved 'guard' to Alternative from MonadPlus
+    ! changed RWS to use (+) and Zero for it's Semigroup usage
+2020-07-02
+    * Added FsTesting Project since I can't use a script file apparently from Linq to Base
+    ! Context.Data renamed to Context.Base
+    ! All Contexts in base now moved to .Base with Linq methods removed
+        -> ! removed type name from namespace in .Base
+    ! .LINQ renamed to .Linq
+    ! Extension types renamed to Linq* so there are no naming conflicts
+2020-07-01
+    'Cont
+        ! Made Cont-Linq
+2020-06-30
+    'Maybe:
+        ! removed 'justs' function from Maybe (just use 'mapMaybes id' ...)
+        * added 'fromMaybe' function because it's in Haskell
+        ! changed mapMaybes to take a flexible seq type
+        *? added ofList (actually ofSeq) and toList because they're in Haskell (Data.Maybe)
+    'Cont:
+        ! began moving to new system
+        ! removed inline from evalCont (and maybe runCont?)
+2020-06-29
+    *State:
+        ! began doing same changes as previous
+        ! removed inline from:
+            [runState, evalState, execState, sequence]
+        ! added #/flexible types to sources on sequence and traverse
+        ! removed 'fromFunc' function (was under 'Interop': this will be done in Extensions lib)
+    *! began changing Monoid and Semigroup for (see ToDo list):
+            [Maybe, Either, Reader]
+    *Reader:
+        ! commented out all Cat and Arrow portions for now
+
+---------come back to this-------------
+2020-06-28
+    *Either:
+        * removed the "Seq.cache" from Either.partition |> user can cache if they want.
+    *Maybe:
+        ! commented out 'toNullable', it may be best left for interop since the main
+            is now solely focused on F#
+        ! added CompiledName attr to ofObj and ofNullable to make them CamelCase for interop
+    ! for union types, started adding try{Case} functions with outref params
+        [Maybe, Either]
+    ! began renaming things like 'onX' to 'ifX' (caseof, .Match, etc)
+        [Maybe?, Either?]
+    --? GroupBy => for Linq operations, really only used on Enumerables (aka semi-Foldables)
+        --? how can this be used and WHERE ??
+    !! began moving 'filter' above 'join' for MonadPlus
+        done: [Maybe]
+    ! (x)Foldables: started renaming 't' and 'ta' to 'source' [Maybe?, Either?]
+    !! stared migration of "Data" folder (Linq and interop methods) to new project file (Context.NET)
+        -Notes:
+            |purpose is to reduce size of F# dll and make the interop opt-in and better
+            |some items have been kept (empty, guard, unit, etc) because they dont fit
+                as Extension methods, but are useful in C# et al. For better Interop, they have
+                been given CompiledName attributed to reflect C# style naming
+            |also moves type definition in same file as functions, so REPL is easier to use
+                instead of needing a Test.fsx file
+        [Maybe?, Either?]
+        Interop Functions:
+        'Functor
+            * Select == map
+        'Applicative
+            ? Unit <- unit from original file and compiled with name Unit
+            * Apply (no overloads)
+            * Select2 == map2 
+            * Select3 == map3
+            ? AndThen (or just Then?) == andthen
+                >> maybe for some types, but several aren't "interesting"
+            * Zip ~= map2 (fun x y -> struct (x, y))
+                ! only for truly Zippable types, map2 is not always the same
+            *? Join == map2, (!) but MAY utilize the bool producing Funcs where it is applicable (seqs, Maybe, etc)
+            * Sequence == sequence
+            * Traverse == traverse
+        'Alternative
+            ? Empty <- empty from original file and compiled with name Empty
+            * OrElse (with overload) == orElse where overload act as orElseWith
+            * Concat == concat *Note: only applies to TRUE Alternatives with an Empty element
+        'Monad
+            * SelectMany == bind, plus SelectMany overload needed for nested Linq operations == (bind (\x -> map (f x) (p x)))
+            * Flatten = flatten
+            ??? Should these be in?
+                ? foldlM, foldrM, fixM ? -> probably leave out fixM because silly CSharpers can't handle recursion.
+        'MonadPlus
+            * Guard <- guard from original file and compiled with name Guard
+            * Where == filter
+            ? GroupJoin (w/o resultSelector overload) == join(not Join from Extensions) (like Applicative Extension Join, but ALWAYS uses the key generating function)
+            ? GroupJoin (w resultSelector overload) == join + extra work on result yielding Linq query options???
+        'Foldable
+            * Aggregate ==
+                1: fold(left)
+                2: fold(left) with extra argument on result to match Linq overload
+                3: mapFold (not from Linq, but useful anyway)
+            (!) AggregateBack aka foldr or foldBack should be used where it is different from fold/foldl
+        'Bifoldable
+            * Aggregate ==
+                'More overloads, just adds extra funcs to handle extra cases
+
+
+
+
+
+2020-04-29
+    -- made flatten in Reader non-inlined
+    -- Added the text: "*Beta*" to package info to indicate it's not really ready for full use.
+        -- "final" version will be 2.0.0.0
+
+2020-04-23
+    !- removed some commented out code in some places, need to do it in others
+        ^ eg: TryWith, Using, etc in MaybeBuilder
+    ?- added (as comments) 'where' and 'select' methods to MaybeBuilder
+        ^ can do to any MonadPlus/Functor types
+        ^ can also add some other methods
+        ^ test possible ApplicativeDo builder vs Monad builder for performance
+        > see Test.fsx for example, including ZipLike
+    -- changed State.flatten to NOT be inline
+    ?- changed Maybe.Monoid.mconcat to use foldBack (with flipped append)
+        ^ because 'append' is USUALLY more performant with this associativity (see [a] ++ [a])
+        !? test if this changes behavior in the presence of 'effects'
+
+
+2020-03-27  commit
+
+
+%   >   1.2.0.0
+2020-03-26
+    -- refinement of 'sequence' functions
+        * removal of inline
+        [Either, Maybe, Tagged]
+    -- change seq to #seq in some functions
+        [Either, Maybe, Reader, Tagged]
+    -- removed Using from all Builders
+    -- moved empty from Monoid to Alternative
+        [Maybe]
+    -- renamed tag to tagged (Tagged Builder)
+
+
+%   >   1.1.3.0
+2020-03-22
+    -- moved sln folder from 'Source' folder to output to make it more 'portable'
+        -- ie so users can view/modify the actual source instead relying entirely on the .bin file
+    -- commented out 'quitCC' in Cont module (it doesnt seem needed and can lead to confusing situations. It's also simple enough that it could be done quickly by anyone who needed it.
+
+
+%   >   1.1.2.0
+2020-01-02
+    -- added [proxy, constrain, typeOf] to Attr
+    -- renamed Attr to Tagged a'la Haskell
+        -- and renamed lots of functions
+    -- added Bifunctor instance
+
+%   >   1.1.1.0
+2019-12-29
+    -- made Using method concrete rather than abstract
+    -- made [Return, ReturnFrom, Zero] non-inlined as applicable
+    -- commented out MOST isomorphisms from Either and Maybe
+        -- they can be achieved via caseof or fold(s)
+    -- commented out [foldl, foldr] everywhere - the laziness can be replicated with other folds
+        -- the lazy versions are not idiomatic F#?
+
+% >     1.1.0.2
+2019-12-23
+    -- removed swap from Either
+    -- for fixM, replaced Either with Choice (swapping order of type args)
+
+% >     1.1.0.1
+2019-12-20
+    -- removed 'read' from [RWS, Writer]
+        & changed 'listens' to (w -> a -> b) from (w -> b) => (b, a)
+    -- commented out 'andthen' from all types
+    -- changed [Using, TryWith, TryFinally] to be abstract with default implementations
+        & commented out [TryWith, TryFinally] BECAUSE they need 'Delay' to work
+
+2019-12-18
+    -- removed Nix method from Maybe
+    -- removed ContinueWith from State
+    -- removed (commented out) all `cache` functions
+    -- removed 'nil' from Maybe in favor of just having 'empty'
+    -- commented out 'recur' function [Either, Maybe]
+    -- commented out 'flip' from Reader
+
+*** Commit
+2019-12-18
+    -- Removed Operators file
+    -- Updated version to 1.1.0.0
+    -- Created Release file to put in git
+
+*** Commit
+2019-12-11
+    -- removing several unneeded inlines (dll size :: 531kB -> 517kB)
+    -- renamed 'make' to 'fromFunc'
+    -- removed 'mapSecond' from Bifunctor (since it == map)
+    -- removed several functions from Reader (curry, register, etc)
+    -- removed several 'incomplete' types -- they will not be included at this time
+    -- for now, set Operators to not compile
+    -- removed Comonad instance of Cont (*and Reader) including the .ContinueWith method
+    -- updated version to 1.0.3
+
+2019-12-10
+    -- got rid of mapr from Profunctor, since it = map
+    -- got rid of ArrowApply (app)
+    -- made 'unit' NOT-inline [Cont, State] and may need to do same for other types
+        -- because it makes using unit in NON-inline functions not work
+
+2019-12-08
+    -- removed 'Eff e' from Pipe
+2019-12-04
+    -- added 'Pipe' => none compiled|will move to Sequences lib along with Stream
+
+2019-12-02
+    -- renamed 'nix' to 'nil'
+
+2019-11-29
+    -- removed [Profunctor, Cat, Arrow(s)] from RWS (type params dont align like Haskell
+        , and can use 'withRWS' and Bifunctor for same effect.
+    -- removed 'when_' from Alternative (Maybe) because it is ~= if then else
+    -- began adding Thunk type
+
+2019-11-25
+    -- added [Cat, Arrow] to RWS
+        * Cat is missing identity (it can only exist as a function due to static constraints)
+
+2019-11-23
+    -- removed 'Traversable' instance; put sequence and traverse into Applicative
+    -- added more to RWS
+
+2019-11-22
+    -- began adding RWS
+    -- updated README to explain what typeclasses are implemented and some notes
+        [parameter orders do not match Haskell, MonadPlus uses Alternative instance for laws]
+    -- Removed CompiledName attribute from all functions
+
+*** Commit
+2019-11-21
+    -- added Biapplicative to Writer (note: NOT adding bitraverse/bisequence)
+    -- updated ReadMe
+
+*** Commit
+2019-11-18
+    -- added Bifoldable MEMBERS to [Either, Writer]
+    -- renamed .Bimap and .Dimap to .BiSelect and .DiSelect
+    -- added .Select and .BiSelect to Writer
+
+2019-11-15
+    -- renamed 1st overload of '.Join' to '.Zip' to better match with C# (Linq.Zip is == map2, not zipWith)
+    -- removed GroupBy from Maybe (it wasnt really useful...)
+    -- split type declarations into a separate file(&fsi) instead of 1 'Type' file for ease-of-use
+        have methods for
+            [Attr, Cont, Either, Maybe, Reader, State]
+    -? Changed Maybe.Join method to basically (in C# query syntax) combine map2 and join
+
+2019-11-13
+    -- removed recM and changed fixM to take a `Either a (m a)` to combine fixM & recM into 1 function
+    -- moved all types into a separate Types file (so that all functions can accessed by all other types)
+    -- renamed case [Either, Maybe] to caseof (because 'case' appears in C# as @case)
+    -- renamed Cont.exit to Cont.quitCC because 'exit' is already taken from F#..Operators
+
+2019-11-12
+    -- added recM to all
+        [fixM :: Monad m => ((a -> m b) -> (m a -> m b) -> a -> m b) -> a   -> m b
+         recM :: Monad m => ((a -> m b) -> (m a -> m b) -> a -> m b) -> m a -> m b]
+    -- reset names of Linq methods to Linq names (Select instead of Map etc)
+    -- added =>= and =<= operators
+    -- in Arrow.Choice :> renamed feed1 and feed2 to feedl and feedr (and changed Choice to Either)
+    -- added register function to Reader (to register events/callbacks)
+
+2019-11-11
+    -- renamed loopM to fixM
+    -- removed compiled name attribute from unit
+    -- added orElseWith as a lazy version of orElse [Either, Maybe]
+    -- renamed nil to nix (Alternative)
+    -- removed when_ from applicative, changed it to Alternative, and when the condition fails it returns nix (& f a, rather than f ())
+    -- added concat to Alternative (DOES require nix)
+    -- added all (?most) members to Maybe type
+
+2019-11-10
+    -- changed namespace from PTR to Rogz
+    -- changed version to 1.0.2.1 from 1.0.2.0
+    -- added .Match { Action(s) } to [Either, Maybe] for C# interop
+    -- added wAttr to Attr
+    -- removed Comonad loopW (it's just fix/Y)
+    -- finished Writer
+    -- removed concat and concatMap from Foldable
+
+2019-11-08
+    -- finished Either
+    -- removed Foldable from Cont (*commented out)
+    -- renamed zero to nil (Alternative)
+    -- renamed mtimes to repeat
+    -- fixed [append mconcat repeat] methods of [*Either Maybe]
+    -- added Attr
+    !! started Writer (need to do .fsi)
+
+2019-11-07
+    -- finished Reader
+    -- optimized loopM for [Reader, State]
+    ?? renamed Invariant to Attributed
+    -- added Semigroup.append to all (currently) applicable types
+    -- renamed Bifunctor stuff to mapFirst & mapSecond
+    -- renamed Profunctor stuff to mapl & mapr
+
+2019-11-06
+    -- added Reader
+
+2019-11-05
+    -- added recur to Maybe
+    -- added Typeclass txt file to act as template/guideline
+    -- moved loopM, recur, fail here !!! to a 'Loop' "typeclass"
+
+2019-11-03
+    -- added recur to Either
+    -- added (but not completed) [toChoice, ofChoice, toResult, ofResult] to Either
+
+2019-11-01
+    -- added State
+    -- added 'Fn' to incomplete
+    -- added Operators (changed Select2 to Join) (added Where = ?>)
+
+2019-10-29
+    -- stylistic adjustments (xml doc, spacing, etc, no actual functional changes)
+    -- removed scan and scanBack
+    -- added concat and concatMap to Maybe
+    -- removed Remove Compiled Name attribute from most items, as they are not extension methods and not "good" for interop
+        -- may change
+
+2019-10-26
+    -- added zero(mzero) to Maybe
+    -- added append (Semigroup) to Maybe
+    -- moved empty to Monoid and zero to Alternative
+
+2019-10-25
+    -- Added to Cont
+    -- generalized type of fail here !!!
+    -- optimized mloop ?
+
+2019-10-24
+    -- Added Cont
+
+2019-10-19
+    -- added guard to Maybe
+    -- created Either
+
+2019-10-18
+    -- filled out most Maybe funcs
+
+2019-10-17
+    -- (re)created sln with new version of VS and .NET

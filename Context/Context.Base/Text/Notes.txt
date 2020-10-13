@@ -1,0 +1,41 @@
+﻿!!!!
+1) Add 'where' clause to all MonadPlus types? select? etc
+2) Remove commented out code in Builders and some functions
+3) MAYBE add a 'Cast' or 'Iso' static type to types with Isomorphisms (Maybe ~~ Option, Nullable) & (Either ~~ Choice, Result)
+    ! static type is for method/function name overloading only
+4) Review if some types actually NEED 'newtype' wrappers
+    ^ the 'this.Method's are only really for C# interop, and some F# heavy types like
+      Cont and RWS etc wont really be used in C# without heavy modification, and the struct
+      wrapper does add overhead.
+5) fixM SHOULD (in theory) have this sig: Monad m => ((a -> m b) -> a -> m b) -> a -> m b
+    ^ The extra (m a -> m b) addition, as well as the input being Either a (m a),
+    - are only useful for carrying 'extra' information (like the log of a Writer, or States state)
+    , but is overhead for simple types like Maybe and Either
+    >! Maybe have 'fix' and 'fix1' (bifix?)
+    -^ note that 
+
+
+
+All union-types should have a this.Match method for interop-pattern-matching (overloads that accept Funcs and Actions).
+    -- for F#, a function named 'case' can be made that takes FSharpFuncs
+^% unless single-case
+^% if single-case is a function, provide a 'Make' function that accepts a System.Func
+All union-types should have this.TryX methods for more specialized interop (requiring no Func or Action objects)
+    -> this can also be used in F# with pattern matching on [<Out>] params like on dict.TryGetValue(key)
+
+
+All Functors, Applicatives, and Monads should implement Linq functions
+    -- Select, Join*, SelectManyx2, Where, etc
+        * Join can act as map2 AND monadplus `join`
+
+All record types should have 's.With' methods to simulate record-with syntax for interop
+
+
+possible Foldable functions:
+    /// <summary>The concatenation of all the elements of a container of sequences.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the sequence is null.</exception>
+    val inline concat: ta -> ^a seq
+
+    /// <summary>Map a function over all the elements of a container and concatenate the resulting sequences.</summary>
+    /// <exception cref="System.ArgumentNullException">Thrown when the sequence is null.</exception>
+    val inline concatMap: f: (^a -> ^b seq) -> ta -> ^b seq

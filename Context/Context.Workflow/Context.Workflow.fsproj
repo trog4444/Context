@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.txt" />
+    <Compile Include="MaybeQ.fs" />
+    <None Include="TestingQ.fsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Context.Base\Context.Base.fsproj" />
+  </ItemGroup>
+
+</Project>

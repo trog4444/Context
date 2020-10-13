@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "BneM4io/6bEAwvEKr0bz/cxgLQIyuXjuq/T+M0s4RRonZ6tB/YXWTUsRR78XVDnlv7m9dgm2/dv1Oi12+KodaA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\FsTesting\\FsTesting.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\TylerRogers\\.nuget\\packages\\fsharp.core\\4.7.2\\fsharp.core.4.7.2.nupkg.sha512"
+  ],
+  "logs": []
+}

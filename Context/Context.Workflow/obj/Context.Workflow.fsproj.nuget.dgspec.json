@@ -1,0 +1,120 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Workflow\\Context.Workflow.fsproj": {}
+  },
+  "projects": {
+    "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Base\\Context.Base.fsproj": {
+      "version": "2.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Base\\Context.Base.fsproj",
+        "projectName": "Context.Base",
+        "projectPath": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Base\\Context.Base.fsproj",
+        "packagesPath": "C:\\Users\\TylerRogers\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Base\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\TylerRogers\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "FSharp.Core": {
+              "target": "Package",
+              "version": "[4.7.2, )",
+              "generatePathProperty": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Workflow\\Context.Workflow.fsproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Workflow\\Context.Workflow.fsproj",
+        "projectName": "Context.Workflow",
+        "projectPath": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Workflow\\Context.Workflow.fsproj",
+        "packagesPath": "C:\\Users\\TylerRogers\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Workflow\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\TylerRogers\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {
+              "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Base\\Context.Base.fsproj": {
+                "projectPath": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Base\\Context.Base.fsproj"
+              }
+            }
+          }
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "FSharp.Core": {
+              "target": "Package",
+              "version": "[4.7.2, )",
+              "generatePathProperty": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

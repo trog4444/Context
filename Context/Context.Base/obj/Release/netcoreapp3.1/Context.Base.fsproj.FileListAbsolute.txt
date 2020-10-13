@@ -1,0 +1,8 @@
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\bin\Release\netcoreapp3.1\Context.Base.XML
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\bin\Release\netcoreapp3.1\Context.Base.deps.json
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\bin\Release\netcoreapp3.1\Context.Base.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\bin\Release\netcoreapp3.1\Context.Base.pdb
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\obj\Release\netcoreapp3.1\Context.Base.AssemblyInfoInputs.cache
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\obj\Release\netcoreapp3.1\Context.Base.AssemblyInfo.fs
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\obj\Release\netcoreapp3.1\Context.Base.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Base\obj\Release\netcoreapp3.1\Context.Base.pdb

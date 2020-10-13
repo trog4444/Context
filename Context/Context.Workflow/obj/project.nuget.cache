@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "IRGI31lABYtEaBr2ffTHAWLSJrQM61Cd1FKm6UvDDxMuw8HJCRKaf3EoJMz5yYUet7Om0wJbJEWPoQqk5Xngng==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\TylerRogers\\Documents\\GitHub\\Context\\Context\\Context.Workflow\\Context.Workflow.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\TylerRogers\\.nuget\\packages\\fsharp.core\\4.7.2\\fsharp.core.4.7.2.nupkg.sha512"
+  ],
+  "logs": []
+}

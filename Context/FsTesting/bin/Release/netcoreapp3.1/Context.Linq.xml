@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Context.Linq</name></assembly>
+<members>
+<member name="M:Rogz.Context.Linq.LinqCont.Zip``4(Rogz.Context.Base.Cont{``0,``1},Rogz.Context.Base.Cont{``0,``2},System.Func{``1,``2,``3})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqCont.Zip``3(Rogz.Context.Base.Cont{``0,``1},Rogz.Context.Base.Cont{``0,``2})">
+ <summary>Merge the values of two contexts into a single pair.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqCont.SelectMany``4(Rogz.Context.Base.Cont{``0,``1},System.Func{``1,Rogz.Context.Base.Cont{``0,``2}},System.Func{``1,``2,``3})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqCont.SelectMany``3(Rogz.Context.Base.Cont{``0,``1},System.Func{``1,Rogz.Context.Base.Cont{``0,``2}})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqCont.Select``3(Rogz.Context.Base.Cont{``0,``1},System.Func{``1,``2})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqCont.Join``5(Rogz.Context.Base.Cont{``0,``1},Rogz.Context.Base.Cont{``0,``2},System.Func{``1,``3},System.Func{``2,``3},System.Func{``1,``2,``4})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqCont.Flatten``2(Rogz.Context.Base.Cont{``0,Rogz.Context.Base.Cont{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqCont.Apply``3(Rogz.Context.Base.Cont{``0,System.Func{``1,``2}},Rogz.Context.Base.Cont{``0,``1})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Zip``4(Rogz.Context.Base.Either{``0,``1},Rogz.Context.Base.Either{``0,``2},System.Func{``1,``2,``3})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Zip``3(Rogz.Context.Base.Either{``0,``1},Rogz.Context.Base.Either{``0,``2})">
+ <summary>Merge the values of two contexts into a single pair.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.SelectMany``4(Rogz.Context.Base.Either{``0,``1},System.Func{``1,Rogz.Context.Base.Either{``0,``2}},System.Func{``1,``2,``3})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.SelectMany``3(Rogz.Context.Base.Either{``0,``1},System.Func{``1,Rogz.Context.Base.Either{``0,``2}})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Select``3(Rogz.Context.Base.Either{``0,``1},System.Func{``0,``2})">
+ <summary>Map over the first value, leaving the second value as-is.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Select``4(Rogz.Context.Base.Either{``0,``1},System.Func{``0,``2},System.Func{``1,``3})">
+ <summary>Map over both arguments covariantly.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Select``3(Rogz.Context.Base.Either{``0,``1},System.Func{``1,``2})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.OrElse``2(Rogz.Context.Base.Either{``0,``1},System.Func{Rogz.Context.Base.Either{``0,``1}})">
+ <summary>An associative operation representing a decision between two structures.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.OrElse``2(Rogz.Context.Base.Either{``0,``1},Rogz.Context.Base.Either{``0,``1})">
+ <summary>An associative operation representing a decision between two structures.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Join``5(Rogz.Context.Base.Either{``0,``1},Rogz.Context.Base.Either{``0,``2},System.Func{``1,``3},System.Func{``2,``3},System.Func{``1,``2,``4})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Flatten``2(Rogz.Context.Base.Either{``0,Rogz.Context.Base.Either{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Apply``3(Rogz.Context.Base.Either{``0,System.Func{``1,``2}},Rogz.Context.Base.Either{``0,``1})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Aggregate``5(Rogz.Context.Base.Either{``0,``1},``2,System.Func{``2,``0,System.ValueTuple{Rogz.Context.Base.Either{``3,``4},``2}},System.Func{``2,``1,System.ValueTuple{Rogz.Context.Base.Either{``3,``4},``2}})">
+ <summary>Combines the functionality of map and fold, returning the pair of the final context-value and state.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Aggregate``4(Rogz.Context.Base.Either{``0,``1},``2,System.Func{``2,``0,``2},System.Func{``2,``1,``2},System.Func{``2,``3})">
+ <summary>Applies a function to all element(s) of two possible sources, threading an accumulator argument through the computation(s).</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Aggregate``3(Rogz.Context.Base.Either{``0,``1},``2,System.Func{``2,``0,``2},System.Func{``2,``1,``2})">
+ <summary>Applies a function to all element(s) of two possible sources, threading an accumulator argument through the computation(s).</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Aggregate``4(Rogz.Context.Base.Either{``0,``1},``2,System.Func{``2,``1,System.ValueTuple{Rogz.Context.Base.Either{``0,``3},``2}})">
+ <summary>Combines the functionality of map and fold, returning the pair of the final context-value and state.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Aggregate``4(Rogz.Context.Base.Either{``0,``1},``2,System.Func{``2,``1,``2},System.Func{``2,``3})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqEither.Aggregate``3(Rogz.Context.Base.Either{``0,``1},``2,System.Func{``2,``1,``2})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Zip``3(Rogz.Context.Base.Maybe{``0},Rogz.Context.Base.Maybe{``1},System.Func{``0,``1,``2})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Zip``2(Rogz.Context.Base.Maybe{``0},Rogz.Context.Base.Maybe{``1})">
+ <summary>Merge the values of two contexts into a single pair.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Where``1(Rogz.Context.Base.Maybe{``0},System.Func{``0,System.Boolean})">
+ <summary>Generalizes the sequence-based 'filter' function.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.SelectMany``3(Rogz.Context.Base.Maybe{``0},System.Func{``0,Rogz.Context.Base.Maybe{``1}},System.Func{``0,``1,``2})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.SelectMany``2(Rogz.Context.Base.Maybe{``0},System.Func{``0,Rogz.Context.Base.Maybe{``1}})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Select``2(Rogz.Context.Base.Maybe{``0},System.Func{``0,``1})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.OrElse``1(Rogz.Context.Base.Maybe{``0},System.Func{Rogz.Context.Base.Maybe{``0}})">
+ <summary>An associative operation representing a decision between two structures.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.OrElse``1(Rogz.Context.Base.Maybe{``0},Rogz.Context.Base.Maybe{``0})">
+ <summary>An associative operation representing a decision between two structures.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Join``4(Rogz.Context.Base.Maybe{``0},Rogz.Context.Base.Maybe{``1},System.Func{``0,``2},System.Func{``1,``2},System.Func{``0,``1,``3})">
+ <summary>Acts similar to a SQL 'inner join', combining elements of each given monad when the elements satisfy a predicate.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.GroupJoin``4(Rogz.Context.Base.Maybe{``0},Rogz.Context.Base.Maybe{``1},System.Func{``0,``2},System.Func{``1,``2},System.Func{``0,Rogz.Context.Base.Maybe{``1},``3})">
+ <summary>Correlates the element(s) of two sources based on equality of keys and selects the results.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.GroupJoin``3(Rogz.Context.Base.Maybe{``0},Rogz.Context.Base.Maybe{``1},System.Func{``0,``1,System.Boolean},System.Func{``0,``1,``2})">
+ <summary>Acts similar to a SQL 'inner join', combining elements of each given monad when the elements satisfy a predicate.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Flatten``1(Rogz.Context.Base.Maybe{Rogz.Context.Base.Maybe{``0}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Apply``2(Rogz.Context.Base.Maybe{System.Func{``0,``1}},Rogz.Context.Base.Maybe{``0})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Aggregate``3(Rogz.Context.Base.Maybe{``0},``1,System.Func{``1,``0,System.ValueTuple{Rogz.Context.Base.Maybe{``2},``1}})">
+ <summary>Combines the functionality of map and fold, returning the pair of the final context-value and state.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Aggregate``3(Rogz.Context.Base.Maybe{``0},``1,System.Func{``1,``0,``1},System.Func{``1,``2})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqMaybe.Aggregate``2(Rogz.Context.Base.Maybe{``0},``1,System.Func{``1,``0,``1})">
+ <summary>Applies a function to all element(s) of the source, threading an accumulator argument through the computation.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Zip``4(Rogz.Context.Base.Reader{``0,``1},Rogz.Context.Base.Reader{``0,``2},System.Func{``1,``2,``3})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Zip``3(Rogz.Context.Base.Reader{``0,``1},Rogz.Context.Base.Reader{``0,``2})">
+ <summary>Merge the values of two contexts into a single pair.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.SelectMany``4(Rogz.Context.Base.Reader{``0,``1},System.Func{``1,Rogz.Context.Base.Reader{``0,``2}},System.Func{``1,``2,``3})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.SelectMany``3(Rogz.Context.Base.Reader{``0,``1},System.Func{``1,Rogz.Context.Base.Reader{``0,``2}})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Select``3(Rogz.Context.Base.Reader{``0,``1},System.Func{``2,``0})">
+ <summary>Map the first (i.e. 'left') argument contravariantly.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Select``4(Rogz.Context.Base.Reader{``0,``1},System.Func{``2,``0},System.Func{``1,``3})">
+ <summary>Map over both arguments at the same time, the first (i.e. 'left') contravariantly and the second (i.e. 'right') covariantly.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Select``3(Rogz.Context.Base.Reader{``0,``1},System.Func{``1,``2})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Join``5(Rogz.Context.Base.Reader{``0,``1},Rogz.Context.Base.Reader{``0,``2},System.Func{``1,``3},System.Func{``2,``3},System.Func{``1,``2,``4})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Flatten``2(Rogz.Context.Base.Reader{``0,Rogz.Context.Base.Reader{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqReader.Apply``3(Rogz.Context.Base.Reader{``0,System.Func{``1,``2}},Rogz.Context.Base.Reader{``0,``1})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqState.Zip``4(Rogz.Context.Base.State{``0,``1},Rogz.Context.Base.State{``0,``2},System.Func{``1,``2,``3})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqState.SelectMany``4(Rogz.Context.Base.State{``0,``1},System.Func{``1,Rogz.Context.Base.State{``0,``2}},System.Func{``1,``2,``3})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqState.SelectMany``3(Rogz.Context.Base.State{``0,``1},System.Func{``1,Rogz.Context.Base.State{``0,``2}})">
+ <summary>Sequentially compose two contexts, passing any value produced by the first as an argument to the second.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqState.Select``3(Rogz.Context.Base.State{``0,``1},System.Func{``1,``2})">
+ <summary>Lift a function onto a context.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqState.Join``5(Rogz.Context.Base.State{``0,``1},Rogz.Context.Base.State{``0,``2},System.Func{``1,``3},System.Func{``2,``3},System.Func{``1,``2,``4})">
+ <summary>Lift a binary function onto contexts.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqState.Flatten``2(Rogz.Context.Base.State{``0,Rogz.Context.Base.State{``0,``1}})">
+ <summary>Removes one level of context structure, projecting its bound argument into the outer level.</summary>
+</member>
+<member name="M:Rogz.Context.Linq.LinqState.Apply``3(Rogz.Context.Base.State{``0,System.Func{``1,``2}},Rogz.Context.Base.State{``0,``1})">
+ <summary>Sequential application of functions stored within contexts onto values stored within similar contexts.</summary>
+</member>
+</members>
+</doc>

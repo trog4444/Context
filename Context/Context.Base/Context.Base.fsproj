@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Authors>rogz</Authors>
+        <Company>rogz</Company>
+        <Description>Contains types that add embed generic types within some context and operations to use and compose those contexts.</Description>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <PackageReleaseNotes>This project is mostly a simple port of some useful types and functions from category theory, with a heavy influence from Haskell. Additional functions, based on existing F# and .NET core libraries, are also included as applicable. Optimizations were made for F#. Interop with other .NET languages was kept in mind and is easily do-able, but F# is the intended language.</PackageReleaseNotes>
+        <FileVersion>2.0.0.0</FileVersion>
+        <Version>2.0.0</Version>
+        <RunPostBuildEvent>0</RunPostBuildEvent>
+    </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>bin\Release\netcoreapp3.1\Context.Base.XML</DocumentationFile>
+    <WarningLevel>5</WarningLevel>
+    <Tailcalls>true</Tailcalls>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Text\MiscItems_ForOtherProjects.txt" />
+    <None Include="Text\Typeclasses-UtilFunctions-ToConsider.txt" />
+    <None Include="Text\Versioning.txt" />
+    <None Include="Text\Typeclasses.txt" />
+    <None Include="Text\Linq.txt" />
+    <None Include="Text\Notes.txt" />
+    <None Include="Text\Questions.txt" />
+    <None Include="Text\Revisions.txt" />
+    <None Include="Text\To Do.txt" />
+    <Compile Include="Contexts\Cont.fsi" />
+    <Compile Include="Contexts\Cont.fs" />
+    <Compile Include="Contexts\Either.fsi" />
+    <Compile Include="Contexts\Either.fs" />
+    <Compile Include="Contexts\Maybe.fsi" />
+    <Compile Include="Contexts\Maybe.fs" />
+    <Compile Include="Contexts\Reader.fsi" />
+    <Compile Include="Contexts\Reader.fs" />
+    <Compile Include="Contexts\RWS.fsi" />
+    <Compile Include="Contexts\RWS.fs" />
+    <Compile Include="Contexts\State.fsi" />
+    <Compile Include="Contexts\State.fs" />
+    <Compile Include="Contexts\Tagged.fsi" />
+    <Compile Include="Contexts\Tagged.fs" />
+    <Compile Include="Contexts\Writer.fsi" />
+    <Compile Include="Contexts\Writer.fs" />
+    <None Include="Test.fsx" />
+  </ItemGroup>
+
+</Project>

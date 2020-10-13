@@ -1,0 +1,15 @@
+﻿
+
+If you make a breaking change, you need to bump the major version
+If you make backward compatible additions, you need to bump the minor version
+If you make backward and forward compatible changes (basically internal implementation changes or documentation changes) you bump the patch version
+
+
+It also sounds straightforward from the perspective of a package consumer, considering moving from one version to another of a package:
+
+
+If you move to a different major version, your existing code may not work (because everything can change between major versions)
+If you move to a later minor version within the same major version, your code should still work
+If you move to an earlier minor version within the same major version, your existing code may not work
+	(because you may be using something that was introduced in the latest minor version)
+If you move to a later or earlier patch version within the same major/minor version, your code should still work

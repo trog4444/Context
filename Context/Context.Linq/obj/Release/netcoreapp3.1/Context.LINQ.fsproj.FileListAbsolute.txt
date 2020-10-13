@@ -1,0 +1,13 @@
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\bin\Release\netcoreapp3.1\Context.Linq.XML
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\bin\Release\netcoreapp3.1\Context.Linq.deps.json
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\bin\Release\netcoreapp3.1\Context.Linq.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\bin\Release\netcoreapp3.1\Context.Linq.pdb
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\bin\Release\netcoreapp3.1\Context.Base.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\bin\Release\netcoreapp3.1\Context.Base.pdb
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\bin\Release\netcoreapp3.1\Context.Base.xml
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\obj\Release\netcoreapp3.1\Context.Linq.fsprojAssemblyReference.cache
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\obj\Release\netcoreapp3.1\Context.Linq.AssemblyInfoInputs.cache
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\obj\Release\netcoreapp3.1\Context.Linq.AssemblyInfo.fs
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\obj\Release\netcoreapp3.1\Context.Linq.fsproj.CopyComplete
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\obj\Release\netcoreapp3.1\Context.Linq.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Linq\obj\Release\netcoreapp3.1\Context.Linq.pdb

@@ -1,0 +1,26 @@
+﻿----------------------------------------------------------------
+Functor m:
+	replace x m = fmap (fun _ -> x) m
+	void m = replace () m
+
+
+----------------------------------------------------------------
+Applicative m:
+	map3, map4
+	rename `traverse` to `mapM`
+	andthen n m = map2 (fun _ x -> x) m n
+	sequence_ :: [m a] -> m ()
+	traverse_ :: (a -> m b) -> [a] -> m ()
+	when_ p f = if p then m.Force() else unit () -- note that all this does is replace an if-then-else, where else => unit (), with a lazy object.
+
+
+----------------------------------------------------------------
+Monad m:	-- note: Maybe add a Monad.Control or something as a separate lib
+	foldlM  :: (s -> a -> m s) -> s -> [a] -> m s
+	foldrM  :: (a -> s -> m s) -> s -> [a] -> m s
+	filterM :: (a - m bool) -> [a] -> m [a]
+
+
+Foldable t:
+    foldl :: ((() -> s) -> a -> s) -> (() -> s) -> t a -> s -- Simulates laziness by making the accumulator a thunk that is only called as needed by the folding function. Not always stack-safe.
+    foldr :: (a -> (() -> s) -> s) -> (() -> s) -> t a -> s -- Simulates laziness by making the accumulator a thunk that is only called as needed by the folding function. Not always stack-safe.

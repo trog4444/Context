@@ -1,0 +1,12 @@
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\bin\Release\netcoreapp3.1\Context.Workflow.deps.json
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\bin\Release\netcoreapp3.1\Context.Workflow.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\bin\Release\netcoreapp3.1\Context.Workflow.pdb
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\bin\Release\netcoreapp3.1\Context.Base.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\bin\Release\netcoreapp3.1\Context.Base.pdb
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\bin\Release\netcoreapp3.1\Context.Base.xml
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\obj\Release\netcoreapp3.1\Context.Workflow.fsprojAssemblyReference.cache
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\obj\Release\netcoreapp3.1\Context.Workflow.AssemblyInfoInputs.cache
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\obj\Release\netcoreapp3.1\Context.Workflow.AssemblyInfo.fs
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\obj\Release\netcoreapp3.1\Context.Workflow.fsproj.CopyComplete
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\obj\Release\netcoreapp3.1\Context.Workflow.dll
+C:\Users\TylerRogers\Documents\GitHub\Context\Context\Context.Workflow\obj\Release\netcoreapp3.1\Context.Workflow.pdb
